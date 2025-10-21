@@ -351,16 +351,13 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
 
     // Add footer to all pages (must be done before doc.end())
     const range = doc.bufferedPageRange();
-    for (let i = 0; i < range.count; i++) {
+    for (let i = range.start; i < range.start + range.count; i++) {
       doc.switchToPage(i);
-
-      // Save current position
-      const oldBottomMargin = doc.page.margins.bottom;
 
       // Add footer
       doc.fontSize(8).fillColor('gray');
       doc.text(
-        `Halaman ${i + 1} dari ${range.count}`,
+        `Halaman ${i - range.start + 1} dari ${range.count}`,
         50,
         doc.page.height - 50,
         { align: 'center', lineBreak: false }
