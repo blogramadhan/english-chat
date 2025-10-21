@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: english-chat-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - CLIENT_URL=${CLIENT_URL}
+    volumes:
+      # Persist uploaded files
+      - ./backend/uploads:/app/uploads
+    networks:
+      - english-chat-network
+    # Use host network to access MongoDB on host machine
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: english-chat-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=${VITE_API_URL}
+    depends_on:
+      - backend
+    networks:
+      - english-chat-network
+
+networks:
+  english-chat-network:
+    driver: bridge
