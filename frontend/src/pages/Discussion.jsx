@@ -1,0 +1,183 @@
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import {
+  Box,
+  Container,
+  VStack,
+  HStack,
+  Heading,
+  Text,
+  Button,
+  useToast,
+  Divider,
+  Badge,
+  Avatar,
+  IconButton,
+} from '@chakra-ui/react'
+import { ArrowBackIcon } from '@chakra-ui/icons'
+import { io } from 'socket.io-client'
+import { useAuth } from '../context/AuthContext'
+import api from '../utils/api'
+import Navbar from '../components/Navbar'
+import ChatBox from '../components/ChatBox'
+import MessageInput from '../components/MessageInput'
+
+const Discussion = () => {
+  const { id } = useParams()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const toast = useToast()
+  const socketRef = useRef(null)
+
+  const [discussion, setDiscussion] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchDiscussion()
+    fetchMessages()
+
+    // Setup socket connection
+    socketRef.current = io('http://localhost:5000')
+
+    socketRef.current.emit('join-discussion', id)
+
+    socketRef.current.on('receive-message', (message) => {
+      setMessages((prev) => [...prev, message])
+    })
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect()
+      }
+    }
+  }, [id])
+
+  const fetchDiscussion = async () => {
+    try {
+      const { data } = await api.get(`/discussions/${id}`)
+      setDiscussion(data)
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Gagal memuat diskusi',
+        status: 'error',
+        duration: 3000,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchMessages = async () => {
+    try {
+      const { data } = await api.get(`/messages/${id}`)
+      setMessages(data)
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Gagal memuat pesan',
+        status: 'error',
+        duration: 3000,
+      })
+    }
+  }
+
+  const handleSendMessage = async (messageData) => {
+    try {
+      const { data } = await api.post('/messages', {
+        discussion: id,
+        ...messageData
+      })
+
+      // Emit to socket
+      socketRef.current.emit('send-message', {
+        discussionId: id,
+        ...data
+      })
+
+      setMessages((prev) => [...prev, data])
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Gagal mengirim pesan',
+        status: 'error',
+        duration: 3000,
+      })
+    }
+  }
+
+  const handleSendFile = async (file, content) => {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('discussion', id)
+      formData.append('content', content || file.name)
+
+      const { data } = await api.post('/messages/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      // Emit to socket
+      socketRef.current.emit('send-message', {
+        discussionId: id,
+        ...data
+      })
+
+      setMessages((prev) => [...prev, data])
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Gagal mengirim file',
+        status: 'error',
+        duration: 3000,
+      })
+    }
+  }
+
+  if (loading) return null
+
+  return (
+    <Box minH="100vh" bg="gray.50">
+      <Navbar />
+      <Container maxW="container.xl" py={4}>
+        <VStack spacing={4} align="stretch" h="calc(100vh - 150px)">
+          <HStack>
+            <IconButton
+              icon={<ArrowBackIcon />}
+              onClick={() => navigate(`/${user?.role}/dashboard`)}
+              variant="ghost"
+            />
+            <Box flex={1}>
+              <HStack justify="space-between">
+                <Heading size="md">{discussion?.title}</Heading>
+                <Badge colorScheme={discussion?.isActive ? 'green' : 'gray'}>
+                  {discussion?.isActive ? 'Aktif' : 'Selesai'}
+                </Badge>
+              </HStack>
+              <Text fontSize="sm" color="gray.600">
+                {discussion?.content}
+              </Text>
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                Grup: {discussion?.group?.name} | Dosen: {discussion?.createdBy?.name}
+              </Text>
+            </Box>
+          </HStack>
+
+          <Divider />
+
+          <ChatBox messages={messages} currentUser={user} />
+
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            onSendFile={handleSendFile}
+          />
+        </VStack>
+      </Container>
+    </Box>
+  )
+}
+
+export default Discussion
