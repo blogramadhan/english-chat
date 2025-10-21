@@ -29,7 +29,7 @@ const MessageInput = ({ onSendMessage, onSendFile }) => {
     }
   }
 
-  const handleKeyPress = (e) => {
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -38,6 +38,8 @@ const MessageInput = ({ onSendMessage, onSendFile }) => {
 
   const handleEmojiClick = (emojiData) => {
     setMessage((prev) => prev + emojiData.emoji)
+    // Keep popover open so user can select multiple emojis
+    // User can close it by clicking outside or pressing Escape
   }
 
   const handleFileSelect = (e) => {
@@ -65,7 +67,12 @@ const MessageInput = ({ onSendMessage, onSendFile }) => {
           accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
         />
 
-        <Popover isOpen={isOpen} onClose={onClose}>
+        <Popover
+          isOpen={isOpen}
+          onClose={onClose}
+          closeOnBlur={false}
+          placement="top-start"
+        >
           <PopoverTrigger>
             <IconButton
               icon={<FaSmile />}
@@ -74,11 +81,11 @@ const MessageInput = ({ onSendMessage, onSendFile }) => {
               aria-label="Emoji"
             />
           </PopoverTrigger>
-          <PopoverContent>
+          <PopoverContent width="auto">
             <PopoverBody p={0}>
               <EmojiPicker
                 onEmojiClick={handleEmojiClick}
-                width="100%"
+                width="350px"
                 height="400px"
               />
             </PopoverBody>
@@ -88,7 +95,7 @@ const MessageInput = ({ onSendMessage, onSendFile }) => {
         <Input
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyDown}
           placeholder="Ketik pesan..."
           flex={1}
         />
