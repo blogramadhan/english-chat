@@ -16,27 +16,26 @@ import {
   Text,
   Badge,
   IconButton,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
 } from '@chakra-ui/react'
-import { AddIcon, SettingsIcon } from '@chakra-ui/icons'
+import { AddIcon, EditIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import CreateGroupModal from '../components/CreateGroupModal'
 import CreateDiscussionModal from '../components/CreateDiscussionModal'
+import EditGroupModal from '../components/EditGroupModal'
 import Navbar from '../components/Navbar'
 
 const DosenDashboard = () => {
   const [groups, setGroups] = useState([])
   const [discussions, setDiscussions] = useState([])
+  const [selectedGroup, setSelectedGroup] = useState(null)
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
   const { isOpen: isGroupOpen, onOpen: onGroupOpen, onClose: onGroupClose } = useDisclosure()
   const { isOpen: isDiscussionOpen, onOpen: onDiscussionOpen, onClose: onDiscussionClose } = useDisclosure()
+  const { isOpen: isEditGroupOpen, onOpen: onEditGroupOpen, onClose: onEditGroupClose } = useDisclosure()
 
   useEffect(() => {
     fetchData()
@@ -72,6 +71,16 @@ const DosenDashboard = () => {
     onDiscussionClose()
   }
 
+  const handleEditGroup = (group) => {
+    setSelectedGroup(group)
+    onEditGroupOpen()
+  }
+
+  const handleGroupUpdated = () => {
+    fetchData()
+    onEditGroupClose()
+  }
+
   return (
     <Box minH="100vh" bg="gray.50">
       <Navbar />
@@ -93,13 +102,23 @@ const DosenDashboard = () => {
             <Heading size="md" mb={4}>Grup Saya</Heading>
             <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
               {groups.map((group) => (
-                <Card key={group._id} cursor="pointer" _hover={{ shadow: 'lg' }}>
+                <Card key={group._id} _hover={{ shadow: 'lg' }}>
                   <CardHeader>
                     <HStack justify="space-between">
                       <Heading size="sm">{group.name}</Heading>
-                      <Badge colorScheme={group.isActive ? 'green' : 'red'}>
-                        {group.isActive ? 'Aktif' : 'Nonaktif'}
-                      </Badge>
+                      <HStack>
+                        <Badge colorScheme={group.isActive ? 'green' : 'red'}>
+                          {group.isActive ? 'Aktif' : 'Nonaktif'}
+                        </Badge>
+                        <IconButton
+                          icon={<EditIcon />}
+                          size="sm"
+                          colorScheme="blue"
+                          variant="ghost"
+                          onClick={() => handleEditGroup(group)}
+                          aria-label="Edit group"
+                        />
+                      </HStack>
                     </HStack>
                   </CardHeader>
                   <CardBody>
@@ -162,6 +181,13 @@ const DosenDashboard = () => {
         onClose={onDiscussionClose}
         onSuccess={handleDiscussionCreated}
         groups={groups}
+      />
+
+      <EditGroupModal
+        isOpen={isEditGroupOpen}
+        onClose={onEditGroupClose}
+        onSuccess={handleGroupUpdated}
+        group={selectedGroup}
       />
     </Box>
   )
