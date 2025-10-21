@@ -33,16 +33,21 @@ const Login = () => {
       const data = await login(email, password)
       toast({
         title: 'Login berhasil',
+        description: `Selamat datang, ${data.name}!`,
         status: 'success',
         duration: 3000,
       })
       navigate(`/${data.role}/dashboard`)
     } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Terjadi kesalahan'
+      const isApprovalError = error.response?.status === 403
+
       toast({
-        title: 'Login gagal',
-        description: error.response?.data?.message || 'Terjadi kesalahan',
-        status: 'error',
-        duration: 3000,
+        title: isApprovalError ? 'Akun Belum Disetujui' : 'Login gagal',
+        description: errorMessage,
+        status: isApprovalError ? 'warning' : 'error',
+        duration: 5000,
+        isClosable: true,
       })
     } finally {
       setLoading(false)

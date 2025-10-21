@@ -44,13 +44,18 @@ const Register = () => {
     setLoading(true)
 
     try {
-      const data = await register(formData)
+      const response = await register(formData)
+
       toast({
         title: 'Registrasi berhasil',
+        description: response.message || 'Akun Anda berhasil dibuat. Silakan tunggu approval dari admin.',
         status: 'success',
-        duration: 3000,
+        duration: 5000,
+        isClosable: true,
       })
-      navigate(`/${data.role}/dashboard`)
+
+      // Redirect to login after registration
+      navigate('/login')
     } catch (error) {
       toast({
         title: 'Registrasi gagal',

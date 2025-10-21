@@ -7,11 +7,9 @@ import {
   HStack,
   Heading,
   Text,
-  Button,
   useToast,
   Divider,
   Badge,
-  Avatar,
   IconButton,
 } from '@chakra-ui/react'
 import { ArrowBackIcon } from '@chakra-ui/icons'
@@ -43,7 +41,14 @@ const Discussion = () => {
     socketRef.current.emit('join-discussion', id)
 
     socketRef.current.on('receive-message', (message) => {
-      setMessages((prev) => [...prev, message])
+      // Only add message if it's not from current user (to avoid duplicates)
+      // Messages from current user are already added optimistically
+      setMessages((prev) => {
+        // Check if message already exists (by _id or timestamp + sender)
+        const exists = prev.some(m => m._id === message._id)
+        if (exists) return prev
+        return [...prev, message]
+      })
     })
 
     return () => {
@@ -90,13 +95,14 @@ const Discussion = () => {
         ...messageData
       })
 
-      // Emit to socket
+      // Add message to local state immediately (optimistic update)
+      setMessages((prev) => [...prev, data])
+
+      // Emit to socket for other users to receive
       socketRef.current.emit('send-message', {
         discussionId: id,
         ...data
       })
-
-      setMessages((prev) => [...prev, data])
     } catch (error) {
       toast({
         title: 'Error',
@@ -120,13 +126,14 @@ const Discussion = () => {
         }
       })
 
-      // Emit to socket
+      // Add message to local state immediately (optimistic update)
+      setMessages((prev) => [...prev, data])
+
+      // Emit to socket for other users to receive
       socketRef.current.emit('send-message', {
         discussionId: id,
         ...data
       })
-
-      setMessages((prev) => [...prev, data])
     } catch (error) {
       toast({
         title: 'Error',

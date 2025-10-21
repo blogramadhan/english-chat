@@ -46,7 +46,8 @@ router.post('/register', [
       name: user.name,
       email: user.email,
       role: user.role,
-      token: generateToken(user._id)
+      status: user.status,
+      message: 'Registration successful. Please wait for admin approval.'
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -80,11 +81,26 @@ router.post('/login', [
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Check if user is approved (admin is always approved)
+    if (user.role !== 'admin' && user.status !== 'approved') {
+      if (user.status === 'pending') {
+        return res.status(403).json({
+          message: 'Your account is pending approval. Please wait for admin approval.'
+        });
+      }
+      if (user.status === 'rejected') {
+        return res.status(403).json({
+          message: 'Your account has been rejected. Please contact admin.'
+        });
+      }
+    }
+
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
+      status: user.status,
       token: generateToken(user._id)
     });
   } catch (error) {

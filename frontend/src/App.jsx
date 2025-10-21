@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext'
 import PrivateRoute from './components/PrivateRoute'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import AdminDashboard from './pages/AdminDashboard'
 import DosenDashboard from './pages/DosenDashboard'
 import MahasiswaDashboard from './pages/MahasiswaDashboard'
 import Discussion from './pages/Discussion'
@@ -16,6 +17,15 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            <Route
+              path="/admin/dashboard"
+              element={
+                <PrivateRoute role="admin">
+                  <AdminDashboard />
+                </PrivateRoute>
+              }
+            />
 
             <Route
               path="/dosen/dashboard"

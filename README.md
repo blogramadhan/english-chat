@@ -4,17 +4,25 @@ Aplikasi diskusi online berbasis web untuk dosen dan mahasiswa dengan fitur real
 
 ## Fitur Utama
 
+### Untuk Admin
+- Approve/reject pendaftaran user baru (dosen & mahasiswa)
+- Melihat statistik pengguna (total, pending, approved, rejected)
+- Mengelola semua user (view, approve, reject, delete)
+- Dashboard dengan overview sistem
+
 ### Untuk Dosen
 - Membuat dan mengelola grup mahasiswa
 - Membuat topik diskusi/pertanyaan untuk grup
 - Melihat diskusi aktif dan histori percakapan
 - Mengelola anggota grup
+- **Catatan**: Akun dosen perlu di-approve admin terlebih dahulu
 
 ### Untuk Mahasiswa
 - Bergabung dalam grup yang dibuat dosen
 - Berpartisipasi dalam diskusi real-time
 - Mengirim pesan teks, emoji, dan file
 - Melihat semua diskusi yang tersedia dalam grup
+- **Catatan**: Akun mahasiswa perlu di-approve admin terlebih dahulu
 
 ## Tech Stack
 
@@ -98,12 +106,30 @@ npm run dev
 
 Frontend akan berjalan di `http://localhost:3000`
 
+### Membuat Akun Admin
+
+Setelah backend berjalan, buat akun admin dengan menjalankan script berikut:
+
+```bash
+cd backend
+npm run create-admin
+```
+
+Script ini akan membuat akun admin dengan kredensial:
+- **Email**: admin@example.com
+- **Password**: admin123
+
+**PENTING**: Segera ganti password admin setelah login pertama kali!
+
+Akun admin dapat login di `http://localhost:3000/login` dan akan diarahkan ke `/admin/dashboard`
+
 ## Struktur Database
 
 ### Collections
 
-1. **users** - Data pengguna (dosen dan mahasiswa)
-   - name, email, password, role, nim/nip, avatar
+1. **users** - Data pengguna (admin, dosen, dan mahasiswa)
+   - name, email, password, role (admin/dosen/mahasiswa), status (pending/approved/rejected)
+   - nim/nip, avatar, approvedBy, approvedAt
 
 2. **groups** - Grup mahasiswa yang dibuat dosen
    - name, description, createdBy, members, isActive
@@ -117,8 +143,16 @@ Frontend akan berjalan di `http://localhost:3000`
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - Register user baru
-- `POST /api/auth/login` - Login user
+- `POST /api/auth/register` - Register user baru (status: pending)
+- `POST /api/auth/login` - Login user (cek approval status)
+
+### Admin (Admin only)
+- `GET /api/admin/stats` - Get dashboard statistics
+- `GET /api/admin/users/pending` - Get pending users
+- `GET /api/admin/users` - Get all users (dengan filter)
+- `PUT /api/admin/users/:id/approve` - Approve user
+- `PUT /api/admin/users/:id/reject` - Reject user
+- `DELETE /api/admin/users/:id` - Delete user
 
 ### Users
 - `GET /api/users/me` - Get profile user saat ini
@@ -159,21 +193,33 @@ Frontend akan berjalan di `http://localhost:3000`
 
 ## Cara Penggunaan
 
+### Sebagai Admin
+
+1. Jalankan script `npm run create-admin` untuk membuat akun admin
+2. Login dengan kredensial admin (admin@example.com / admin123)
+3. Masuk ke Admin Dashboard untuk:
+   - Melihat statistik sistem
+   - Approve/reject pendaftaran user baru
+   - Mengelola semua user
+4. Approve akun dosen dan mahasiswa yang mendaftar
+
 ### Sebagai Dosen
 
 1. Register dengan role "Dosen"
-2. Login ke dashboard dosen
-3. Buat grup mahasiswa dan tambahkan anggota
-4. Buat topik diskusi/pertanyaan untuk grup tertentu
-5. Monitor dan berpartisipasi dalam diskusi
+2. Tunggu approval dari admin
+3. Setelah di-approve, login ke dashboard dosen
+4. Buat grup mahasiswa dan tambahkan anggota
+5. Buat topik diskusi/pertanyaan untuk grup tertentu
+6. Monitor dan berpartisipasi dalam diskusi
 
 ### Sebagai Mahasiswa
 
 1. Register dengan role "Mahasiswa"
-2. Login ke dashboard mahasiswa
-3. Lihat grup yang Anda ikuti
-4. Buka diskusi yang tersedia
-5. Berpartisipasi dalam diskusi dengan mengirim pesan, emoji, atau file
+2. Tunggu approval dari admin
+3. Setelah di-approve, login ke dashboard mahasiswa
+4. Lihat grup yang Anda ikuti
+5. Buka diskusi yang tersedia
+6. Berpartisipasi dalam diskusi dengan mengirim pesan, emoji, atau file
 
 ## File Upload
 

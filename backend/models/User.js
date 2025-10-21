@@ -21,8 +21,20 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['dosen', 'mahasiswa'],
+    enum: ['admin', 'dosen', 'mahasiswa'],
     required: true
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  approvedAt: {
+    type: Date
   },
   nim: {
     type: String,

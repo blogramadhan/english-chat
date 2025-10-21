@@ -44,3 +44,12 @@ exports.isMahasiswa = (req, res, next) => {
     res.status(403).json({ message: 'Access denied. Mahasiswa only.' });
   }
 };
+
+// Check if user is admin
+exports.isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Access denied. Admin only.' });
+  }
+};
