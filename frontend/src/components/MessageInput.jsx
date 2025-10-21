@@ -64,7 +64,7 @@ const MessageInput = ({ onSendMessage, onSendFile }) => {
           type="file"
           hidden
           onChange={handleFileSelect}
-          accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
+          accept="image/jpeg,image/jpg,image/png,image/gif"
         />
 
         <Popover

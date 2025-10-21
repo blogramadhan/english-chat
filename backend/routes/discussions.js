@@ -210,21 +210,25 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
         doc.addPage();
       }
 
-      // Message header
-      doc.fontSize(9).font('Helvetica-Bold');
+      // Save left margin position
+      const leftMargin = doc.page.margins.left;
+      const contentIndent = 20; // Indent for message content
+
+      // Message header with number and sender name
+      doc.fontSize(9).font('Helvetica-Bold').fillColor('black');
       const senderRole = message.sender?.role === 'dosen' ? '(Dosen)' : '(Mahasiswa)';
-      doc.text(`${index + 1}. ${message.sender?.name || 'Unknown'} ${senderRole}`);
+      doc.text(`${index + 1}. ${message.sender?.name || 'Unknown'} ${senderRole}`, leftMargin);
 
+      // Timestamp and edit indicator on new line with indent
       doc.fontSize(8).font('Helvetica').fillColor('gray');
-      doc.text(new Date(message.createdAt).toLocaleString('id-ID'), { continued: true });
+      const timestamp = new Date(message.createdAt).toLocaleString('id-ID');
+      const editedText = message.isEdited ? ' (edited)' : '';
+      doc.text(`${timestamp}${editedText}`, leftMargin + contentIndent);
 
-      if (message.isEdited) {
-        doc.text(' (edited)');
-      } else {
-        doc.text('');
-      }
+      // Add spacing before message content
+      doc.moveDown(0.5);
 
-      // Message content
+      // Message content with indent
       doc.fillColor('black').fontSize(9).font('Helvetica');
 
       if (message.messageType === 'file') {
@@ -243,13 +247,14 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
                 doc.addPage();
               }
 
-              doc.text(`[Gambar: ${message.fileName}]`, { align: 'left' });
+              doc.text(`[Gambar: ${message.fileName}]`, leftMargin + contentIndent);
               doc.moveDown(0.3);
 
-              // Add image with max width 400px
-              doc.image(imagePath, {
-                fit: [400, 300],
-                align: 'center'
+              // Add image with max width 400px, indented
+              const imageX = leftMargin + contentIndent;
+              doc.image(imagePath, imageX, doc.y, {
+                fit: [380, 280],
+                align: 'left'
               });
 
               doc.moveDown(0.5);
@@ -257,28 +262,31 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
               // Add caption if different from filename
               if (message.content && message.content !== message.fileName) {
                 doc.fontSize(8).fillColor('gray');
-                doc.text(`Keterangan: ${message.content}`, { align: 'justify' });
+                doc.text(`Keterangan: ${message.content}`, leftMargin + contentIndent, doc.y, {
+                  width: doc.page.width - leftMargin - contentIndent - doc.page.margins.right,
+                  align: 'left'
+                });
                 doc.fillColor('black').fontSize(9);
               }
             } else {
               // File not found, show placeholder
-              doc.text(`[Gambar tidak ditemukan: ${message.fileName}]`);
+              doc.text(`[Gambar tidak ditemukan: ${message.fileName}]`, leftMargin + contentIndent);
               if (message.content !== message.fileName) {
-                doc.text(message.content);
+                doc.text(message.content, leftMargin + contentIndent);
               }
             }
           } catch (error) {
             console.error('Error embedding image:', error);
-            doc.text(`[Gambar: ${message.fileName}]`);
+            doc.text(`[Gambar: ${message.fileName}]`, leftMargin + contentIndent);
             if (message.content !== message.fileName) {
-              doc.text(message.content);
+              doc.text(message.content, leftMargin + contentIndent);
             }
           }
         } else {
-          // Non-image file
-          doc.text(`[File: ${message.fileName || 'attachment'}]`);
+          // Non-image file (should not happen anymore, but keep for safety)
+          doc.text(`[File: ${message.fileName || 'attachment'}]`, leftMargin + contentIndent);
           if (message.content && message.content !== message.fileName) {
-            doc.text(message.content);
+            doc.text(message.content, leftMargin + contentIndent);
           }
         }
       } else {
@@ -331,31 +339,47 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
         textContent = textContent.replace(/[\u{2600}-\u{26FF}]/gu, '[emoji]');   // Misc symbols
         textContent = textContent.replace(/[\u{2700}-\u{27BF}]/gu, '[emoji]');   // Dingbats
 
-        doc.text(textContent, { align: 'justify' });
+        // Write text content with indent
+        doc.text(textContent, leftMargin + contentIndent, doc.y, {
+          width: doc.page.width - leftMargin - contentIndent - doc.page.margins.right,
+          align: 'left'
+        });
       }
 
-      doc.moveDown(0.5);
+      doc.moveDown(0.8);
     }
 
-    // Footer
-    doc.fontSize(8).fillColor('gray');
-    const pages = doc.bufferedPageRange();
-    for (let i = 0; i < pages.count; i++) {
+    // Add footer to all pages (must be done before doc.end())
+    const range = doc.bufferedPageRange();
+    for (let i = 0; i < range.count; i++) {
       doc.switchToPage(i);
+
+      // Save current position
+      const oldBottomMargin = doc.page.margins.bottom;
+
+      // Add footer
+      doc.fontSize(8).fillColor('gray');
       doc.text(
-        `Halaman ${i + 1} dari ${pages.count}`,
+        `Halaman ${i + 1} dari ${range.count}`,
         50,
         doc.page.height - 50,
-        { align: 'center' }
+        { align: 'center', lineBreak: false }
       );
+
+      // Restore
+      doc.fillColor('black');
     }
 
-    // Finalize PDF
+    // Finalize PDF (this will close the stream)
     doc.end();
 
   } catch (error) {
     console.error('PDF Export Error:', error);
-    res.status(500).json({ message: error.message });
+
+    // Only send error response if headers haven't been sent yet
+    if (!res.headersSent) {
+      res.status(500).json({ message: error.message });
+    }
   }
 });
 
