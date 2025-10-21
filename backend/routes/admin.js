@@ -107,6 +107,73 @@ router.put('/users/:id/reject', protect, isAdmin, async (req, res) => {
   }
 });
 
+// @route   PUT /api/admin/users/:id
+// @desc    Update user profile (by admin)
+// @access  Private/Admin
+router.put('/users/:id', protect, isAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+
+    if (user.role === 'admin') {
+      return res.status(403).json({ message: 'Tidak bisa mengedit admin user' });
+    }
+
+    // Update fields that are allowed to be changed by admin
+    if (req.body.name) user.name = req.body.name;
+
+    if (req.body.email) {
+      // Check if email is already taken by another user
+      const emailExists = await User.findOne({
+        email: req.body.email,
+        _id: { $ne: user._id }
+      });
+      if (emailExists) {
+        return res.status(400).json({ message: 'Email sudah digunakan' });
+      }
+      user.email = req.body.email;
+    }
+
+    // Update NIM/NIP based on role
+    if (user.role === 'mahasiswa' && req.body.nim !== undefined) {
+      user.nim = req.body.nim;
+    }
+    if (user.role === 'dosen' && req.body.nip !== undefined) {
+      user.nip = req.body.nip;
+    }
+
+    // Admin can also update status
+    if (req.body.status && ['pending', 'approved', 'rejected'].includes(req.body.status)) {
+      user.status = req.body.status;
+      if (req.body.status === 'approved' || req.body.status === 'rejected') {
+        user.approvedBy = req.user._id;
+        user.approvedAt = Date.now();
+      }
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      message: 'User berhasil diperbarui',
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        nim: updatedUser.nim,
+        nip: updatedUser.nip,
+        avatar: updatedUser.avatar,
+        status: updatedUser.status
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // @route   DELETE /api/admin/users/:id
 // @desc    Delete user
 // @access  Private/Admin

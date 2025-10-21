@@ -160,24 +160,30 @@ Admin user already exists!
 Email: admin@example.com
 ```
 
-### Lupa Password Admin
-Karena password di-hash, Anda perlu:
-1. Hapus admin dari database MongoDB
-2. Jalankan ulang `npm run create-admin`
-
-Atau update manual di MongoDB:
-```javascript
-// Di MongoDB shell atau Compass
-use online-discussion
-db.users.updateOne(
-  { email: "admin@example.com" },
-  {
-    $set: {
-      password: "$2a$10$..." // hash dari password baru
-    }
-  }
-)
+### Lupa Password Admin atau Ingin Reset ke Default
+Gunakan script reset admin untuk mengembalikan email dan password ke default:
+```bash
+cd backend
+npm run reset-admin
 ```
+
+Output yang diharapkan:
+```
+MongoDB connected
+Admin user found. Resetting to default credentials...
+
+✅ Admin user reset successfully!
+
+Admin Credentials:
+Email: admin@example.com
+Password: admin123
+
+⚠️  IMPORTANT: Please change the admin password after login!
+```
+
+Setelah reset, Anda bisa login dengan:
+- Email: `admin@example.com`
+- Password: `admin123`
 
 ### User tidak bisa login setelah di-approve
 1. Cek status user di database: `status: "approved"`

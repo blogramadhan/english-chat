@@ -37,10 +37,11 @@ import {
   StatNumber,
   StatHelpText,
 } from '@chakra-ui/react'
-import { CheckIcon, CloseIcon, DeleteIcon } from '@chakra-ui/icons'
+import { CheckIcon, CloseIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import Navbar from '../components/Navbar'
+import EditUserModal from '../components/EditUserModal'
 import { useRef } from 'react'
 
 const AdminDashboard = () => {
@@ -49,7 +50,9 @@ const AdminDashboard = () => {
   const [allUsers, setAllUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState(null)
+  const [userToEdit, setUserToEdit] = useState(null)
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure()
   const cancelRef = useRef()
   const toast = useToast()
 
@@ -122,6 +125,20 @@ const AdminDashboard = () => {
         duration: 3000,
       })
     }
+  }
+
+  const handleEditClick = (user) => {
+    setUserToEdit(user)
+    onEditOpen()
+  }
+
+  const handleUserUpdated = (updatedUser) => {
+    // Update user in both lists
+    setPendingUsers(prev => prev.map(u => u._id === updatedUser._id ? updatedUser : u))
+    setAllUsers(prev => prev.map(u => u._id === updatedUser._id ? updatedUser : u))
+
+    // Refresh data to get accurate stats
+    fetchData()
   }
 
   const handleDeleteClick = (user) => {
@@ -357,13 +374,22 @@ const AdminDashboard = () => {
                                   </>
                                 )}
                                 {user.role !== 'admin' && (
-                                  <IconButton
-                                    icon={<DeleteIcon />}
-                                    colorScheme="red"
-                                    size="sm"
-                                    onClick={() => handleDeleteClick(user)}
-                                    aria-label="Delete"
-                                  />
+                                  <>
+                                    <IconButton
+                                      icon={<EditIcon />}
+                                      colorScheme="blue"
+                                      size="sm"
+                                      onClick={() => handleEditClick(user)}
+                                      aria-label="Edit"
+                                    />
+                                    <IconButton
+                                      icon={<DeleteIcon />}
+                                      colorScheme="red"
+                                      size="sm"
+                                      onClick={() => handleDeleteClick(user)}
+                                      aria-label="Delete"
+                                    />
+                                  </>
                                 )}
                               </HStack>
                             </Td>
@@ -378,6 +404,14 @@ const AdminDashboard = () => {
           </Tabs>
         </VStack>
       </Container>
+
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={isEditOpen}
+        onClose={onEditClose}
+        user={userToEdit}
+        onUserUpdated={handleUserUpdated}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog

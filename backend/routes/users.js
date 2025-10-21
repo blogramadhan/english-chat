@@ -120,9 +120,8 @@ router.put('/password', protect, async (req, res) => {
       return res.status(400).json({ message: 'Password lama tidak sesuai' });
     }
 
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
+    // Set new password (will be hashed by pre-save hook)
+    user.password = newPassword;
 
     await user.save();
 
