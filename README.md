@@ -104,6 +104,7 @@ english-chat/
 ## 📖 Documentation
 
 - [Admin Guide](ADMIN_GUIDE.md) - Panduan administrator
+- [MongoDB Atlas Setup](MONGODB_ATLAS_SETUP.md) - Setup cloud MongoDB
 - [Deployment Guide](DEPLOYMENT.md) - Panduan deployment production
 - [Data Persistence](DATA_PERSISTENCE.md) - Panduan backup & data safety
 

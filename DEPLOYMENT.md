@@ -18,9 +18,9 @@ Sebelum melakukan deployment, pastikan server Anda memiliki:
    docker compose version
    ```
 
-3. **MongoDB** yang sudah berjalan di server lokal
-   - Pastikan MongoDB running dan accessible
-   - Default: `mongodb://localhost:27017`
+3. **MongoDB Atlas Account** (Recommended - Free tier available)
+   - Setup MongoDB Atlas: Lihat [MONGODB_ATLAS_SETUP.md](MONGODB_ATLAS_SETUP.md)
+   - Alternatif: MongoDB lokal di server
 
 4. **Git** (untuk clone repository)
    ```bash
@@ -50,13 +50,15 @@ Edit file `.env.production.local`:
 nano .env.production.local
 ```
 
-**Konfigurasi untuk MongoDB Lokal:**
+**Konfigurasi untuk MongoDB Atlas (Recommended):**
 
 ```env
-# MongoDB Connection - menggunakan MongoDB lokal yang sudah ada
-MONGODB_URI=mongodb://host.docker.internal:27017/online-discussion
+# MongoDB Connection - MongoDB Atlas (cloud.mongodb.com)
+# Get from: https://cloud.mongodb.com → Connect → Connection String
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/online-discussion?retryWrites=true&w=majority
 
-# JWT Secret - ganti dengan random string yang aman
+# JWT Secret - generate secure random string
+# Use: openssl rand -base64 32
 JWT_SECRET=generate-random-secret-key-here-min-32-chars
 
 # Client URL - sesuaikan dengan domain production Anda
@@ -66,10 +68,21 @@ CLIENT_URL=http://your-domain.com
 VITE_API_URL=http://your-domain.com:5000
 ```
 
-**Catatan Penting:**
-- `host.docker.internal` adalah special DNS name yang mengarah ke host machine dari dalam Docker container
-- MongoDB lokal yang sudah ada di server akan tetap digunakan (tidak perlu container MongoDB baru)
-- Database existing Anda akan tetap aman dan tidak berubah
+**Catatan:**
+- Setup MongoDB Atlas: Lihat [MONGODB_ATLAS_SETUP.md](MONGODB_ATLAS_SETUP.md)
+- Free tier available: 512MB storage
+- Auto backups, monitoring, dan scaling
+- Akses dari mana saja (tidak tergantung server lokal)
+
+**Alternative - MongoDB Lokal:**
+
+```env
+# Jika menggunakan MongoDB lokal di server
+MONGODB_URI=mongodb://localhost:27017/online-discussion
+
+# Atau dari container Docker (uncomment extra_hosts di docker-compose.yml):
+# MONGODB_URI=mongodb://host.docker.internal:27017/online-discussion
+```
 
 ### 3. Deploy Aplikasi
 

@@ -21,9 +21,6 @@ services:
       - ./backend/uploads:/app/uploads
     networks:
       - english-chat-network
-    # Use host network to access MongoDB on host machine
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   # Frontend Service
   frontend:
