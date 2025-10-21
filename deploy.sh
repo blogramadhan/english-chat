@@ -51,23 +51,26 @@ echo ""
 # Show deployment options
 echo "Deployment Options:"
 echo "1. Deploy (build and start containers)"
-echo "2. Stop containers"
-echo "3. Restart containers"
-echo "4. View logs"
-echo "5. Remove containers and images"
-echo "6. Exit"
+echo "2. Update from GitHub and redeploy"
+echo "3. Stop containers"
+echo "4. Restart containers"
+echo "5. View logs"
+echo "6. Backup database and files"
+echo "7. Restore from backup"
+echo "8. Remove containers and images"
+echo "9. Exit"
 echo ""
 
-read -p "Select option (1-6): " option
+read -p "Select option (1-9): " option
 
 case $option in
     1)
         echo -e "${GREEN}Building and starting containers...${NC}"
         echo ""
 
-        # Stop existing containers
+        # Stop existing containers (keep volumes and data)
         echo "Stopping existing containers..."
-        docker-compose --env-file .env.production.local down || true
+        docker-compose --env-file .env.production.local down --remove-orphans || true
 
         # Build images
         echo "Building Docker images..."
@@ -94,37 +97,144 @@ case $option in
         ;;
 
     2)
-        echo -e "${YELLOW}Stopping containers...${NC}"
-        docker-compose --env-file .env.production.local down
-        echo -e "${GREEN}✓ Containers stopped${NC}"
+        echo -e "${GREEN}Updating from GitHub and redeploying...${NC}"
+        echo ""
+
+        # Check if git is installed
+        if ! command -v git &> /dev/null; then
+            echo -e "${RED}Error: Git is not installed${NC}"
+            exit 1
+        fi
+
+        # Check if it's a git repository
+        if [ ! -d .git ]; then
+            echo -e "${RED}Error: Not a git repository${NC}"
+            echo "Please clone from GitHub first"
+            exit 1
+        fi
+
+        # Show current branch and status
+        echo -e "${YELLOW}Current branch:${NC} $(git branch --show-current)"
+        echo -e "${YELLOW}Current commit:${NC} $(git rev-parse --short HEAD)"
+        echo ""
+
+        # Backup before update
+        echo -e "${YELLOW}Creating backup before update...${NC}"
+        ./backup.sh
+        echo ""
+
+        # Stash local changes if any
+        if ! git diff-index --quiet HEAD --; then
+            echo -e "${YELLOW}Stashing local changes...${NC}"
+            git stash push -m "Auto-stash before deploy update $(date)"
+        fi
+
+        # Pull latest changes
+        echo "Pulling latest changes from GitHub..."
+        git pull origin $(git branch --show-current)
+
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Error: Failed to pull from GitHub${NC}"
+            echo "Please resolve conflicts manually"
+            exit 1
+        fi
+
+        echo -e "${GREEN}✓ Code updated successfully${NC}"
+        echo ""
+
+        # Stop existing containers (keep volumes and data)
+        echo "Stopping existing containers..."
+        docker-compose --env-file .env.production.local down --remove-orphans || true
+
+        # Rebuild images
+        echo "Rebuilding Docker images..."
+        docker-compose --env-file .env.production.local build --no-cache
+
+        # Start containers
+        echo "Starting containers..."
+        docker-compose --env-file .env.production.local up -d
+
+        echo ""
+        echo -e "${GREEN}=========================================${NC}"
+        echo -e "${GREEN}Update and redeploy completed!${NC}"
+        echo -e "${GREEN}=========================================${NC}"
+        echo ""
+        echo -e "${YELLOW}Changes:${NC}"
+        git log --oneline -5
+        echo ""
         ;;
 
     3)
+        echo -e "${YELLOW}Stopping containers...${NC}"
+        echo -e "${YELLOW}Note: Uploads and backups will be preserved${NC}"
+        docker-compose --env-file .env.production.local down --remove-orphans
+        echo -e "${GREEN}✓ Containers stopped (data preserved)${NC}"
+        ;;
+
+    4)
         echo -e "${YELLOW}Restarting containers...${NC}"
         docker-compose --env-file .env.production.local restart
         echo -e "${GREEN}✓ Containers restarted${NC}"
         ;;
 
-    4)
+    5)
         echo -e "${GREEN}Viewing logs (Ctrl+C to exit)...${NC}"
         docker-compose --env-file .env.production.local logs -f
         ;;
 
-    5)
+    6)
+        echo -e "${GREEN}Creating backup...${NC}"
+        ./backup.sh
+        ;;
+
+    7)
+        echo -e "${GREEN}Restoring from backup...${NC}"
+        echo ""
+
+        if [ ! -d "./backups" ] || [ -z "$(ls -A ./backups 2>/dev/null)" ]; then
+            echo -e "${RED}Error: No backups found${NC}"
+            exit 1
+        fi
+
+        echo "Available backups:"
+        ls -1 ./backups | nl -w2 -s'. '
+        echo ""
+
+        read -p "Enter backup number or timestamp: " backup_choice
+
+        # Check if it's a number
+        if [[ "$backup_choice" =~ ^[0-9]+$ ]]; then
+            BACKUP_TIMESTAMP=$(ls -1 ./backups | sed -n "${backup_choice}p")
+        else
+            BACKUP_TIMESTAMP="$backup_choice"
+        fi
+
+        if [ -z "$BACKUP_TIMESTAMP" ]; then
+            echo -e "${RED}Invalid selection${NC}"
+            exit 1
+        fi
+
+        ./restore.sh "$BACKUP_TIMESTAMP"
+        ;;
+
+    8)
         echo -e "${RED}Warning: This will remove all containers and images!${NC}"
+        echo -e "${YELLOW}Your data (uploads & backups) will be preserved${NC}"
+        echo ""
         read -p "Are you sure? (yes/no): " confirm
         if [ "$confirm" = "yes" ]; then
             echo "Removing containers..."
-            docker-compose --env-file .env.production.local down
+            docker-compose --env-file .env.production.local down --remove-orphans
             echo "Removing images..."
             docker rmi english-chat_backend english-chat_frontend || true
             echo -e "${GREEN}✓ Cleanup completed${NC}"
+            echo -e "${GREEN}✓ Uploads and backups preserved${NC}"
         else
             echo "Cancelled."
         fi
         ;;
 
-    6)
+    9)
         echo "Exiting..."
         exit 0
         ;;

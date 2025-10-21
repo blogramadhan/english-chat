@@ -103,8 +103,9 @@ english-chat/
 
 ## 📖 Documentation
 
-- [Admin Guide](ADMIN_GUIDE.md)
-- [Deployment Guide](DEPLOYMENT.md)
+- [Admin Guide](ADMIN_GUIDE.md) - Panduan administrator
+- [Deployment Guide](DEPLOYMENT.md) - Panduan deployment production
+- [Data Persistence](DATA_PERSISTENCE.md) - Panduan backup & data safety
 
 ## 🔧 Scripts
 

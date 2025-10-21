@@ -164,11 +164,64 @@ docker-compose logs -f backend
 docker-compose logs -f frontend
 ```
 
+### Update from GitHub and Redeploy
+
+Ketika ada perbaikan code di GitHub, gunakan option ini untuk update dan redeploy otomatis:
+
+```bash
+./deploy.sh
+# Pilih option 2
+```
+
+**Proses yang terjadi:**
+1. ✓ Auto backup database dan files sebelum update
+2. ✓ Stash local changes (jika ada)
+3. ✓ Pull latest code dari GitHub
+4. ✓ Rebuild Docker images
+5. ✓ Restart containers
+6. ✓ Show latest changes
+
+### Backup Database dan Files
+
+```bash
+./deploy.sh
+# Pilih option 6
+
+# atau manual:
+./backup.sh
+```
+
+**Yang di-backup:**
+- MongoDB database (compressed .tar.gz)
+- Uploads folder (compressed .tar.gz)
+- Environment file (.env.production.local)
+- Backup manifest
+
+**Lokasi backup:** `./backups/<timestamp>/`
+
+**Auto cleanup:** Hanya menyimpan 7 backup terakhir
+
+### Restore from Backup
+
+```bash
+./deploy.sh
+# Pilih option 7
+
+# atau manual:
+./restore.sh <timestamp>
+```
+
+**Cara restore:**
+1. Script akan menampilkan list backup yang tersedia
+2. Pilih backup berdasarkan nomor atau timestamp
+3. Konfirmasi restore
+4. Database dan files akan di-restore
+
 ### Remove Containers dan Images
 
 ```bash
 ./deploy.sh
-# Pilih option 5
+# Pilih option 8
 ```
 
 ### Check Status Containers
@@ -277,9 +330,64 @@ Kemudian rebuild:
 - [ ] Monitor logs secara regular
 - [ ] Update Docker images secara berkala
 
-## 🗃️ Database Backup
+## 🗃️ Backup & Restore
 
-### Backup MongoDB
+### Automated Backup (Recommended)
+
+Gunakan script backup yang sudah disediakan:
+
+```bash
+# Via deploy menu
+./deploy.sh
+# Pilih option 6
+
+# Atau langsung
+./backup.sh
+```
+
+**Backup otomatis meliputi:**
+- ✅ MongoDB database (compressed)
+- ✅ Uploads folder (semua file yang diupload user)
+- ✅ Environment configuration
+- ✅ Backup manifest dengan timestamp
+- ✅ Auto cleanup (keep last 7 backups)
+
+**Lokasi:** `./backups/<timestamp>/`
+
+**Contoh struktur backup:**
+```
+backups/
+  └── 20250121_143000/
+      ├── mongodb-20250121_143000.tar.gz
+      ├── uploads-20250121_143000.tar.gz
+      ├── env.production.local.backup
+      └── manifest.txt
+```
+
+### Restore from Backup
+
+```bash
+# Via deploy menu (interactive)
+./deploy.sh
+# Pilih option 7
+
+# Atau langsung dengan timestamp
+./restore.sh 20250121_143000
+
+# List available backups
+ls -lh backups/
+```
+
+**Proses restore:**
+1. Script menampilkan available backups
+2. Pilih backup yang diinginkan
+3. Konfirmasi restore (⚠️ will overwrite current data)
+4. Database dan files akan di-restore
+5. Current data di-backup terlebih dahulu
+
+### Manual Backup (Advanced)
+
+#### MongoDB Manual Backup
 
 ```bash
 # Backup database
@@ -289,7 +397,7 @@ mongodump --db online-discussion --out /backup/mongodb-$(date +%Y%m%d)
 mongodump --db online-discussion --archive=/backup/mongodb-$(date +%Y%m%d).gz --gzip
 ```
 
-### Restore MongoDB
+#### MongoDB Manual Restore
 
 ```bash
 # Restore dari backup
@@ -299,11 +407,23 @@ mongorestore --db online-discussion /backup/mongodb-20250101/online-discussion
 mongorestore --db online-discussion --archive=/backup/mongodb-20250101.gz --gzip
 ```
 
-### Backup Files (Uploads)
+#### Files Manual Backup
 
 ```bash
 # Backup folder uploads
 tar -czf uploads-backup-$(date +%Y%m%d).tar.gz ./backend/uploads
+```
+
+### Backup Schedule (Cron)
+
+Setup automatic daily backup:
+
+```bash
+# Edit crontab
+crontab -e
+
+# Add this line for daily backup at 2 AM
+0 2 * * * cd /path/to/english-chat && ./backup.sh >> /var/log/english-chat-backup.log 2>&1
 ```
 
 ## 📊 Monitoring

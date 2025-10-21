@@ -40,6 +40,9 @@ coverage/
 backend/uploads/*
 !backend/uploads/.gitkeep
 
+# Backups
+backups/
+
 # Cache
 .cache/
 .parcel-cache/
