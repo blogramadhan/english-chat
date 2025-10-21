@@ -17,18 +17,20 @@ import {
   Badge,
   IconButton,
 } from '@chakra-ui/react'
-import { AddIcon, EditIcon } from '@chakra-ui/icons'
+import { AddIcon, EditIcon, DownloadIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import CreateGroupModal from '../components/CreateGroupModal'
 import CreateDiscussionModal from '../components/CreateDiscussionModal'
 import EditGroupModal from '../components/EditGroupModal'
+import EditDiscussionModal from '../components/EditDiscussionModal'
 import Navbar from '../components/Navbar'
 
 const DosenDashboard = () => {
   const [groups, setGroups] = useState([])
   const [discussions, setDiscussions] = useState([])
   const [selectedGroup, setSelectedGroup] = useState(null)
+  const [selectedDiscussion, setSelectedDiscussion] = useState(null)
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -36,6 +38,7 @@ const DosenDashboard = () => {
   const { isOpen: isGroupOpen, onOpen: onGroupOpen, onClose: onGroupClose } = useDisclosure()
   const { isOpen: isDiscussionOpen, onOpen: onDiscussionOpen, onClose: onDiscussionClose } = useDisclosure()
   const { isOpen: isEditGroupOpen, onOpen: onEditGroupOpen, onClose: onEditGroupClose } = useDisclosure()
+  const { isOpen: isEditDiscussionOpen, onOpen: onEditDiscussionOpen, onClose: onEditDiscussionClose } = useDisclosure()
 
   useEffect(() => {
     fetchData()
@@ -79,6 +82,60 @@ const DosenDashboard = () => {
   const handleGroupUpdated = () => {
     fetchData()
     onEditGroupClose()
+  }
+
+  const handleEditDiscussion = (e, discussion) => {
+    e.stopPropagation() // Prevent card click
+    setSelectedDiscussion(discussion)
+    onEditDiscussionOpen()
+  }
+
+  const handleDiscussionUpdated = () => {
+    fetchData()
+    onEditDiscussionClose()
+  }
+
+  const handleDownloadPDF = async (e, discussionId, discussionTitle) => {
+    e.stopPropagation() // Prevent card click
+
+    try {
+      const userInfo = localStorage.getItem('userInfo')
+      const { token } = JSON.parse(userInfo)
+
+      const response = await fetch(`/api/discussions/${discussionId}/export-pdf`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to download PDF')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `diskusi-${discussionTitle.replace(/\s+/g, '-')}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      toast({
+        title: 'PDF berhasil didownload',
+        status: 'success',
+        duration: 3000,
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Gagal mendownload PDF',
+        status: 'error',
+        duration: 3000,
+      })
+    }
   }
 
   return (
@@ -146,10 +203,30 @@ const DosenDashboard = () => {
                 >
                   <CardHeader>
                     <HStack justify="space-between">
-                      <Heading size="sm">{discussion.title}</Heading>
-                      <Badge colorScheme={discussion.isActive ? 'green' : 'red'}>
-                        {discussion.isActive ? 'Aktif' : 'Selesai'}
-                      </Badge>
+                      <Heading size="sm" flex={1}>{discussion.title}</Heading>
+                      <HStack spacing={1}>
+                        <Badge colorScheme={discussion.isActive ? 'green' : 'red'}>
+                          {discussion.isActive ? 'Aktif' : 'Selesai'}
+                        </Badge>
+                        <IconButton
+                          icon={<DownloadIcon />}
+                          size="sm"
+                          colorScheme="green"
+                          variant="ghost"
+                          onClick={(e) => handleDownloadPDF(e, discussion._id, discussion.title)}
+                          aria-label="Download PDF"
+                          title="Download PDF"
+                        />
+                        <IconButton
+                          icon={<EditIcon />}
+                          size="sm"
+                          colorScheme="blue"
+                          variant="ghost"
+                          onClick={(e) => handleEditDiscussion(e, discussion)}
+                          aria-label="Edit discussion"
+                          title="Edit Diskusi"
+                        />
+                      </HStack>
                     </HStack>
                   </CardHeader>
                   <CardBody>
@@ -188,6 +265,14 @@ const DosenDashboard = () => {
         onClose={onEditGroupClose}
         onSuccess={handleGroupUpdated}
         group={selectedGroup}
+      />
+
+      <EditDiscussionModal
+        isOpen={isEditDiscussionOpen}
+        onClose={onEditDiscussionClose}
+        onSuccess={handleDiscussionUpdated}
+        discussion={selectedDiscussion}
+        groups={groups}
       />
     </Box>
   )

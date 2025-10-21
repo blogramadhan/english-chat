@@ -3,6 +3,9 @@ const router = express.Router();
 const { protect, isDosen } = require('../middleware/auth');
 const Discussion = require('../models/Discussion');
 const Group = require('../models/Group');
+const Message = require('../models/Message');
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
 
 // @route   POST /api/discussions
 // @desc    Create new discussion (Dosen only)
@@ -135,6 +138,124 @@ router.delete('/:id', protect, isDosen, async (req, res) => {
     await discussion.deleteOne();
     res.json({ message: 'Discussion removed' });
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   GET /api/discussions/:id/export-pdf
+// @desc    Export discussion to PDF (Dosen only)
+// @access  Private/Dosen
+router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
+  try {
+    const discussion = await Discussion.findById(req.params.id)
+      .populate('createdBy group', '-password');
+
+    if (!discussion) {
+      return res.status(404).json({ message: 'Discussion not found' });
+    }
+
+    // Check if user is the creator
+    if (discussion.createdBy._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    // Get all messages for this discussion
+    const messages = await Message.find({ discussion: req.params.id })
+      .populate('sender', 'name email role')
+      .sort('createdAt');
+
+    // Create PDF document
+    const doc = new PDFDocument({ margin: 50 });
+
+    // Set response headers
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=diskusi-${discussion.title.replace(/\s+/g, '-')}.pdf`);
+
+    // Pipe PDF to response
+    doc.pipe(res);
+
+    // Add content to PDF
+    // Header
+    doc.fontSize(20).font('Helvetica-Bold').text('Laporan Diskusi', { align: 'center' });
+    doc.moveDown();
+
+    // Discussion Info
+    doc.fontSize(14).font('Helvetica-Bold').text('Informasi Diskusi');
+    doc.fontSize(10).font('Helvetica');
+    doc.text(`Judul: ${discussion.title}`);
+    doc.text(`Grup: ${discussion.group?.name || 'N/A'}`);
+    doc.text(`Dosen: ${discussion.createdBy?.name || 'N/A'}`);
+    doc.text(`Dibuat: ${new Date(discussion.createdAt).toLocaleString('id-ID')}`);
+    doc.text(`Status: ${discussion.isActive ? 'Aktif' : 'Nonaktif'}`);
+    doc.moveDown();
+
+    // Discussion Content
+    doc.fontSize(12).font('Helvetica-Bold').text('Pertanyaan/Topik:');
+    doc.fontSize(10).font('Helvetica').text(discussion.content, { align: 'justify' });
+    doc.moveDown();
+
+    // Separator
+    doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+    doc.moveDown();
+
+    // Messages
+    doc.fontSize(14).font('Helvetica-Bold').text('Pesan Diskusi');
+    doc.fontSize(10).font('Helvetica').text(`Total ${messages.length} pesan`);
+    doc.moveDown();
+
+    messages.forEach((message, index) => {
+      // Check if we need a new page
+      if (doc.y > 700) {
+        doc.addPage();
+      }
+
+      // Message header
+      doc.fontSize(9).font('Helvetica-Bold');
+      const senderRole = message.sender?.role === 'dosen' ? '(Dosen)' : '(Mahasiswa)';
+      doc.text(`${index + 1}. ${message.sender?.name || 'Unknown'} ${senderRole}`);
+
+      doc.fontSize(8).font('Helvetica').fillColor('gray');
+      doc.text(new Date(message.createdAt).toLocaleString('id-ID'), { continued: true });
+
+      if (message.isEdited) {
+        doc.text(' (edited)');
+      } else {
+        doc.text('');
+      }
+
+      // Message content
+      doc.fillColor('black').fontSize(9).font('Helvetica');
+
+      if (message.messageType === 'file') {
+        doc.text(`📎 File: ${message.fileName || 'attachment'}`);
+        if (message.content !== message.fileName) {
+          doc.text(message.content);
+        }
+      } else {
+        doc.text(message.content, { align: 'justify' });
+      }
+
+      doc.moveDown(0.5);
+    });
+
+    // Footer
+    doc.fontSize(8).fillColor('gray');
+    const pages = doc.bufferedPageRange();
+    for (let i = 0; i < pages.count; i++) {
+      doc.switchToPage(i);
+      doc.text(
+        `Halaman ${i + 1} dari ${pages.count}`,
+        50,
+        doc.page.height - 50,
+        { align: 'center' }
+      );
+    }
+
+    // Finalize PDF
+    doc.end();
+
+  } catch (error) {
+    console.error('PDF Export Error:', error);
     res.status(500).json({ message: error.message });
   }
 });
