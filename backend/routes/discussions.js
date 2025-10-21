@@ -6,6 +6,7 @@ const Group = require('../models/Group');
 const Message = require('../models/Message');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
+const path = require('path');
 
 // @route   POST /api/discussions
 // @desc    Create new discussion (Dosen only)
@@ -203,7 +204,7 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
     doc.fontSize(10).font('Helvetica').text(`Total ${messages.length} pesan`);
     doc.moveDown();
 
-    messages.forEach((message, index) => {
+    for (const [index, message] of messages.entries()) {
       // Check if we need a new page
       if (doc.y > 700) {
         doc.addPage();
@@ -227,16 +228,114 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
       doc.fillColor('black').fontSize(9).font('Helvetica');
 
       if (message.messageType === 'file') {
-        doc.text(`📎 File: ${message.fileName || 'attachment'}`);
-        if (message.content !== message.fileName) {
-          doc.text(message.content);
+        // Handle file attachments
+        const fileExt = message.fileName ? path.extname(message.fileName).toLowerCase() : '';
+        const isImage = ['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt);
+
+        if (isImage && message.fileUrl) {
+          // Try to embed image in PDF
+          try {
+            const imagePath = path.join(__dirname, '..', message.fileUrl);
+
+            if (fs.existsSync(imagePath)) {
+              // Check if we need new page for image
+              if (doc.y > 600) {
+                doc.addPage();
+              }
+
+              doc.text(`[Gambar: ${message.fileName}]`, { align: 'left' });
+              doc.moveDown(0.3);
+
+              // Add image with max width 400px
+              doc.image(imagePath, {
+                fit: [400, 300],
+                align: 'center'
+              });
+
+              doc.moveDown(0.5);
+
+              // Add caption if different from filename
+              if (message.content && message.content !== message.fileName) {
+                doc.fontSize(8).fillColor('gray');
+                doc.text(`Keterangan: ${message.content}`, { align: 'justify' });
+                doc.fillColor('black').fontSize(9);
+              }
+            } else {
+              // File not found, show placeholder
+              doc.text(`[Gambar tidak ditemukan: ${message.fileName}]`);
+              if (message.content !== message.fileName) {
+                doc.text(message.content);
+              }
+            }
+          } catch (error) {
+            console.error('Error embedding image:', error);
+            doc.text(`[Gambar: ${message.fileName}]`);
+            if (message.content !== message.fileName) {
+              doc.text(message.content);
+            }
+          }
+        } else {
+          // Non-image file
+          doc.text(`[File: ${message.fileName || 'attachment'}]`);
+          if (message.content && message.content !== message.fileName) {
+            doc.text(message.content);
+          }
         }
       } else {
-        doc.text(message.content, { align: 'justify' });
+        // Text message - convert emoji to text representation
+        let textContent = message.content;
+
+        // Replace common emoji with text (basic fallback)
+        const emojiMap = {
+          '😊': ':)',
+          '😃': ':D',
+          '😄': ':D',
+          '😁': ':D',
+          '😆': 'XD',
+          '😂': 'LOL',
+          '🤣': 'ROFL',
+          '😢': ':(',
+          '😭': 'T_T',
+          '😍': '<3',
+          '😘': ':*',
+          '👍': '[thumbs up]',
+          '👎': '[thumbs down]',
+          '🙏': '[praying hands]',
+          '❤️': '<3',
+          '💕': '<3',
+          '💖': '<3',
+          '✅': '[v]',
+          '❌': '[x]',
+          '⭐': '[star]',
+          '🎉': '[party]',
+          '🔥': '[fire]',
+          '💯': '[100]',
+          '👏': '[clap]',
+          '🤔': '[thinking]',
+          '😎': 'B)',
+          '🙂': ':)',
+          '😐': ':|',
+          '😑': '-_-'
+        };
+
+        // Replace emoji with text representation
+        for (const [emoji, text] of Object.entries(emojiMap)) {
+          textContent = textContent.split(emoji).join(text);
+        }
+
+        // For remaining emoji, replace with unicode description
+        textContent = textContent.replace(/[\u{1F600}-\u{1F64F}]/gu, '[emoji]'); // Emoticons
+        textContent = textContent.replace(/[\u{1F300}-\u{1F5FF}]/gu, '[emoji]'); // Misc Symbols
+        textContent = textContent.replace(/[\u{1F680}-\u{1F6FF}]/gu, '[emoji]'); // Transport
+        textContent = textContent.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '[flag]');  // Flags
+        textContent = textContent.replace(/[\u{2600}-\u{26FF}]/gu, '[emoji]');   // Misc symbols
+        textContent = textContent.replace(/[\u{2700}-\u{27BF}]/gu, '[emoji]');   // Dingbats
+
+        doc.text(textContent, { align: 'justify' });
       }
 
       doc.moveDown(0.5);
-    });
+    }
 
     // Footer
     doc.fontSize(8).fillColor('gray');
