@@ -26,6 +26,14 @@ const Navbar = () => {
     navigate('/login')
   }
 
+  const getAvatarSrc = () => {
+    if (user?.avatar) {
+      // Return the avatar path directly since Vite proxy will handle it
+      return user.avatar
+    }
+    return ''
+  }
+
   return (
     <Box bg="white" px={4} boxShadow="sm">
       <Flex h={16} alignItems="center" justifyContent="space-between">
@@ -41,7 +49,7 @@ const Navbar = () => {
         <Menu>
           <MenuButton as={Button} rightIcon={<ChevronDownIcon />} variant="ghost">
             <HStack spacing={2}>
-              <Avatar size="sm" name={user?.name} />
+              <Avatar size="sm" name={user?.name} src={getAvatarSrc()} />
               <Text>{user?.name}</Text>
             </HStack>
           </MenuButton>
@@ -56,6 +64,7 @@ const Navbar = () => {
               </VStack>
             </MenuItem>
             <MenuDivider />
+            <MenuItem onClick={() => navigate('/profile')}>Profile</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </MenuList>
         </Menu>

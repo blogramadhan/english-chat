@@ -101,6 +101,9 @@ router.post('/login', [
       email: user.email,
       role: user.role,
       status: user.status,
+      nim: user.nim,
+      nip: user.nip,
+      avatar: user.avatar,
       token: generateToken(user._id)
     });
   } catch (error) {

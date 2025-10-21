@@ -8,6 +8,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import DosenDashboard from './pages/DosenDashboard'
 import MahasiswaDashboard from './pages/MahasiswaDashboard'
 import Discussion from './pages/Discussion'
+import Profile from './pages/Profile'
 
 function App() {
   return (
@@ -50,6 +51,15 @@ function App() {
               element={
                 <PrivateRoute>
                   <Discussion />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
                 </PrivateRoute>
               }
             />
