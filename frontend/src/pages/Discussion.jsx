@@ -65,7 +65,7 @@ const Discussion = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal memuat diskusi',
+        description: 'Failed to load discussion',
         status: 'error',
         duration: 3000,
       })
@@ -81,7 +81,7 @@ const Discussion = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal memuat pesan',
+        description: 'Failed to load messages',
         status: 'error',
         duration: 3000,
       })
@@ -106,7 +106,7 @@ const Discussion = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal mengirim pesan',
+        description: 'Failed to send message',
         status: 'error',
         duration: 3000,
       })
@@ -137,7 +137,7 @@ const Discussion = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal mengirim file',
+        description: 'Failed to send file',
         status: 'error',
         duration: 3000,
       })

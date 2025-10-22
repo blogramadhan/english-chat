@@ -96,7 +96,7 @@ const MessageInput = ({ onSendMessage, onSendFile }) => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ketik pesan..."
+          placeholder="Type a message..."
           flex={1}
         />
 

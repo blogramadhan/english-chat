@@ -110,7 +110,7 @@ const ChatBox = ({ messages, currentUser }) => {
                   )}
                 </Box>
                 <Text fontSize="xs" color="gray.400" mt={1}>
-                  {new Date(message.createdAt).toLocaleTimeString('id-ID', {
+                  {new Date(message.createdAt).toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit'
                   })}
