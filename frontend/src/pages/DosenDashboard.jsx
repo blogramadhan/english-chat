@@ -55,7 +55,7 @@ const DosenDashboard = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal memuat data',
+        description: 'Failed to load data',
         status: 'error',
         duration: 3000,
       })
@@ -117,21 +117,21 @@ const DosenDashboard = () => {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `diskusi-${discussionTitle.replace(/\s+/g, '-')}.pdf`
+      a.download = `discussion-${discussionTitle.replace(/\s+/g, '-')}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
 
       toast({
-        title: 'PDF berhasil didownload',
+        title: 'PDF downloaded successfully',
         status: 'success',
         duration: 3000,
       })
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal mendownload PDF',
+        description: 'Failed to download PDF',
         status: 'error',
         duration: 3000,
       })
@@ -155,18 +155,17 @@ const DosenDashboard = () => {
             </HStack>
           </HStack>
 
+          {/* Active Groups */}
           <Box>
-            <Heading size="md" mb={4}>My Groups</Heading>
+            <Heading size="md" mb={4}>Active Groups</Heading>
             <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-              {groups.map((group) => (
+              {groups.filter(group => group.isActive).map((group) => (
                 <Card key={group._id} _hover={{ shadow: 'lg' }}>
                   <CardHeader>
                     <HStack justify="space-between">
                       <Heading size="sm">{group.name}</Heading>
                       <HStack>
-                        <Badge colorScheme={group.isActive ? 'green' : 'red'}>
-                          {group.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
+                        <Badge colorScheme="green">Active</Badge>
                         <IconButton
                           icon={<EditIcon />}
                           size="sm"
@@ -188,6 +187,47 @@ const DosenDashboard = () => {
                   </CardBody>
                 </Card>
               ))}
+              {groups.filter(group => group.isActive).length === 0 && (
+                <Text color="gray.500">No active groups</Text>
+              )}
+            </Grid>
+          </Box>
+
+          {/* Inactive Groups */}
+          <Box>
+            <Heading size="md" mb={4}>Inactive Groups</Heading>
+            <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
+              {groups.filter(group => !group.isActive).map((group) => (
+                <Card key={group._id} _hover={{ shadow: 'lg' }} opacity={0.7}>
+                  <CardHeader>
+                    <HStack justify="space-between">
+                      <Heading size="sm">{group.name}</Heading>
+                      <HStack>
+                        <Badge colorScheme="red">Inactive</Badge>
+                        <IconButton
+                          icon={<EditIcon />}
+                          size="sm"
+                          colorScheme="blue"
+                          variant="ghost"
+                          onClick={() => handleEditGroup(group)}
+                          aria-label="Edit group"
+                        />
+                      </HStack>
+                    </HStack>
+                  </CardHeader>
+                  <CardBody>
+                    <Text fontSize="sm" color="gray.600" mb={2}>
+                      {group.description || 'No description'}
+                    </Text>
+                    <Text fontSize="sm" fontWeight="bold">
+                      {group.members?.length || 0} Students
+                    </Text>
+                  </CardBody>
+                </Card>
+              ))}
+              {groups.filter(group => !group.isActive).length === 0 && (
+                <Text color="gray.500">No inactive groups</Text>
+              )}
             </Grid>
           </Box>
 

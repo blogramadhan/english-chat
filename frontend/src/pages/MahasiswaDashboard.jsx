@@ -41,7 +41,7 @@ const MahasiswaDashboard = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal memuat data',
+        description: 'Failed to load data',
         status: 'error',
         duration: 3000,
       })
@@ -57,15 +57,19 @@ const MahasiswaDashboard = () => {
         <VStack spacing={8} align="stretch">
           <Heading size="lg">Student Dashboard</Heading>
 
+          {/* Active Groups */}
           <Box>
-            <Heading size="md" mb={4}>My Groups</Heading>
+            <Heading size="md" mb={4}>Active Groups</Heading>
             <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-              {groups.map((group) => (
+              {groups.filter(group => group.isActive).map((group) => (
                 <Card key={group._id}>
                   <CardHeader>
                     <HStack justify="space-between">
                       <Heading size="sm">{group.name}</Heading>
-                      <Badge colorScheme="blue">Member</Badge>
+                      <HStack>
+                        <Badge colorScheme="green">Active</Badge>
+                        <Badge colorScheme="blue">Member</Badge>
+                      </HStack>
                     </HStack>
                   </CardHeader>
                   <CardBody>
@@ -81,6 +85,43 @@ const MahasiswaDashboard = () => {
                   </CardBody>
                 </Card>
               ))}
+              {groups.filter(group => group.isActive).length === 0 && (
+                <Text color="gray.500">No active groups</Text>
+              )}
+            </Grid>
+          </Box>
+
+          {/* Inactive Groups */}
+          <Box>
+            <Heading size="md" mb={4}>Inactive Groups</Heading>
+            <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
+              {groups.filter(group => !group.isActive).map((group) => (
+                <Card key={group._id} opacity={0.7}>
+                  <CardHeader>
+                    <HStack justify="space-between">
+                      <Heading size="sm">{group.name}</Heading>
+                      <HStack>
+                        <Badge colorScheme="red">Inactive</Badge>
+                        <Badge colorScheme="blue">Member</Badge>
+                      </HStack>
+                    </HStack>
+                  </CardHeader>
+                  <CardBody>
+                    <Text fontSize="sm" color="gray.600" mb={2}>
+                      {group.description || 'No description'}
+                    </Text>
+                    <Text fontSize="sm">
+                      Lecturer: {group.createdBy?.name}
+                    </Text>
+                    <Text fontSize="sm" color="gray.500">
+                      {group.members?.length || 0} Students
+                    </Text>
+                  </CardBody>
+                </Card>
+              ))}
+              {groups.filter(group => !group.isActive).length === 0 && (
+                <Text color="gray.500">No inactive groups</Text>
+              )}
             </Grid>
           </Box>
 
