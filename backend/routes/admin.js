@@ -115,11 +115,11 @@ router.put('/users/:id', protect, isAdmin, async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User tidak ditemukan' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     if (user.role === 'admin') {
-      return res.status(403).json({ message: 'Tidak bisa mengedit admin user' });
+      return res.status(403).json({ message: 'Cannot edit admin user' });
     }
 
     // Update fields that are allowed to be changed by admin
@@ -132,7 +132,7 @@ router.put('/users/:id', protect, isAdmin, async (req, res) => {
         _id: { $ne: user._id }
       });
       if (emailExists) {
-        return res.status(400).json({ message: 'Email sudah digunakan' });
+        return res.status(400).json({ message: 'Email already in use' });
       }
       user.email = req.body.email;
     }
@@ -157,7 +157,7 @@ router.put('/users/:id', protect, isAdmin, async (req, res) => {
     const updatedUser = await user.save();
 
     res.json({
-      message: 'User berhasil diperbarui',
+      message: 'User updated successfully',
       user: {
         _id: updatedUser._id,
         name: updatedUser.name,

@@ -51,7 +51,7 @@ router.put('/profile', protect, async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User tidak ditemukan' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     // Update fields that are allowed to be changed
@@ -63,7 +63,7 @@ router.put('/profile', protect, async (req, res) => {
         _id: { $ne: req.user._id }
       });
       if (emailExists) {
-        return res.status(400).json({ message: 'Email sudah digunakan' });
+        return res.status(400).json({ message: 'Email already in use' });
       }
       user.email = req.body.email;
     }
@@ -101,23 +101,23 @@ router.put('/password', protect, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: 'Password lama dan password baru harus diisi' });
+      return res.status(400).json({ message: 'Current password and new password are required' });
     }
 
     if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'Password baru minimal 6 karakter' });
+      return res.status(400).json({ message: 'New password must be at least 6 characters' });
     }
 
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User tidak ditemukan' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     // Check if current password is correct
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Password lama tidak sesuai' });
+      return res.status(400).json({ message: 'Current password is incorrect' });
     }
 
     // Set new password (will be hashed by pre-save hook)
@@ -125,7 +125,7 @@ router.put('/password', protect, async (req, res) => {
 
     await user.save();
 
-    res.json({ message: 'Password berhasil diubah' });
+    res.json({ message: 'Password updated successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -137,13 +137,13 @@ router.put('/password', protect, async (req, res) => {
 router.post('/avatar', protect, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'Tidak ada file yang diupload' });
+      return res.status(400).json({ message: 'No file uploaded' });
     }
 
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User tidak ditemukan' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     // Delete old avatar if exists
@@ -159,7 +159,7 @@ router.post('/avatar', protect, upload.single('avatar'), async (req, res) => {
     await user.save();
 
     res.json({
-      message: 'Avatar berhasil diupload',
+      message: 'Avatar uploaded successfully',
       avatar: user.avatar
     });
   } catch (error) {

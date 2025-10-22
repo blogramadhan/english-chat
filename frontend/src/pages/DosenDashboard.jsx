@@ -144,19 +144,19 @@ const DosenDashboard = () => {
       <Container maxW="container.xl" py={8}>
         <VStack spacing={8} align="stretch">
           <HStack justify="space-between">
-            <Heading size="lg">Dashboard Dosen</Heading>
+            <Heading size="lg">Lecturer Dashboard</Heading>
             <HStack>
               <Button leftIcon={<AddIcon />} colorScheme="brand" onClick={onGroupOpen}>
-                Buat Grup
+                Create Group
               </Button>
               <Button leftIcon={<AddIcon />} colorScheme="green" onClick={onDiscussionOpen}>
-                Buat Diskusi
+                Create Discussion
               </Button>
             </HStack>
           </HStack>
 
           <Box>
-            <Heading size="md" mb={4}>Grup Saya</Heading>
+            <Heading size="md" mb={4}>My Groups</Heading>
             <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
               {groups.map((group) => (
                 <Card key={group._id} _hover={{ shadow: 'lg' }}>
@@ -192,7 +192,7 @@ const DosenDashboard = () => {
           </Box>
 
           <Box>
-            <Heading size="md" mb={4}>Diskusi Aktif</Heading>
+            <Heading size="md" mb={4}>Active Discussions</Heading>
             <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
               {discussions.map((discussion) => (
                 <Card

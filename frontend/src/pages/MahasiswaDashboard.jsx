@@ -55,10 +55,10 @@ const MahasiswaDashboard = () => {
       <Navbar />
       <Container maxW="container.xl" py={8}>
         <VStack spacing={8} align="stretch">
-          <Heading size="lg">Dashboard Mahasiswa</Heading>
+          <Heading size="lg">Student Dashboard</Heading>
 
           <Box>
-            <Heading size="md" mb={4}>Grup Saya</Heading>
+            <Heading size="md" mb={4}>My Groups</Heading>
             <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
               {groups.map((group) => (
                 <Card key={group._id}>
@@ -85,7 +85,7 @@ const MahasiswaDashboard = () => {
           </Box>
 
           <Box>
-            <Heading size="md" mb={4}>Diskusi Tersedia</Heading>
+            <Heading size="md" mb={4}>Available Discussions</Heading>
             <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
               {discussions.map((discussion) => (
                 <Card

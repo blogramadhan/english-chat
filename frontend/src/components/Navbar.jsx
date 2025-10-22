@@ -16,6 +16,7 @@ import {
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import ThynkLogo from './ThynkLogo'
 
 const Navbar = () => {
   const { user, logout } = useAuth()
@@ -37,14 +38,16 @@ const Navbar = () => {
   return (
     <Box bg="white" px={4} boxShadow="sm">
       <Flex h={16} alignItems="center" justifyContent="space-between">
-        <Heading
-          size="md"
-          color="brand.600"
+        <HStack
+          spacing={3}
           cursor="pointer"
           onClick={() => navigate(`/${user?.role}/dashboard`)}
         >
-          Online Discussion
-        </Heading>
+          <ThynkLogo size={19} />
+          <Heading size="md" color="brand.600">
+            THYNK
+          </Heading>
+        </HStack>
 
         <Menu>
           <MenuButton as={Button} rightIcon={<ChevronDownIcon />} variant="ghost">

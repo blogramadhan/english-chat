@@ -62,36 +62,36 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups }) => {
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Buat Diskusi / Pertanyaan Baru</ModalHeader>
+        <ModalHeader>Create New Discussion / Question</ModalHeader>
         <ModalCloseButton />
         <form onSubmit={handleSubmit}>
           <ModalBody>
             <VStack spacing={4}>
               <FormControl isRequired>
-                <FormLabel>Judul</FormLabel>
+                <FormLabel>Title</FormLabel>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Judul diskusi..."
+                  placeholder="Discussion title..."
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Pertanyaan / Topik</FormLabel>
+                <FormLabel>Question / Topic</FormLabel>
                 <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Deskripsikan pertanyaan atau topik diskusi..."
+                  placeholder="Describe the question or discussion topic..."
                   rows={6}
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Grup</FormLabel>
+                <FormLabel>Group</FormLabel>
                 <Select
                   value={selectedGroup}
                   onChange={(e) => setSelectedGroup(e.target.value)}
-                  placeholder="Pilih grup"
+                  placeholder="Select group"
                 >
                   {groups.map((group) => (
                     <option key={group._id} value={group._id}>
@@ -105,10 +105,10 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups }) => {
 
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>
-              Batal
+              Cancel
             </Button>
             <Button type="submit" colorScheme="green" isLoading={loading}>
-              Buat Diskusi
+              Create Discussion
             </Button>
           </ModalFooter>
         </form>

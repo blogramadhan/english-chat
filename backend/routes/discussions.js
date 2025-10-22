@@ -170,28 +170,28 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
 
     // Set response headers
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=diskusi-${discussion.title.replace(/\s+/g, '-')}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=discussion-${discussion.title.replace(/\s+/g, '-')}.pdf`);
 
     // Pipe PDF to response
     doc.pipe(res);
 
     // Add content to PDF
     // Header
-    doc.fontSize(20).font('Helvetica-Bold').text('Laporan Diskusi', { align: 'center' });
+    doc.fontSize(20).font('Helvetica-Bold').text('Discussion Report', { align: 'center' });
     doc.moveDown();
 
     // Discussion Info
-    doc.fontSize(14).font('Helvetica-Bold').text('Informasi Diskusi');
+    doc.fontSize(14).font('Helvetica-Bold').text('Discussion Information');
     doc.fontSize(10).font('Helvetica');
-    doc.text(`Judul: ${discussion.title}`);
-    doc.text(`Grup: ${discussion.group?.name || 'N/A'}`);
-    doc.text(`Dosen: ${discussion.createdBy?.name || 'N/A'}`);
-    doc.text(`Dibuat: ${new Date(discussion.createdAt).toLocaleString('id-ID')}`);
-    doc.text(`Status: ${discussion.isActive ? 'Aktif' : 'Nonaktif'}`);
+    doc.text(`Title: ${discussion.title}`);
+    doc.text(`Group: ${discussion.group?.name || 'N/A'}`);
+    doc.text(`Lecturer: ${discussion.createdBy?.name || 'N/A'}`);
+    doc.text(`Created: ${new Date(discussion.createdAt).toLocaleString('en-US')}`);
+    doc.text(`Status: ${discussion.isActive ? 'Active' : 'Inactive'}`);
     doc.moveDown();
 
     // Discussion Content
-    doc.fontSize(12).font('Helvetica-Bold').text('Pertanyaan/Topik:');
+    doc.fontSize(12).font('Helvetica-Bold').text('Question/Topic:');
     doc.fontSize(10).font('Helvetica').text(discussion.content, { align: 'justify' });
     doc.moveDown();
 
@@ -200,8 +200,8 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
     doc.moveDown();
 
     // Messages
-    doc.fontSize(14).font('Helvetica-Bold').text('Pesan Diskusi');
-    doc.fontSize(10).font('Helvetica').text(`Total ${messages.length} pesan`);
+    doc.fontSize(14).font('Helvetica-Bold').text('Discussion Messages');
+    doc.fontSize(10).font('Helvetica').text(`Total ${messages.length} messages`);
     doc.moveDown();
 
     for (const [index, message] of messages.entries()) {
@@ -216,12 +216,12 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
 
       // Message header with number and sender name
       doc.fontSize(9).font('Helvetica-Bold').fillColor('black');
-      const senderRole = message.sender?.role === 'dosen' ? '(Dosen)' : '(Mahasiswa)';
+      const senderRole = message.sender?.role === 'dosen' ? '(Lecturer)' : '(Student)';
       doc.text(`${index + 1}. ${message.sender?.name || 'Unknown'} ${senderRole}`, leftMargin);
 
       // Timestamp and edit indicator on new line with indent
       doc.fontSize(8).font('Helvetica').fillColor('gray');
-      const timestamp = new Date(message.createdAt).toLocaleString('id-ID');
+      const timestamp = new Date(message.createdAt).toLocaleString('en-US');
       const editedText = message.isEdited ? ' (edited)' : '';
       doc.text(`${timestamp}${editedText}`, leftMargin + contentIndent);
 
@@ -247,7 +247,7 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
                 doc.addPage();
               }
 
-              doc.text(`[Gambar: ${message.fileName}]`, leftMargin + contentIndent);
+              doc.text(`[Image: ${message.fileName}]`, leftMargin + contentIndent);
               doc.moveDown(0.3);
 
               // Add image with max width 400px, indented
@@ -262,7 +262,7 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
               // Add caption if different from filename
               if (message.content && message.content !== message.fileName) {
                 doc.fontSize(8).fillColor('gray');
-                doc.text(`Keterangan: ${message.content}`, leftMargin + contentIndent, doc.y, {
+                doc.text(`Caption: ${message.content}`, leftMargin + contentIndent, doc.y, {
                   width: doc.page.width - leftMargin - contentIndent - doc.page.margins.right,
                   align: 'left'
                 });
@@ -270,14 +270,14 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
               }
             } else {
               // File not found, show placeholder
-              doc.text(`[Gambar tidak ditemukan: ${message.fileName}]`, leftMargin + contentIndent);
+              doc.text(`[Image not found: ${message.fileName}]`, leftMargin + contentIndent);
               if (message.content !== message.fileName) {
                 doc.text(message.content, leftMargin + contentIndent);
               }
             }
           } catch (error) {
             console.error('Error embedding image:', error);
-            doc.text(`[Gambar: ${message.fileName}]`, leftMargin + contentIndent);
+            doc.text(`[Image: ${message.fileName}]`, leftMargin + contentIndent);
             if (message.content !== message.fileName) {
               doc.text(message.content, leftMargin + contentIndent);
             }
@@ -357,7 +357,7 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
       // Add footer
       doc.fontSize(8).fillColor('gray');
       doc.text(
-        `Halaman ${i - range.start + 1} dari ${range.count}`,
+        `Page ${i - range.start + 1} of ${range.count}`,
         50,
         doc.page.height - 50,
         { align: 'center', lineBreak: false }

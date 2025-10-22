@@ -85,31 +85,31 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Buat Grup Baru</ModalHeader>
+        <ModalHeader>Create New Group</ModalHeader>
         <ModalCloseButton />
         <form onSubmit={handleSubmit}>
           <ModalBody>
             <VStack spacing={4}>
               <FormControl isRequired>
-                <FormLabel>Nama Grup</FormLabel>
+                <FormLabel>Group Name</FormLabel>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Kelompok A"
+                  placeholder="Example: Group A"
                 />
               </FormControl>
 
               <FormControl>
-                <FormLabel>Deskripsi</FormLabel>
+                <FormLabel>Description</FormLabel>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Deskripsi grup..."
+                  placeholder="Group description..."
                 />
               </FormControl>
 
               <FormControl>
-                <FormLabel>Pilih Mahasiswa</FormLabel>
+                <FormLabel>Select Students</FormLabel>
                 <Stack maxH="200px" overflowY="auto" spacing={2}>
                   <CheckboxGroup value={selectedMembers} onChange={setSelectedMembers}>
                     {mahasiswa.map((m) => (
@@ -125,10 +125,10 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
 
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>
-              Batal
+              Cancel
             </Button>
             <Button type="submit" colorScheme="brand" isLoading={loading}>
-              Buat Grup
+              Create Group
             </Button>
           </ModalFooter>
         </form>
