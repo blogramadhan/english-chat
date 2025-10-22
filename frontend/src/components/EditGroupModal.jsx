@@ -51,7 +51,7 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal memuat daftar mahasiswa',
+        description: 'Failed to load student list',
         status: 'error',
         duration: 3000,
       })
@@ -71,7 +71,7 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
       })
 
       toast({
-        title: 'Grup berhasil diupdate',
+        title: 'Group updated successfully',
         status: 'success',
         duration: 3000,
       })
@@ -80,7 +80,7 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal update grup',
+        description: error.response?.data?.message || 'Failed to update group',
         status: 'error',
         duration: 3000,
       })
@@ -101,26 +101,26 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
     <Modal isOpen={isOpen} onClose={handleClose} size="xl">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Edit Grup: {group?.name}</ModalHeader>
+        <ModalHeader>Edit Group: {group?.name}</ModalHeader>
         <ModalCloseButton />
         <form onSubmit={handleSubmit}>
           <ModalBody>
             <VStack spacing={4}>
               <FormControl isRequired>
-                <FormLabel>Nama Grup</FormLabel>
+                <FormLabel>Group Name</FormLabel>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Kelompok A"
+                  placeholder="Example: Group A"
                 />
               </FormControl>
 
               <FormControl>
-                <FormLabel>Deskripsi</FormLabel>
+                <FormLabel>Description</FormLabel>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Deskripsi grup..."
+                  placeholder="Group description..."
                   rows={3}
                 />
               </FormControl>
@@ -128,14 +128,14 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
               <FormControl>
                 <HStack justify="space-between">
                   <Box>
-                    <Text fontWeight="medium">Status Grup</Text>
+                    <Text fontWeight="medium">Group Status</Text>
                     <Text fontSize="sm" color="gray.600">
-                      {isActive ? 'Grup sedang aktif' : 'Grup dinonaktifkan'}
+                      {isActive ? 'Group is active' : 'Group is inactive'}
                     </Text>
                   </Box>
                   <HStack>
                     <Badge colorScheme={isActive ? 'green' : 'red'}>
-                      {isActive ? 'Aktif' : 'Nonaktif'}
+                      {isActive ? 'Active' : 'Inactive'}
                     </Badge>
                     <Switch
                       isChecked={isActive}
@@ -149,7 +149,7 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
 
               <FormControl>
                 <FormLabel>
-                  Anggota Mahasiswa ({selectedMembers.length} terpilih)
+                  Student Members ({selectedMembers.length} selected)
                 </FormLabel>
                 <Box
                   maxH="300px"
@@ -185,10 +185,10 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
 
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={handleClose}>
-              Batal
+              Cancel
             </Button>
             <Button type="submit" colorScheme="brand" isLoading={loading}>
-              Update Grup
+              Update Group
             </Button>
           </ModalFooter>
         </form>

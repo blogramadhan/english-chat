@@ -47,8 +47,8 @@ const Register = () => {
       const response = await register(formData)
 
       toast({
-        title: 'Registrasi berhasil',
-        description: response.message || 'Akun Anda berhasil dibuat. Silakan tunggu approval dari admin.',
+        title: 'Registration successful',
+        description: response.message || 'Your account has been created. Please wait for admin approval.',
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -58,8 +58,8 @@ const Register = () => {
       navigate('/login')
     } catch (error) {
       toast({
-        title: 'Registrasi gagal',
-        description: error.response?.data?.message || 'Terjadi kesalahan',
+        title: 'Registration failed',
+        description: error.response?.data?.message || 'An error occurred',
         status: 'error',
         duration: 3000,
       })
@@ -73,18 +73,18 @@ const Register = () => {
       <Card w="full" boxShadow="xl">
         <CardBody>
           <VStack spacing={8}>
-            <Heading size="xl" color="brand.600">Online Discussion</Heading>
-            <Text color="gray.600">Daftar akun baru</Text>
+            <Heading size="xl" color="brand.600">THYNK</Heading>
+            <Text color="gray.600">Create new account</Text>
 
             <Box as="form" onSubmit={handleSubmit} w="full">
               <VStack spacing={4}>
                 <FormControl isRequired>
-                  <FormLabel>Nama Lengkap</FormLabel>
+                  <FormLabel>Full Name</FormLabel>
                   <Input
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="Nama lengkap Anda"
+                    placeholder="Your full name"
                   />
                 </FormControl>
 
@@ -106,38 +106,38 @@ const Register = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="Minimal 6 karakter"
+                    placeholder="Minimum 6 characters"
                   />
                 </FormControl>
 
                 <FormControl isRequired>
                   <FormLabel>Role</FormLabel>
                   <Select name="role" value={formData.role} onChange={handleChange}>
-                    <option value="mahasiswa">Mahasiswa</option>
-                    <option value="dosen">Dosen</option>
+                    <option value="mahasiswa">Student</option>
+                    <option value="dosen">Lecturer</option>
                   </Select>
                 </FormControl>
 
                 {formData.role === 'mahasiswa' && (
                   <FormControl>
-                    <FormLabel>NIM</FormLabel>
+                    <FormLabel>Student ID (NIM)</FormLabel>
                     <Input
                       name="nim"
                       value={formData.nim}
                       onChange={handleChange}
-                      placeholder="Nomor Induk Mahasiswa"
+                      placeholder="Student ID number"
                     />
                   </FormControl>
                 )}
 
                 {formData.role === 'dosen' && (
                   <FormControl>
-                    <FormLabel>NIP</FormLabel>
+                    <FormLabel>Employee ID (NIP)</FormLabel>
                     <Input
                       name="nip"
                       value={formData.nip}
                       onChange={handleChange}
-                      placeholder="Nomor Induk Pegawai"
+                      placeholder="Employee ID number"
                     />
                   </FormControl>
                 )}
@@ -149,13 +149,13 @@ const Register = () => {
                   w="full"
                   isLoading={loading}
                 >
-                  Daftar
+                  Register
                 </Button>
 
                 <Text>
-                  Sudah punya akun?{' '}
+                  Already have an account?{' '}
                   <Link as={RouterLink} to="/login" color="brand.500" fontWeight="bold">
-                    Masuk di sini
+                    Sign in here
                   </Link>
                 </Text>
               </VStack>

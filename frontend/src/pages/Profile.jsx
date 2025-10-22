@@ -88,8 +88,8 @@ const Profile = () => {
       updateUser(data);
 
       toast({
-        title: 'Berhasil',
-        description: 'Profile berhasil diperbarui',
+        title: 'Success',
+        description: 'Profile updated successfully',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -97,7 +97,7 @@ const Profile = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal memperbarui profile',
+        description: error.response?.data?.message || 'Failed to update profile',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -113,7 +113,7 @@ const Profile = () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast({
         title: 'Error',
-        description: 'Password baru dan konfirmasi password tidak sama',
+        description: 'New password and confirmation password do not match',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -130,8 +130,8 @@ const Profile = () => {
       });
 
       toast({
-        title: 'Berhasil',
-        description: 'Password berhasil diubah',
+        title: 'Success',
+        description: 'Password changed successfully',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -146,7 +146,7 @@ const Profile = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal mengubah password',
+        description: error.response?.data?.message || 'Failed to change password',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -165,7 +165,7 @@ const Profile = () => {
     if (!allowedTypes.includes(file.type)) {
       toast({
         title: 'Error',
-        description: 'Hanya file gambar yang diperbolehkan (JPG, PNG, GIF)',
+        description: 'Only image files are allowed (JPG, PNG, GIF)',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -177,7 +177,7 @@ const Profile = () => {
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: 'Error',
-        description: 'Ukuran file maksimal 5MB',
+        description: 'Maximum file size is 5MB',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -201,8 +201,8 @@ const Profile = () => {
       updateUser({ avatar: data.avatar });
 
       toast({
-        title: 'Berhasil',
-        description: 'Avatar berhasil diupload',
+        title: 'Success',
+        description: 'Avatar uploaded successfully',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -210,7 +210,7 @@ const Profile = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal mengupload avatar',
+        description: error.response?.data?.message || 'Failed to upload avatar',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -258,10 +258,10 @@ const Profile = () => {
               isLoading={avatarLoading}
               cursor="pointer"
             >
-              Ganti Avatar
+              Change Avatar
             </Button>
             <Text fontSize="sm" color="gray.500">
-              JPG, PNG atau GIF. Maksimal 5MB
+              JPG, PNG or GIF. Maximum 5MB
             </Text>
           </VStack>
         </Box>
@@ -269,8 +269,8 @@ const Profile = () => {
         {/* Tabs for Profile and Password */}
         <Tabs colorScheme="blue">
           <TabList>
-            <Tab>Informasi Profile</Tab>
-            <Tab>Ubah Password</Tab>
+            <Tab>Profile Information</Tab>
+            <Tab>Change Password</Tab>
           </TabList>
 
           <TabPanels>
@@ -280,7 +280,7 @@ const Profile = () => {
                 <form onSubmit={handleProfileSubmit}>
                   <VStack spacing={4}>
                     <FormControl isRequired>
-                      <FormLabel>Nama</FormLabel>
+                      <FormLabel>Name</FormLabel>
                       <Input
                         type="text"
                         name="name"
@@ -351,7 +351,7 @@ const Profile = () => {
                       width="full"
                       isLoading={loading}
                     >
-                      Simpan Perubahan
+                      Save Changes
                     </Button>
                   </VStack>
                 </form>
@@ -364,7 +364,7 @@ const Profile = () => {
                 <form onSubmit={handlePasswordSubmit}>
                   <VStack spacing={4}>
                     <FormControl isRequired>
-                      <FormLabel>Password Lama</FormLabel>
+                      <FormLabel>Current Password</FormLabel>
                       <InputGroup>
                         <Input
                           type={showCurrentPassword ? 'text' : 'password'}
@@ -384,7 +384,7 @@ const Profile = () => {
                     </FormControl>
 
                     <FormControl isRequired>
-                      <FormLabel>Password Baru</FormLabel>
+                      <FormLabel>New Password</FormLabel>
                       <InputGroup>
                         <Input
                           type={showNewPassword ? 'text' : 'password'}
@@ -403,12 +403,12 @@ const Profile = () => {
                         </InputRightElement>
                       </InputGroup>
                       <Text fontSize="sm" color="gray.500" mt={1}>
-                        Minimal 6 karakter
+                        Minimum 6 characters
                       </Text>
                     </FormControl>
 
                     <FormControl isRequired>
-                      <FormLabel>Konfirmasi Password Baru</FormLabel>
+                      <FormLabel>Confirm New Password</FormLabel>
                       <InputGroup>
                         <Input
                           type={showConfirmPassword ? 'text' : 'password'}
@@ -434,7 +434,7 @@ const Profile = () => {
                       width="full"
                       isLoading={loading}
                     >
-                      Ubah Password
+                      Change Password
                     </Button>
                   </VStack>
                 </form>

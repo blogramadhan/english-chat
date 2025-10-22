@@ -1,28 +1,28 @@
-# Deployment Guide - English Chat Application
+# Deployment Guide - THYNK Platform
 
-Panduan lengkap untuk deploy aplikasi English Chat menggunakan Docker di server production.
+Complete guide for deploying the THYNK application using Docker on production server.
 
 ## 📋 Prerequisites
 
-Sebelum melakukan deployment, pastikan server Anda memiliki:
+Before deployment, ensure your server has:
 
-1. **Docker** (versi 20.10 atau lebih baru)
+1. **Docker** (version 20.10 or newer)
    ```bash
    docker --version
    ```
 
-2. **Docker Compose** (versi 2.0 atau lebih baru)
+2. **Docker Compose** (version 2.0 or newer)
    ```bash
    docker-compose --version
-   # atau
+   # or
    docker compose version
    ```
 
 3. **MongoDB Atlas Account** (Recommended - Free tier available)
-   - Setup MongoDB Atlas: Lihat [MONGODB_ATLAS_SETUP.md](MONGODB_ATLAS_SETUP.md)
-   - Alternatif: MongoDB lokal di server
+   - Setup MongoDB Atlas: See [MONGODB_ATLAS_SETUP.md](MONGODB_ATLAS_SETUP.md)
+   - Alternative: Local MongoDB on server
 
-4. **Git** (untuk clone repository)
+4. **Git** (to clone repository)
    ```bash
    git --version
    ```
@@ -38,90 +38,90 @@ cd english-chat
 
 ### 2. Setup Environment Variables
 
-Copy file environment production dan sesuaikan:
+Copy the production environment file and adjust:
 
 ```bash
 cp .env.production .env.production.local
 ```
 
-Edit file `.env.production.local`:
+Edit the `.env.production.local` file:
 
 ```bash
 nano .env.production.local
 ```
 
-**Konfigurasi untuk MongoDB Atlas (Recommended):**
+**Configuration for MongoDB Atlas (Recommended):**
 
 ```env
 # MongoDB Connection - MongoDB Atlas (cloud.mongodb.com)
 # Get from: https://cloud.mongodb.com → Connect → Connection String
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/online-discussion?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/thynk?retryWrites=true&w=majority
 
 # JWT Secret - generate secure random string
 # Use: openssl rand -base64 32
 JWT_SECRET=generate-random-secret-key-here-min-32-chars
 
-# Client URL - sesuaikan dengan domain production Anda
+# Client URL - adjust to your production domain
 CLIENT_URL=http://your-domain.com
 
-# API URL for frontend - sesuaikan dengan domain production Anda
+# API URL for frontend - adjust to your production domain
 VITE_API_URL=http://your-domain.com:5000
 ```
 
-**Catatan:**
-- Setup MongoDB Atlas: Lihat [MONGODB_ATLAS_SETUP.md](MONGODB_ATLAS_SETUP.md)
+**Note:**
+- Setup MongoDB Atlas: See [MONGODB_ATLAS_SETUP.md](MONGODB_ATLAS_SETUP.md)
 - Free tier available: 512MB storage
-- Auto backups, monitoring, dan scaling
-- Akses dari mana saja (tidak tergantung server lokal)
+- Auto backups, monitoring, and scaling
+- Access from anywhere (not dependent on local server)
 
-**Alternative - MongoDB Lokal:**
+**Alternative - Local MongoDB:**
 
 ```env
-# Jika menggunakan MongoDB lokal di server
-MONGODB_URI=mongodb://localhost:27017/online-discussion
+# If using local MongoDB on server
+MONGODB_URI=mongodb://localhost:27017/thynk
 
-# Atau dari container Docker (uncomment extra_hosts di docker-compose.yml):
-# MONGODB_URI=mongodb://host.docker.internal:27017/online-discussion
+# Or from Docker container (uncomment extra_hosts in docker-compose.yml):
+# MONGODB_URI=mongodb://host.docker.internal:27017/thynk
 ```
 
-### 3. Deploy Aplikasi
+### 3. Deploy Application
 
-Jalankan script deployment:
+Run the deployment script:
 
 ```bash
 ./deploy.sh
 ```
 
-Pilih option **1** untuk deploy (build and start containers).
+Select option **1** to deploy (build and start containers).
 
-Script akan:
+The script will:
 1. ✓ Load environment variables
-2. ✓ Stop existing containers (jika ada)
-3. ✓ Build Docker images untuk backend dan frontend
+2. ✓ Stop existing containers (if any)
+3. ✓ Build Docker images for backend and frontend
 4. ✓ Start containers
-5. ✓ Menampilkan URL aplikasi
+5. ✓ Display application URL
 
-## 📦 Struktur Deployment
+## 📦 Deployment Structure
 
 ### Docker Containers
 
-Setelah deployment, akan ada 2 containers:
+After deployment, there will be 2 containers:
 
 1. **english-chat-backend** (Port 5000)
    - Node.js Express server
-   - Socket.IO untuk real-time chat
-   - Koneksi ke MongoDB lokal
-   - Volume untuk uploads
+   - Socket.IO for real-time chat
+   - Connection to local MongoDB
+   - Volume for uploads
 
 2. **english-chat-frontend** (Port 3000)
    - React + Vite production build
-   - Served menggunakan `serve`
+   - Served using `serve`
 
 ### Network
 
-- Containers terhubung via Docker network `english-chat-network`
-- Backend dapat akses MongoDB lokal via `host.docker.internal`
-- Frontend berkomunikasi dengan backend via internal Docker network
+- Containers connected via Docker network `english-chat-network`
+- Backend can access local MongoDB via `host.docker.internal`
+- Frontend communicates with backend via internal Docker network
 
 ### Volumes
 
@@ -129,37 +129,37 @@ Setelah deployment, akan ada 2 containers:
 ./backend/uploads:/app/uploads
 ```
 
-Folder uploads di-mount sebagai volume agar:
-- Files yang diupload tetap persistent
-- Tidak hilang saat restart container
-- Bisa di-backup dengan mudah
+The uploads folder is mounted as a volume so that:
+- Uploaded files remain persistent
+- Not lost on container restart
+- Easy to backup
 
 ## 🔧 Management Commands
 
-### Deploy / Update Aplikasi
+### Deploy / Update Application
 
 ```bash
 ./deploy.sh
-# Pilih option 1
+# Select option 1
 ```
 
-### Stop Aplikasi
+### Stop Application
 
 ```bash
 ./deploy.sh
-# Pilih option 2
+# Select option 2
 
-# atau manual:
+# or manual:
 docker-compose --env-file .env.production.local down
 ```
 
-### Restart Aplikasi
+### Restart Application
 
 ```bash
 ./deploy.sh
-# Pilih option 3
+# Select option 3
 
-# atau manual:
+# or manual:
 docker-compose --env-file .env.production.local restart
 ```
 
@@ -167,83 +167,83 @@ docker-compose --env-file .env.production.local restart
 
 ```bash
 ./deploy.sh
-# Pilih option 4
+# Select option 4
 
-# atau manual:
+# or manual:
 docker-compose --env-file .env.production.local logs -f
 
-# View logs untuk service tertentu:
+# View logs for specific service:
 docker-compose logs -f backend
 docker-compose logs -f frontend
 ```
 
 ### Update from GitHub and Redeploy
 
-Ketika ada perbaikan code di GitHub, gunakan option ini untuk update dan redeploy otomatis:
+When there are code fixes on GitHub, use this option to update and redeploy automatically:
 
 ```bash
 ./deploy.sh
-# Pilih option 2
+# Select option 2
 ```
 
-**Proses yang terjadi:**
-1. ✓ Auto backup database dan files sebelum update
-2. ✓ Stash local changes (jika ada)
-3. ✓ Pull latest code dari GitHub
+**Process that occurs:**
+1. ✓ Auto backup database and files before update
+2. ✓ Stash local changes (if any)
+3. ✓ Pull latest code from GitHub
 4. ✓ Rebuild Docker images
 5. ✓ Restart containers
 6. ✓ Show latest changes
 
-### Backup Database dan Files
+### Backup Database and Files
 
 ```bash
 ./deploy.sh
-# Pilih option 6
+# Select option 6
 
-# atau manual:
+# or manual:
 ./backup.sh
 ```
 
-**Yang di-backup:**
+**What gets backed up:**
 - MongoDB database (compressed .tar.gz)
 - Uploads folder (compressed .tar.gz)
 - Environment file (.env.production.local)
 - Backup manifest
 
-**Lokasi backup:** `./backups/<timestamp>/`
+**Backup location:** `./backups/<timestamp>/`
 
-**Auto cleanup:** Hanya menyimpan 7 backup terakhir
+**Auto cleanup:** Only keeps last 7 backups
 
 ### Restore from Backup
 
 ```bash
 ./deploy.sh
-# Pilih option 7
+# Select option 7
 
-# atau manual:
+# or manual:
 ./restore.sh <timestamp>
 ```
 
-**Cara restore:**
-1. Script akan menampilkan list backup yang tersedia
-2. Pilih backup berdasarkan nomor atau timestamp
-3. Konfirmasi restore
-4. Database dan files akan di-restore
+**How to restore:**
+1. Script will display available backups
+2. Select backup by number or timestamp
+3. Confirm restore
+4. Database and files will be restored
 
-### Remove Containers dan Images
+### Remove Containers and Images
 
 ```bash
 ./deploy.sh
-# Pilih option 8
+# Select option 8
 ```
 
-### Check Status Containers
+### Check Container Status
 
 ```bash
 docker ps
 ```
 
-Output expected:
+Expected output:
 ```
 CONTAINER ID   IMAGE                    STATUS         PORTS
 xxxxx          english-chat_backend     Up 2 minutes   0.0.0.0:5000->5000/tcp
@@ -252,7 +252,7 @@ xxxxx          english-chat_frontend    Up 2 minutes   0.0.0.0:3000->3000/tcp
 
 ## 🌐 Accessing the Application
 
-Setelah deployment berhasil:
+After successful deployment:
 
 - **Frontend**: `http://your-server-ip:3000`
 - **Backend API**: `http://your-server-ip:5000`
@@ -262,7 +262,7 @@ Setelah deployment berhasil:
 
 ### 1. Setup Reverse Proxy (Nginx/Apache)
 
-Untuk production, sebaiknya gunakan reverse proxy:
+For production, it's recommended to use a reverse proxy:
 
 **Nginx Example:**
 
@@ -310,7 +310,7 @@ server {
 
 ### 2. Setup SSL/HTTPS
 
-Gunakan Let's Encrypt untuk SSL gratis:
+Use Let's Encrypt for free SSL:
 
 ```bash
 sudo apt install certbot python3-certbot-nginx
@@ -319,55 +319,55 @@ sudo certbot --nginx -d your-domain.com -d api.your-domain.com
 
 ### 3. Update Environment Variables
 
-Setelah setup domain dan SSL, update `.env.production.local`:
+After setting up domain and SSL, update `.env.production.local`:
 
 ```env
 CLIENT_URL=https://your-domain.com
 VITE_API_URL=https://api.your-domain.com
 ```
 
-Kemudian rebuild:
+Then rebuild:
 
 ```bash
 ./deploy.sh
-# Pilih option 1
+# Select option 1
 ```
 
 ## 🔐 Security Checklist
 
-- [ ] Ganti `JWT_SECRET` dengan random string yang kuat
+- [ ] Replace `JWT_SECRET` with a strong random string
 - [ ] Setup firewall (ufw/iptables)
-- [ ] Gunakan HTTPS/SSL
-- [ ] Batasi akses MongoDB hanya dari localhost
-- [ ] Backup database secara berkala
-- [ ] Monitor logs secara regular
-- [ ] Update Docker images secara berkala
+- [ ] Use HTTPS/SSL
+- [ ] Restrict MongoDB access to localhost only
+- [ ] Backup database regularly
+- [ ] Monitor logs regularly
+- [ ] Update Docker images regularly
 
 ## 🗃️ Backup & Restore
 
 ### Automated Backup (Recommended)
 
-Gunakan script backup yang sudah disediakan:
+Use the provided backup script:
 
 ```bash
 # Via deploy menu
 ./deploy.sh
-# Pilih option 6
+# Select option 6
 
-# Atau langsung
+# Or directly
 ./backup.sh
 ```
 
-**Backup otomatis meliputi:**
+**Automatic backup includes:**
 - ✅ MongoDB database (compressed)
-- ✅ Uploads folder (semua file yang diupload user)
+- ✅ Uploads folder (all user uploaded files)
 - ✅ Environment configuration
-- ✅ Backup manifest dengan timestamp
+- ✅ Backup manifest with timestamp
 - ✅ Auto cleanup (keep last 7 backups)
 
-**Lokasi:** `./backups/<timestamp>/`
+**Location:** `./backups/<timestamp>/`
 
-**Contoh struktur backup:**
+**Example backup structure:**
 ```
 backups/
   └── 20250121_143000/
@@ -382,21 +382,21 @@ backups/
 ```bash
 # Via deploy menu (interactive)
 ./deploy.sh
-# Pilih option 7
+# Select option 7
 
-# Atau langsung dengan timestamp
+# Or directly with timestamp
 ./restore.sh 20250121_143000
 
 # List available backups
 ls -lh backups/
 ```
 
-**Proses restore:**
-1. Script menampilkan available backups
-2. Pilih backup yang diinginkan
-3. Konfirmasi restore (⚠️ will overwrite current data)
-4. Database dan files akan di-restore
-5. Current data di-backup terlebih dahulu
+**Restore process:**
+1. Script displays available backups
+2. Select desired backup
+3. Confirm restore (⚠️ will overwrite current data)
+4. Database and files will be restored
+5. Current data is backed up first
 
 ### Manual Backup (Advanced)
 
@@ -404,26 +404,26 @@ ls -lh backups/
 
 ```bash
 # Backup database
-mongodump --db online-discussion --out /backup/mongodb-$(date +%Y%m%d)
+mongodump --db thynk --out /backup/mongodb-$(date +%Y%m%d)
 
-# Backup dengan kompresi
-mongodump --db online-discussion --archive=/backup/mongodb-$(date +%Y%m%d).gz --gzip
+# Backup with compression
+mongodump --db thynk --archive=/backup/mongodb-$(date +%Y%m%d).gz --gzip
 ```
 
 #### MongoDB Manual Restore
 
 ```bash
-# Restore dari backup
-mongorestore --db online-discussion /backup/mongodb-20250101/online-discussion
+# Restore from backup
+mongorestore --db thynk /backup/mongodb-20250101/thynk
 
-# Restore dari archive
-mongorestore --db online-discussion --archive=/backup/mongodb-20250101.gz --gzip
+# Restore from archive
+mongorestore --db thynk --archive=/backup/mongodb-20250101.gz --gzip
 ```
 
 #### Files Manual Backup
 
 ```bash
-# Backup folder uploads
+# Backup uploads folder
 tar -czf uploads-backup-$(date +%Y%m%d).tar.gz ./backend/uploads
 ```
 
@@ -462,7 +462,7 @@ docker logs english-chat-frontend
 mongosh
 
 # Check database status
-use online-discussion
+use thynk
 db.stats()
 
 # Check collections
@@ -471,7 +471,7 @@ show collections
 
 ## 🐛 Troubleshooting
 
-### Container tidak bisa start
+### Container Won't Start
 
 ```bash
 # Check logs
@@ -482,21 +482,21 @@ docker-compose logs backend
 docker-compose logs frontend
 ```
 
-### Backend tidak bisa connect ke MongoDB
+### Backend Can't Connect to MongoDB
 
-1. Pastikan MongoDB running:
+1. Ensure MongoDB is running:
    ```bash
    sudo systemctl status mongod
    ```
 
-2. Check MongoDB connection string di `.env.production.local`
+2. Check MongoDB connection string in `.env.production.local`
 
-3. Pastikan MongoDB accept connections dari Docker:
+3. Ensure MongoDB accepts connections from Docker:
    ```bash
    # Edit MongoDB config
    sudo nano /etc/mongod.conf
 
-   # Pastikan bindIp includes 0.0.0.0 atau specific IP
+   # Ensure bindIp includes 0.0.0.0 or specific IP
    net:
      bindIp: 127.0.0.1,0.0.0.0
    ```
@@ -506,18 +506,18 @@ docker-compose logs frontend
    sudo systemctl restart mongod
    ```
 
-### Port sudah digunakan
+### Port Already in Use
 
 ```bash
-# Check apa yang menggunakan port 5000 atau 3000
+# Check what's using port 5000 or 3000
 sudo lsof -i :5000
 sudo lsof -i :3000
 
-# Kill process jika perlu
+# Kill process if needed
 sudo kill -9 <PID>
 ```
 
-### Memory/Disk penuh
+### Memory/Disk Full
 
 ```bash
 # Check disk space
@@ -534,29 +534,29 @@ docker rmi <image-id>
 
 ## 🔄 Update Application
 
-Untuk update aplikasi ke versi baru:
+To update application to a new version:
 
 1. Pull latest code:
    ```bash
    git pull origin main
    ```
 
-2. Rebuild dan restart:
+2. Rebuild and restart:
    ```bash
    ./deploy.sh
-   # Pilih option 1
+   # Select option 1
    ```
 
 ## 📝 Notes
 
-- **MongoDB Lokal**: Aplikasi menggunakan MongoDB yang sudah ada di server, tidak membuat container MongoDB baru
-- **Persistent Data**: Uploads folder di-mount sebagai volume, jadi data tidak hilang saat restart
-- **Network**: Containers menggunakan `host.docker.internal` untuk akses ke services di host machine
-- **Production Ready**: Configuration sudah siap untuk production deployment
+- **Local MongoDB**: Application uses existing MongoDB on server, does not create new MongoDB container
+- **Persistent Data**: Uploads folder is mounted as volume, so data is not lost on restart
+- **Network**: Containers use `host.docker.internal` to access services on host machine
+- **Production Ready**: Configuration is ready for production deployment
 
 ## 📞 Support
 
-Jika ada masalah atau pertanyaan, silakan:
+If you have issues or questions, please:
 - Check logs: `docker-compose logs -f`
-- Review environment variables di `.env.production.local`
-- Pastikan MongoDB accessible dari Docker containers
+- Review environment variables in `.env.production.local`
+- Ensure MongoDB is accessible from Docker containers

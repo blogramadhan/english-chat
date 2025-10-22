@@ -32,18 +32,18 @@ const Login = () => {
     try {
       const data = await login(email, password)
       toast({
-        title: 'Login berhasil',
-        description: `Selamat datang, ${data.name}!`,
+        title: 'Login successful',
+        description: `Welcome, ${data.name}!`,
         status: 'success',
         duration: 3000,
       })
       navigate(`/${data.role}/dashboard`)
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Terjadi kesalahan'
+      const errorMessage = error.response?.data?.message || 'An error occurred'
       const isApprovalError = error.response?.status === 403
 
       toast({
-        title: isApprovalError ? 'Akun Belum Disetujui' : 'Login gagal',
+        title: isApprovalError ? 'Account Not Approved' : 'Login failed',
         description: errorMessage,
         status: isApprovalError ? 'warning' : 'error',
         duration: 5000,
@@ -59,8 +59,8 @@ const Login = () => {
       <Card w="full" boxShadow="xl">
         <CardBody>
           <VStack spacing={8}>
-            <Heading size="xl" color="brand.600">Online Discussion</Heading>
-            <Text color="gray.600">Masuk ke akun Anda</Text>
+            <Heading size="xl" color="brand.600">THYNK</Heading>
+            <Text color="gray.600">Sign in to your account</Text>
 
             <Box as="form" onSubmit={handleSubmit} w="full">
               <VStack spacing={4}>
@@ -91,13 +91,13 @@ const Login = () => {
                   w="full"
                   isLoading={loading}
                 >
-                  Masuk
+                  Sign In
                 </Button>
 
                 <Text>
-                  Belum punya akun?{' '}
+                  Don't have an account?{' '}
                   <Link as={RouterLink} to="/register" color="brand.500" fontWeight="bold">
-                    Daftar di sini
+                    Register here
                   </Link>
                 </Text>
               </VStack>

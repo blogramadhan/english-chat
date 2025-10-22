@@ -161,14 +161,14 @@ const Discussion = () => {
               <HStack justify="space-between">
                 <Heading size="md">{discussion?.title}</Heading>
                 <Badge colorScheme={discussion?.isActive ? 'green' : 'gray'}>
-                  {discussion?.isActive ? 'Aktif' : 'Selesai'}
+                  {discussion?.isActive ? 'Active' : 'Completed'}
                 </Badge>
               </HStack>
               <Text fontSize="sm" color="gray.600">
                 {discussion?.content}
               </Text>
               <Text fontSize="xs" color="gray.500" mt={1}>
-                Grup: {discussion?.group?.name} | Dosen: {discussion?.createdBy?.name}
+                Group: {discussion?.group?.name} | Lecturer: {discussion?.createdBy?.name}
               </Text>
             </Box>
           </HStack>

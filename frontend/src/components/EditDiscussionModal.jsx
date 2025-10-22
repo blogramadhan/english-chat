@@ -52,7 +52,7 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
       })
 
       toast({
-        title: 'Diskusi berhasil diupdate',
+        title: 'Discussion updated successfully',
         status: 'success',
         duration: 3000,
       })
@@ -61,7 +61,7 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal update diskusi',
+        description: error.response?.data?.message || 'Failed to update discussion',
         status: 'error',
         duration: 3000,
       })
@@ -82,32 +82,32 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
     <Modal isOpen={isOpen} onClose={handleClose} size="xl">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Edit Diskusi: {discussion?.title}</ModalHeader>
+        <ModalHeader>Edit Discussion: {discussion?.title}</ModalHeader>
         <ModalCloseButton />
         <form onSubmit={handleSubmit}>
           <ModalBody>
             <VStack spacing={4}>
               <FormControl isRequired>
-                <FormLabel>Judul</FormLabel>
+                <FormLabel>Title</FormLabel>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Judul diskusi..."
+                  placeholder="Discussion title..."
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel>Pertanyaan / Topik</FormLabel>
+                <FormLabel>Question / Topic</FormLabel>
                 <Textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Deskripsikan pertanyaan atau topik diskusi..."
+                  placeholder="Describe the question or discussion topic..."
                   rows={6}
                 />
               </FormControl>
 
               <FormControl isDisabled>
-                <FormLabel>Grup</FormLabel>
+                <FormLabel>Group</FormLabel>
                 <Select value={selectedGroup} disabled>
                   {groups?.map((group) => (
                     <option key={group._id} value={group._id}>
@@ -116,21 +116,21 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
                   ))}
                 </Select>
                 <Text fontSize="xs" color="gray.500" mt={1}>
-                  Grup tidak dapat diubah setelah diskusi dibuat
+                  Group cannot be changed after discussion is created
                 </Text>
               </FormControl>
 
               <FormControl>
                 <HStack justify="space-between">
                   <Box>
-                    <Text fontWeight="medium">Status Diskusi</Text>
+                    <Text fontWeight="medium">Discussion Status</Text>
                     <Text fontSize="sm" color="gray.600">
-                      {isActive ? 'Diskusi sedang aktif' : 'Diskusi dinonaktifkan'}
+                      {isActive ? 'Discussion is active' : 'Discussion is inactive'}
                     </Text>
                   </Box>
                   <HStack>
                     <Badge colorScheme={isActive ? 'green' : 'red'}>
-                      {isActive ? 'Aktif' : 'Nonaktif'}
+                      {isActive ? 'Active' : 'Inactive'}
                     </Badge>
                     <Switch
                       isChecked={isActive}
@@ -146,10 +146,10 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
 
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={handleClose}>
-              Batal
+              Cancel
             </Button>
             <Button type="submit" colorScheme="brand" isLoading={loading}>
-              Update Diskusi
+              Update Discussion
             </Button>
           </ModalFooter>
         </form>

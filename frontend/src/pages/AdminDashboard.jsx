@@ -211,7 +211,7 @@ const AdminDashboard = () => {
                 <Stat>
                   <StatLabel>Total Users</StatLabel>
                   <StatNumber>{stats.totalUsers || 0}</StatNumber>
-                  <StatHelpText>Dosen & Mahasiswa</StatHelpText>
+                  <StatHelpText>Lecturers & Students</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
@@ -221,7 +221,7 @@ const AdminDashboard = () => {
                 <Stat>
                   <StatLabel>Pending Approval</StatLabel>
                   <StatNumber color="yellow.500">{stats.pendingUsers || 0}</StatNumber>
-                  <StatHelpText>Menunggu persetujuan</StatHelpText>
+                  <StatHelpText>Waiting for approval</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
@@ -231,7 +231,7 @@ const AdminDashboard = () => {
                 <Stat>
                   <StatLabel>Approved Users</StatLabel>
                   <StatNumber color="green.500">{stats.approvedUsers || 0}</StatNumber>
-                  <StatHelpText>User aktif</StatHelpText>
+                  <StatHelpText>Active users</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
@@ -239,9 +239,9 @@ const AdminDashboard = () => {
             <Card>
               <CardBody>
                 <Stat>
-                  <StatLabel>Total Dosen</StatLabel>
+                  <StatLabel>Total Lecturers</StatLabel>
                   <StatNumber color="blue.500">{stats.totalDosen || 0}</StatNumber>
-                  <StatHelpText>Dosen aktif</StatHelpText>
+                  <StatHelpText>Active lecturers</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
@@ -249,9 +249,9 @@ const AdminDashboard = () => {
             <Card>
               <CardBody>
                 <Stat>
-                  <StatLabel>Total Mahasiswa</StatLabel>
+                  <StatLabel>Total Students</StatLabel>
                   <StatNumber color="cyan.500">{stats.totalMahasiswa || 0}</StatNumber>
-                  <StatHelpText>Mahasiswa aktif</StatHelpText>
+                  <StatHelpText>Active students</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
@@ -273,7 +273,7 @@ const AdminDashboard = () => {
                   </CardHeader>
                   <CardBody>
                     {pendingUsers.length === 0 ? (
-                      <Text color="gray.500">Tidak ada user yang menunggu approval</Text>
+                      <Text color="gray.500">No users waiting for approval</Text>
                     ) : (
                       <Table variant="simple">
                         <Thead>

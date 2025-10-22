@@ -165,7 +165,7 @@ const DosenDashboard = () => {
                       <Heading size="sm">{group.name}</Heading>
                       <HStack>
                         <Badge colorScheme={group.isActive ? 'green' : 'red'}>
-                          {group.isActive ? 'Aktif' : 'Nonaktif'}
+                          {group.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                         <IconButton
                           icon={<EditIcon />}
@@ -180,10 +180,10 @@ const DosenDashboard = () => {
                   </CardHeader>
                   <CardBody>
                     <Text fontSize="sm" color="gray.600" mb={2}>
-                      {group.description || 'Tidak ada deskripsi'}
+                      {group.description || 'No description'}
                     </Text>
                     <Text fontSize="sm" fontWeight="bold">
-                      {group.members?.length || 0} Mahasiswa
+                      {group.members?.length || 0} Students
                     </Text>
                   </CardBody>
                 </Card>
@@ -206,7 +206,7 @@ const DosenDashboard = () => {
                       <Heading size="sm" flex={1}>{discussion.title}</Heading>
                       <HStack spacing={1}>
                         <Badge colorScheme={discussion.isActive ? 'green' : 'red'}>
-                          {discussion.isActive ? 'Aktif' : 'Selesai'}
+                          {discussion.isActive ? 'Active' : 'Completed'}
                         </Badge>
                         <IconButton
                           icon={<DownloadIcon />}
@@ -234,10 +234,10 @@ const DosenDashboard = () => {
                       {discussion.content}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      Grup: {discussion.group?.name}
+                      Group: {discussion.group?.name}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      {new Date(discussion.createdAt).toLocaleDateString('id-ID')}
+                      {new Date(discussion.createdAt).toLocaleDateString('en-US')}
                     </Text>
                   </CardBody>
                 </Card>

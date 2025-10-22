@@ -1,98 +1,98 @@
 # MongoDB Atlas Setup Guide
 
-Panduan lengkap untuk setup MongoDB Atlas (cloud MongoDB) untuk aplikasi English Chat.
+Complete guide for setting up MongoDB Atlas (cloud MongoDB) for the THYNK application.
 
-## 🌐 Mengapa MongoDB Atlas?
+## 🌐 Why MongoDB Atlas?
 
-**Keuntungan:**
-- ✅ **Free Tier** - 512MB storage gratis
-- ✅ **Cloud-based** - Akses dari mana saja
+**Benefits:**
+- ✅ **Free Tier** - 512MB storage free
+- ✅ **Cloud-based** - Access from anywhere
 - ✅ **Auto Backup** - Built-in backup & restore
-- ✅ **Scalable** - Mudah upgrade saat traffic naik
-- ✅ **Secure** - Enkripsi & network isolation
+- ✅ **Scalable** - Easy to upgrade when traffic increases
+- ✅ **Secure** - Encryption & network isolation
 - ✅ **Monitoring** - Built-in metrics & alerts
 - ✅ **No Maintenance** - Managed service
 
 ## 📋 Step-by-Step Setup
 
-### 1. Buat Akun MongoDB Atlas
+### 1. Create MongoDB Atlas Account
 
-1. Buka https://www.mongodb.com/cloud/atlas/register
-2. Sign up dengan:
+1. Go to https://www.mongodb.com/cloud/atlas/register
+2. Sign up with:
    - Email
    - Google Account
    - GitHub Account
 3. Verify email
 
-### 2. Buat Cluster Baru
+### 2. Create New Cluster
 
-1. Login ke https://cloud.mongodb.com
-2. Klik **"Build a Database"** atau **"Create"**
-3. Pilih **"Shared"** (Free Tier)
-4. Pilih Cloud Provider & Region:
-   - **Provider**: AWS / Google Cloud / Azure (pilih yang terdekat)
-   - **Region**: Pilih yang terdekat dengan server Anda
-     - Untuk Indonesia: Singapore (AWS ap-southeast-1)
-     - Alternatif: Mumbai, Tokyo
-5. Cluster Name: `EnglishChat` (atau sesuai keinginan)
-6. Klik **"Create Cluster"**
+1. Login to https://cloud.mongodb.com
+2. Click **"Build a Database"** or **"Create"**
+3. Select **"Shared"** (Free Tier)
+4. Choose Cloud Provider & Region:
+   - **Provider**: AWS / Google Cloud / Azure (choose the closest)
+   - **Region**: Choose closest to your server
+     - For Indonesia: Singapore (AWS ap-southeast-1)
+     - Alternative: Mumbai, Tokyo
+5. Cluster Name: `THYNK` (or as desired)
+6. Click **"Create Cluster"**
 
-**⏱️ Tunggu 3-5 menit** untuk cluster dibuat.
+**⏱️ Wait 3-5 minutes** for cluster to be created.
 
 ### 3. Setup Database Access (User)
 
-1. Di sidebar, klik **"Database Access"**
-2. Klik **"Add New Database User"**
+1. In sidebar, click **"Database Access"**
+2. Click **"Add New Database User"**
 3. **Authentication Method**: Password
-4. **Username**: `englishchat-admin` (atau sesuai keinginan)
+4. **Username**: `thynk-admin` (or as desired)
 5. **Password**:
-   - Klik "Autogenerate Secure Password" atau
-   - Buat password sendiri (min 8 karakter)
-   - **SIMPAN PASSWORD INI!**
+   - Click "Autogenerate Secure Password" or
+   - Create your own password (min 8 characters)
+   - **SAVE THIS PASSWORD!**
 6. **Database User Privileges**:
-   - Pilih **"Read and write to any database"**
-7. Klik **"Add User"**
+   - Select **"Read and write to any database"**
+7. Click **"Add User"**
 
 ### 4. Setup Network Access (Whitelist IP)
 
-1. Di sidebar, klik **"Network Access"**
-2. Klik **"Add IP Address"**
-3. Pilih salah satu:
+1. In sidebar, click **"Network Access"**
+2. Click **"Add IP Address"**
+3. Choose one:
 
-   **Option A: Allow dari mana saja (Development/Testing)**
-   - Klik **"Allow Access from Anywhere"**
+   **Option A: Allow from anywhere (Development/Testing)**
+   - Click **"Allow Access from Anywhere"**
    - IP: `0.0.0.0/0`
-   - ⚠️ **TIDAK AMAN untuk production!**
+   - ⚠️ **NOT SECURE for production!**
 
-   **Option B: Allow IP spesifik (Production - Recommended)**
-   - Klik **"Add Current IP Address"** untuk IP Anda saat ini
-   - Atau manual tambah IP server production
-   - Contoh: `103.123.45.67/32`
+   **Option B: Allow specific IP (Production - Recommended)**
+   - Click **"Add Current IP Address"** for your current IP
+   - Or manually add production server IP
+   - Example: `103.123.45.67/32`
 
-4. Description: `Production Server` atau `Development`
-5. Klik **"Confirm"**
+4. Description: `Production Server` or `Development`
+5. Click **"Confirm"**
 
 ### 5. Get Connection String
 
-1. Kembali ke **"Database"** (sidebar)
-2. Klik **"Connect"** pada cluster Anda
-3. Pilih **"Connect your application"**
+1. Return to **"Database"** (sidebar)
+2. Click **"Connect"** on your cluster
+3. Select **"Connect your application"**
 4. **Driver**: Node.js
 5. **Version**: 4.1 or later
 6. **Copy connection string**:
 
 ```
-mongodb+srv://englishchat-admin:<password>@englishchat.xxxxx.mongodb.net/?retryWrites=true&w=majority
+mongodb+srv://thynk-admin:<password>@thynk.xxxxx.mongodb.net/?retryWrites=true&w=majority
 ```
 
-7. **Replace `<password>`** dengan password user yang dibuat di step 3
-8. **Tambahkan database name** setelah `.net/`:
+7. **Replace `<password>`** with the user password created in step 3
+8. **Add database name** after `.net/`:
 
 ```
-mongodb+srv://englishchat-admin:YOUR_PASSWORD@englishchat.xxxxx.mongodb.net/online-discussion?retryWrites=true&w=majority
+mongodb+srv://thynk-admin:YOUR_PASSWORD@thynk.xxxxx.mongodb.net/thynk?retryWrites=true&w=majority
 ```
 
-## 🔧 Konfigurasi Aplikasi
+## 🔧 Application Configuration
 
 ### Development (.env)
 
@@ -102,11 +102,11 @@ cp .env.example .env
 nano .env
 ```
 
-Update dengan connection string:
+Update with connection string:
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb+srv://englishchat-admin:YOUR_PASSWORD@englishchat.xxxxx.mongodb.net/online-discussion?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://thynk-admin:YOUR_PASSWORD@thynk.xxxxx.mongodb.net/thynk?retryWrites=true&w=majority
 JWT_SECRET=your_jwt_secret_key_here
 NODE_ENV=development
 CLIENT_URL=http://localhost:3000
@@ -120,15 +120,15 @@ nano .env.production.local
 ```
 
 ```env
-MONGODB_URI=mongodb+srv://englishchat-admin:YOUR_PASSWORD@englishchat.xxxxx.mongodb.net/online-discussion?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://thynk-admin:YOUR_PASSWORD@thynk.xxxxx.mongodb.net/thynk?retryWrites=true&w=majority
 JWT_SECRET=your-super-secret-jwt-key
 CLIENT_URL=https://your-domain.com
 VITE_API_URL=https://api.your-domain.com
 ```
 
-## ✅ Test Koneksi
+## ✅ Test Connection
 
-### Test di Development
+### Test in Development
 
 ```bash
 cd backend
@@ -136,17 +136,17 @@ npm install
 npm run dev
 ```
 
-Output yang diharapkan:
+Expected output:
 ```
 Server running on port 5000
-MongoDB connected successfully  ← HARUS MUNCUL INI
+MongoDB connected successfully  ← MUST SEE THIS
 ```
 
-### Test di Production (Docker)
+### Test in Production (Docker)
 
 ```bash
 ./deploy.sh
-# Pilih option 1
+# Select option 1
 
 # Check logs
 docker logs english-chat-backend
@@ -158,12 +158,12 @@ docker logs english-chat-backend
 
 ## 🗄️ Database Management
 
-### View Database di Atlas
+### View Database in Atlas
 
-1. Login ke https://cloud.mongodb.com
-2. Klik **"Browse Collections"** pada cluster
-3. Akan melihat:
-   - **online-discussion** database
+1. Login to https://cloud.mongodb.com
+2. Click **"Browse Collections"** on cluster
+3. Will see:
+   - **thynk** database
    - Collections: users, groups, discussions, messages
 
 ### Manual Backup (Atlas UI)
@@ -182,8 +182,8 @@ docker logs english-chat-backend
 
 ### View Metrics
 
-1. Login ke Atlas
-2. Klik cluster name
+1. Login to Atlas
+2. Click cluster name
 3. Tab **"Metrics"**
 4. Monitor:
    - Operations per second
@@ -195,7 +195,7 @@ docker logs english-chat-backend
 
 1. Sidebar → **"Alerts"**
 2. **"Create Alert"**
-3. Kondisi:
+3. Conditions:
    - Disk usage > 80%
    - Connection limit
    - Query performance
@@ -208,7 +208,7 @@ docker logs english-chat-backend
 **Production:**
 ```
 # Allow ONLY server IP
-103.123.45.67/32  ← IP server production
+103.123.45.67/32  ← Production server IP
 ```
 
 **Development:**
@@ -232,11 +232,11 @@ openssl rand -base64 32
 
 ### 4. Enable Authentication
 
-Sudah enabled by default di Atlas.
+Already enabled by default in Atlas.
 
-### 5. Use Connection String dengan Auth
+### 5. Use Connection String with Auth
 
-Jangan hardcode password di code:
+Don't hardcode password in code:
 ```javascript
 // ❌ BAD
 const uri = "mongodb+srv://user:password123@..."
@@ -254,19 +254,19 @@ const uri = process.env.MONGODB_URI
 # https://www.mongodb.com/try/download/database-tools
 
 # Backup
-mongodump --uri="mongodb+srv://user:pass@cluster.mongodb.net/online-discussion" --out=./backup
+mongodump --uri="mongodb+srv://user:pass@cluster.mongodb.net/thynk" --out=./backup
 
 # Restore
-mongorestore --uri="mongodb+srv://user:pass@cluster.mongodb.net/" --db=online-discussion ./backup/online-discussion
+mongorestore --uri="mongodb+srv://user:pass@cluster.mongodb.net/" --db=thynk ./backup/thynk
 ```
 
 ### Option 2: Using Backup Script
 
-Script otomatis sudah mendukung MongoDB Atlas:
+The automatic script already supports MongoDB Atlas:
 
 ```bash
 ./backup.sh
-# Script akan detect Atlas URI dan backup accordingly
+# Script will detect Atlas URI and backup accordingly
 ```
 
 ### Option 3: Atlas Cloud Backups (Paid)
@@ -274,22 +274,22 @@ Script otomatis sudah mendukung MongoDB Atlas:
 - **M10+ clusters**: Continuous cloud backups
 - Point-in-time recovery
 - Automated backup schedule
-- Restore ke cluster baru
+- Restore to new cluster
 
-## 🚀 Migration dari Local ke Atlas
+## 🚀 Migration from Local to Atlas
 
 ### 1. Backup Local Database
 
 ```bash
 # Backup local MongoDB
-mongodump --db online-discussion --out ./local-backup
+mongodump --db thynk --out ./local-backup
 ```
 
-### 2. Restore ke Atlas
+### 2. Restore to Atlas
 
 ```bash
-# Restore ke Atlas
-mongorestore --uri="mongodb+srv://user:pass@cluster.mongodb.net/" --db=online-discussion ./local-backup/online-discussion
+# Restore to Atlas
+mongorestore --uri="mongodb+srv://user:pass@cluster.mongodb.net/" --db=thynk ./local-backup/thynk
 ```
 
 ### 3. Update Connection String
@@ -310,35 +310,35 @@ npm run dev
 
 ```bash
 ./deploy.sh
-# Pilih option 1
+# Select option 1
 ```
 
 ## 🆘 Troubleshooting
 
 ### Error: "Authentication failed"
 
-**Cause:** Password salah atau user tidak ada
+**Cause:** Wrong password or user doesn't exist
 
 **Fix:**
-1. Check password di Database Access
-2. Reset password jika perlu
+1. Check password in Database Access
+2. Reset password if needed
 3. Update connection string
 
 ### Error: "Connection timeout"
 
-**Cause:** IP tidak di-whitelist
+**Cause:** IP not whitelisted
 
 **Fix:**
 1. Go to Network Access
-2. Add IP address server
-3. Wait 1-2 menit untuk apply
+2. Add server IP address
+3. Wait 1-2 minutes for changes to apply
 
 ### Error: "Server selection timeout"
 
 **Cause:**
 - Network issue
-- Cluster belum ready
-- Connection string salah
+- Cluster not ready yet
+- Wrong connection string
 
 **Fix:**
 1. Check cluster status (green = active)
@@ -351,8 +351,8 @@ npm run dev
 
 **Fix:**
 1. Close unused connections
-2. Use connection pooling (sudah default di Mongoose)
-3. Upgrade ke M10+ jika perlu
+2. Use connection pooling (already default in Mongoose)
+3. Upgrade to M10+ if needed
 
 ## 📈 Scaling
 
@@ -360,7 +360,7 @@ npm run dev
 - ✅ 512MB storage
 - ✅ Shared RAM
 - ✅ Shared vCPU
-- ✅ Perfect untuk development & small apps
+- ✅ Perfect for development & small apps
 
 ### Upgrade Options
 
@@ -397,13 +397,13 @@ npm run dev
 
 ## ✅ Checklist
 
-Setelah setup, verify:
+After setup, verify:
 
 - [ ] Cluster created & active
-- [ ] Database user created dengan password
+- [ ] Database user created with password
 - [ ] IP address whitelisted
 - [ ] Connection string obtained
-- [ ] .env updated dengan connection string
+- [ ] .env updated with connection string
 - [ ] Application connects successfully
-- [ ] Data terlihat di Atlas UI
+- [ ] Data visible in Atlas UI
 - [ ] Backup strategy determined

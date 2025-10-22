@@ -70,13 +70,13 @@ const MahasiswaDashboard = () => {
                   </CardHeader>
                   <CardBody>
                     <Text fontSize="sm" color="gray.600" mb={2}>
-                      {group.description || 'Tidak ada deskripsi'}
+                      {group.description || 'No description'}
                     </Text>
                     <Text fontSize="sm">
-                      Dosen: {group.createdBy?.name}
+                      Lecturer: {group.createdBy?.name}
                     </Text>
                     <Text fontSize="sm" color="gray.500">
-                      {group.members?.length || 0} Mahasiswa
+                      {group.members?.length || 0} Students
                     </Text>
                   </CardBody>
                 </Card>
@@ -98,7 +98,7 @@ const MahasiswaDashboard = () => {
                     <HStack justify="space-between">
                       <Heading size="sm">{discussion.title}</Heading>
                       <Badge colorScheme={discussion.isActive ? 'green' : 'gray'}>
-                        {discussion.isActive ? 'Aktif' : 'Selesai'}
+                        {discussion.isActive ? 'Active' : 'Completed'}
                       </Badge>
                     </HStack>
                   </CardHeader>
@@ -107,13 +107,13 @@ const MahasiswaDashboard = () => {
                       {discussion.content}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      Dosen: {discussion.createdBy?.name}
+                      Lecturer: {discussion.createdBy?.name}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      Grup: {discussion.group?.name}
+                      Group: {discussion.group?.name}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      {new Date(discussion.createdAt).toLocaleDateString('id-ID')}
+                      {new Date(discussion.createdAt).toLocaleDateString('en-US')}
                     </Text>
                   </CardBody>
                 </Card>
