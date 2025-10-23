@@ -24,14 +24,16 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   const login = async (email, password) => {
-    const { data } = await axios.post('/api/auth/login', { email, password })
+    const API_URL = import.meta.env.VITE_API_URL || '/api'
+    const { data } = await axios.post(`${API_URL}/auth/login`, { email, password })
     localStorage.setItem('userInfo', JSON.stringify(data))
     setUser(data)
     return data
   }
 
   const register = async (userData) => {
-    const { data } = await axios.post('/api/auth/register', userData)
+    const API_URL = import.meta.env.VITE_API_URL || '/api'
+    const { data } = await axios.post(`${API_URL}/auth/register`, userData)
     // Don't store user info or token after registration
     // User needs admin approval first
     return data
