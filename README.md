@@ -231,6 +231,21 @@ npm run reset-admin
 - Verify email and password are correct
 - Check if account is approved by admin
 
+### Database Reset
+
+**⚠️ Reset entire database (DELETE ALL DATA):**
+```bash
+cd backend
+node scripts/resetDatabase.js
+```
+
+This will permanently delete:
+- All users (including admin)
+- All groups and discussions
+- All messages and files
+
+See [RESET_DATABASE.md](RESET_DATABASE.md) for complete guide and safety instructions.
+
 ### File Upload Issues
 **Avatar not displaying:**
 - Check if file size is under 5MB
@@ -305,6 +320,14 @@ NODE_ENV=development
 VITE_API_URL=http://localhost:5000
 VITE_SOCKET_URL=http://localhost:5000
 ```
+
+## 📚 Documentation
+
+- [ADMIN_GUIDE.md](ADMIN_GUIDE.md) - Admin setup and user management
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Production deployment with Docker
+- [MONGODB_ATLAS_SETUP.md](MONGODB_ATLAS_SETUP.md) - Cloud database setup
+- [DATA_PERSISTENCE.md](DATA_PERSISTENCE.md) - Backup and restore guide
+- [RESET_DATABASE.md](RESET_DATABASE.md) - Database reset instructions
 
 ## 📄 License
 
