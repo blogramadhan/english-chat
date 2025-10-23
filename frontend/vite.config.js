@@ -15,5 +15,20 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  build: {
+    // Production build optimization
+    outDir: 'dist',
+    sourcemap: false,
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'chakra-vendor': ['@chakra-ui/react', '@emotion/react', '@emotion/styled'],
+          'socket-vendor': ['socket.io-client']
+        }
+      }
+    }
   }
 })

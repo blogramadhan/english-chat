@@ -36,7 +36,8 @@ const Discussion = () => {
     fetchMessages()
 
     // Setup socket connection
-    socketRef.current = io('http://localhost:5000')
+    const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    socketRef.current = io(SOCKET_URL)
 
     socketRef.current.emit('join-discussion', id)
 
