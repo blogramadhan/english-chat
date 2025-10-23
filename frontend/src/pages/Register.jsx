@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react'
 import { useAuth } from '../context/AuthContext'
 import axios from 'axios'
+import LoomaLogo from '../components/LoomaLogo'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -116,7 +117,11 @@ const Register = () => {
       <Card w="full" boxShadow="xl">
         <CardBody>
           <VStack spacing={8}>
-            <Heading size="xl" color="brand.600">LOOMA</Heading>
+            <LoomaLogo size={80} />
+            <VStack spacing={2}>
+              <Heading size="xl" color="brand.600">LOOMA</Heading>
+              <Text fontSize="sm" color="gray.500" fontWeight="medium">Learning Online Platform</Text>
+            </VStack>
             <Text color="gray.600">Create new account</Text>
 
             <Box as="form" onSubmit={handleSubmit} w="full">

@@ -16,7 +16,7 @@ import {
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import ThynkLogo from './ThynkLogo'
+import LoomaLogo from './LoomaLogo'
 
 const Navbar = () => {
   const { user, logout } = useAuth()
@@ -43,10 +43,15 @@ const Navbar = () => {
           cursor="pointer"
           onClick={() => navigate(`/${user?.role}/dashboard`)}
         >
-          <ThynkLogo size={19} />
-          <Heading size="md" color="brand.600">
-            LOOMA
-          </Heading>
+          <LoomaLogo size={50} />
+          <VStack align="start" spacing={0}>
+            <Heading size="md" color="brand.600" lineHeight="1.2">
+              LOOMA
+            </Heading>
+            <Text fontSize="xs" color="gray.500" fontWeight="medium">
+              Learning Online Platform
+            </Text>
+          </VStack>
         </HStack>
 
         <Menu>
