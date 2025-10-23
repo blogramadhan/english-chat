@@ -273,7 +273,11 @@ const DosenDashboard = () => {
                       {discussion.content}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      Group: {discussion.group?.name}
+                      {discussion.groups && discussion.groups.length > 0 ? (
+                        <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
+                      ) : (
+                        <>Group: {discussion.group?.name}</>
+                      )}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
                       {new Date(discussion.createdAt).toLocaleDateString('en-US')}
@@ -330,7 +334,11 @@ const DosenDashboard = () => {
                       {discussion.content}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      Group: {discussion.group?.name}
+                      {discussion.groups && discussion.groups.length > 0 ? (
+                        <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
+                      ) : (
+                        <>Group: {discussion.group?.name}</>
+                      )}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
                       {new Date(discussion.createdAt).toLocaleDateString('en-US')}

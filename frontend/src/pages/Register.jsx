@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import {
   Box,
@@ -17,6 +17,7 @@ import {
   CardBody,
 } from '@chakra-ui/react'
 import { useAuth } from '../context/AuthContext'
+import axios from 'axios'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -25,12 +26,27 @@ const Register = () => {
     password: '',
     role: 'mahasiswa',
     nim: '',
-    nip: ''
+    nip: '',
+    lecturer: ''
   })
+  const [lecturers, setLecturers] = useState([])
   const [loading, setLoading] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
+
+  useEffect(() => {
+    fetchLecturers()
+  }, [])
+
+  const fetchLecturers = async () => {
+    try {
+      const response = await axios.get('/api/users/lecturers')
+      setLecturers(response.data)
+    } catch (error) {
+      console.error('Failed to fetch lecturers:', error)
+    }
+  }
 
   const handleChange = (e) => {
     setFormData({
@@ -119,15 +135,36 @@ const Register = () => {
                 </FormControl>
 
                 {formData.role === 'mahasiswa' && (
-                  <FormControl>
-                    <FormLabel>Student ID (NIM)</FormLabel>
-                    <Input
-                      name="nim"
-                      value={formData.nim}
-                      onChange={handleChange}
-                      placeholder="Student ID number"
-                    />
-                  </FormControl>
+                  <>
+                    <FormControl>
+                      <FormLabel>Student ID (NIM)</FormLabel>
+                      <Input
+                        name="nim"
+                        value={formData.nim}
+                        onChange={handleChange}
+                        placeholder="Student ID number"
+                      />
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>Select Your Lecturer</FormLabel>
+                      <Select
+                        name="lecturer"
+                        value={formData.lecturer}
+                        onChange={handleChange}
+                        placeholder="Choose a lecturer"
+                      >
+                        {lecturers.map((lecturer) => (
+                          <option key={lecturer._id} value={lecturer._id}>
+                            {lecturer.name} {lecturer.nip ? `(${lecturer.nip})` : ''}
+                          </option>
+                        ))}
+                      </Select>
+                      <Text fontSize="xs" color="gray.500" mt={1}>
+                        You will only appear in groups created by this lecturer
+                      </Text>
+                    </FormControl>
+                  </>
                 )}
 
                 {formData.role === 'dosen' && (

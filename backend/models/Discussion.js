@@ -15,10 +15,14 @@ const discussionSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  groups: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group'
+  }],
+  // Keep for backward compatibility, but deprecated
   group: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Group',
-    required: true
+    ref: 'Group'
   },
   isActive: {
     type: Boolean,

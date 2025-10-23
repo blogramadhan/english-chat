@@ -13,27 +13,37 @@ const path = require('path');
 // @access  Private/Dosen
 router.post('/', protect, isDosen, async (req, res) => {
   try {
-    const { title, content, group, tags } = req.body;
+    const { title, content, groups, tags } = req.body;
 
-    // Verify group exists and user is the creator
-    const groupDoc = await Group.findById(group);
-    if (!groupDoc) {
-      return res.status(404).json({ message: 'Group not found' });
+    // Support both single group (backward compatibility) and multiple groups
+    const groupIds = Array.isArray(groups) ? groups : (groups ? [groups] : []);
+
+    if (groupIds.length === 0) {
+      return res.status(400).json({ message: 'At least one group is required' });
     }
 
-    if (groupDoc.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to create discussion for this group' });
+    // Verify all groups exist and user is the creator
+    for (const groupId of groupIds) {
+      const groupDoc = await Group.findById(groupId);
+      if (!groupDoc) {
+        return res.status(404).json({ message: `Group not found: ${groupId}` });
+      }
+
+      if (groupDoc.createdBy.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: `Not authorized to create discussion for group: ${groupDoc.name}` });
+      }
     }
 
     const discussion = await Discussion.create({
       title,
       content,
       createdBy: req.user._id,
-      group,
+      groups: groupIds,
+      group: groupIds[0], // For backward compatibility
       tags
     });
 
-    await discussion.populate('createdBy group', '-password');
+    await discussion.populate('createdBy groups group', '-password');
 
     res.status(201).json(discussion);
   } catch (error) {
@@ -51,16 +61,21 @@ router.get('/', protect, async (req, res) => {
     if (req.user.role === 'dosen') {
       // Get discussions created by dosen
       discussions = await Discussion.find({ createdBy: req.user._id })
-        .populate('createdBy group', '-password')
+        .populate('createdBy groups group', '-password')
         .sort('-createdAt');
     } else {
       // Get groups where mahasiswa is a member
       const groups = await Group.find({ members: req.user._id });
       const groupIds = groups.map(g => g._id);
 
-      // Get discussions for those groups
-      discussions = await Discussion.find({ group: { $in: groupIds } })
-        .populate('createdBy group', '-password')
+      // Get discussions for those groups (support both old 'group' and new 'groups' field)
+      discussions = await Discussion.find({
+        $or: [
+          { groups: { $in: groupIds } },
+          { group: { $in: groupIds } }
+        ]
+      })
+        .populate('createdBy groups group', '-password')
         .sort('-createdAt');
     }
 
@@ -76,7 +91,7 @@ router.get('/', protect, async (req, res) => {
 router.get('/:id', protect, async (req, res) => {
   try {
     const discussion = await Discussion.findById(req.params.id)
-      .populate('createdBy group', '-password');
+      .populate('createdBy groups group', '-password');
 
     if (!discussion) {
       return res.status(404).json({ message: 'Discussion not found' });
@@ -93,7 +108,7 @@ router.get('/:id', protect, async (req, res) => {
 // @access  Private/Dosen
 router.put('/:id', protect, isDosen, async (req, res) => {
   try {
-    const { title, content, tags, isActive } = req.body;
+    const { title, content, tags, isActive, groups } = req.body;
 
     const discussion = await Discussion.findById(req.params.id);
 
@@ -106,13 +121,36 @@ router.put('/:id', protect, isDosen, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
+    // If groups are being updated, verify all groups exist and user is the creator
+    if (groups) {
+      const groupIds = Array.isArray(groups) ? groups : (groups ? [groups] : []);
+
+      if (groupIds.length === 0) {
+        return res.status(400).json({ message: 'At least one group is required' });
+      }
+
+      for (const groupId of groupIds) {
+        const groupDoc = await Group.findById(groupId);
+        if (!groupDoc) {
+          return res.status(404).json({ message: `Group not found: ${groupId}` });
+        }
+
+        if (groupDoc.createdBy.toString() !== req.user._id.toString()) {
+          return res.status(403).json({ message: `Not authorized to use group: ${groupDoc.name}` });
+        }
+      }
+
+      discussion.groups = groupIds;
+      discussion.group = groupIds[0]; // For backward compatibility
+    }
+
     discussion.title = title || discussion.title;
     discussion.content = content || discussion.content;
     discussion.tags = tags || discussion.tags;
     discussion.isActive = isActive !== undefined ? isActive : discussion.isActive;
 
     const updatedDiscussion = await discussion.save();
-    await updatedDiscussion.populate('createdBy group', '-password');
+    await updatedDiscussion.populate('createdBy groups group', '-password');
 
     res.json(updatedDiscussion);
   } catch (error) {

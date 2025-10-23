@@ -168,7 +168,11 @@ const Discussion = () => {
                 {discussion?.content}
               </Text>
               <Text fontSize="xs" color="gray.500" mt={1}>
-                Group: {discussion?.group?.name} | Lecturer: {discussion?.createdBy?.name}
+                {discussion?.groups && discussion.groups.length > 0 ? (
+                  <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
+                ) : (
+                  <>Group: {discussion?.group?.name}</>
+                )} | Lecturer: {discussion?.createdBy?.name}
               </Text>
             </Box>
           </HStack>

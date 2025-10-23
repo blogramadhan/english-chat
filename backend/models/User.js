@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     sparse: true // Only for dosen
   },
+  lecturer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User' // Reference to dosen, only for mahasiswa
+  },
   avatar: {
     type: String,
     default: ''

@@ -19,14 +19,15 @@ import {
   Text,
   Box,
   Badge,
-  Select,
+  Checkbox,
+  Stack,
 } from '@chakra-ui/react'
 import api from '../utils/api'
 
 const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups }) => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [selectedGroup, setSelectedGroup] = useState('')
+  const [selectedGroups, setSelectedGroups] = useState([])
   const [isActive, setIsActive] = useState(true)
   const [loading, setLoading] = useState(false)
   const toast = useToast()
@@ -35,20 +36,59 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
     if (isOpen && discussion) {
       setTitle(discussion.title)
       setContent(discussion.content)
-      setSelectedGroup(discussion.group?._id || '')
+
+      // Support both old single group and new multiple groups
+      let groupIds = []
+
+      if (discussion.groups && discussion.groups.length > 0) {
+        // New schema: multiple groups
+        groupIds = discussion.groups.map(g => {
+          // Handle both populated (object) and unpopulated (string) references
+          return typeof g === 'string' ? g : g._id
+        })
+      } else if (discussion.group) {
+        // Old schema: single group
+        // Handle both populated (object) and unpopulated (string) reference
+        const groupId = typeof discussion.group === 'string' ? discussion.group : discussion.group._id
+        groupIds = [groupId]
+      }
+
+      setSelectedGroups(groupIds)
       setIsActive(discussion.isActive)
     }
   }, [isOpen, discussion])
 
+  const handleGroupToggle = (groupId) => {
+    setSelectedGroups(prev => {
+      if (prev.includes(groupId)) {
+        return prev.filter(id => id !== groupId)
+      } else {
+        return [...prev, groupId]
+      }
+    })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (selectedGroups.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Please select at least one group',
+        status: 'error',
+        duration: 3000,
+      })
+      return
+    }
+
     setLoading(true)
 
     try {
       await api.put(`/discussions/${discussion._id}`, {
         title,
         content,
-        isActive
+        isActive,
+        groups: selectedGroups
       })
 
       toast({
@@ -73,7 +113,7 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
   const handleClose = () => {
     setTitle('')
     setContent('')
-    setSelectedGroup('')
+    setSelectedGroups([])
     setIsActive(true)
     onClose()
   }
@@ -106,17 +146,38 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
                 />
               </FormControl>
 
-              <FormControl isDisabled>
-                <FormLabel>Group</FormLabel>
-                <Select value={selectedGroup} disabled>
-                  {groups?.map((group) => (
-                    <option key={group._id} value={group._id}>
-                      {group.name}
-                    </option>
-                  ))}
-                </Select>
+              <FormControl isRequired>
+                <FormLabel>
+                  Groups ({selectedGroups.length} selected)
+                </FormLabel>
+                <Box
+                  maxH="200px"
+                  overflowY="auto"
+                  border="1px"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  p={3}
+                >
+                  {groups && groups.length === 0 ? (
+                    <Text color="gray.500" fontSize="sm">No groups available</Text>
+                  ) : (
+                    <Stack spacing={2}>
+                      {groups
+                        ?.filter(group => group.isActive)
+                        .map((group) => (
+                          <Checkbox
+                            key={group._id}
+                            isChecked={selectedGroups.includes(group._id)}
+                            onChange={() => handleGroupToggle(group._id)}
+                          >
+                            {group.name}
+                          </Checkbox>
+                        ))}
+                    </Stack>
+                  )}
+                </Box>
                 <Text fontSize="xs" color="gray.500" mt={1}>
-                  Group cannot be changed after discussion is created
+                  You can update which groups this discussion is available to
                 </Text>
               </FormControl>
 

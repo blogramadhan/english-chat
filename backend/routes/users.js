@@ -32,12 +32,34 @@ router.get('/', protect, async (req, res) => {
 });
 
 // @route   GET /api/users/mahasiswa
-// @desc    Get all mahasiswa
+// @desc    Get all mahasiswa (filtered by lecturer for dosen)
 // @access  Private
 router.get('/mahasiswa', protect, async (req, res) => {
   try {
-    const mahasiswa = await User.find({ role: 'mahasiswa' }).select('-password');
+    let query = { role: 'mahasiswa', status: 'approved' };
+
+    // If user is dosen, only return mahasiswa who selected this lecturer
+    if (req.user.role === 'dosen') {
+      query.lecturer = req.user._id;
+    }
+
+    const mahasiswa = await User.find(query).select('-password');
     res.json(mahasiswa);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   GET /api/users/lecturers
+// @desc    Get all approved lecturers (for registration)
+// @access  Public
+router.get('/lecturers', async (req, res) => {
+  try {
+    const lecturers = await User.find({
+      role: 'dosen',
+      status: 'approved'
+    }).select('_id name nip');
+    res.json(lecturers);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
