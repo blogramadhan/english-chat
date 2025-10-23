@@ -6,7 +6,7 @@
 set -e  # Exit on error
 
 echo "========================================="
-echo "English Chat - Production Deployment"
+echo "LOOMA - Production Deployment"
 echo "========================================="
 echo ""
 
@@ -22,11 +22,26 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-    echo -e "${RED}Error: Docker Compose is not installed. Please install Docker Compose first.${NC}"
+# Detect docker compose command (plugin or standalone)
+DOCKER_COMPOSE=""
+if command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+    echo -e "${GREEN}✓ Using docker-compose (standalone)${NC}"
+elif docker compose version &> /dev/null 2>&1; then
+    DOCKER_COMPOSE="docker compose"
+    echo -e "${GREEN}✓ Using docker compose (plugin)${NC}"
+else
+    echo -e "${RED}Error: Docker Compose is not installed.${NC}"
+    echo -e "${YELLOW}Install instructions:${NC}"
+    echo "  # For AlmaLinux/RHEL:"
+    echo "  sudo dnf install docker-compose-plugin -y"
+    echo ""
+    echo "  # Or standalone:"
+    echo "  sudo curl -L 'https://github.com/docker/compose/releases/latest/download/docker-compose-\$(uname -s)-\$(uname -m)' -o /usr/local/bin/docker-compose"
+    echo "  sudo chmod +x /usr/local/bin/docker-compose"
     exit 1
 fi
+echo ""
 
 # Check if .env file exists
 if [ ! -f .env.production.local ]; then
@@ -70,15 +85,15 @@ case $option in
 
         # Stop existing containers (keep volumes and data)
         echo "Stopping existing containers..."
-        docker-compose --env-file .env.production.local down --remove-orphans || true
+        $DOCKER_COMPOSE --env-file .env.production.local down --remove-orphans || true
 
         # Build images
         echo "Building Docker images..."
-        docker-compose --env-file .env.production.local build --no-cache
+        $DOCKER_COMPOSE --env-file .env.production.local build --no-cache
 
         # Start containers
         echo "Starting containers..."
-        docker-compose --env-file .env.production.local up -d
+        $DOCKER_COMPOSE --env-file .env.production.local up -d
 
         echo ""
         echo -e "${GREEN}=========================================${NC}"
@@ -90,10 +105,10 @@ case $option in
         echo "  Backend:  http://localhost:5000"
         echo ""
         echo "To view logs, run:"
-        echo "  docker-compose logs -f"
+        echo "  $DOCKER_COMPOSE logs -f"
         echo ""
         echo "To stop the application, run:"
-        echo "  docker-compose down"
+        echo "  $DOCKER_COMPOSE down"
         ;;
 
     2)
@@ -144,15 +159,15 @@ case $option in
 
         # Stop existing containers (keep volumes and data)
         echo "Stopping existing containers..."
-        docker-compose --env-file .env.production.local down --remove-orphans || true
+        $DOCKER_COMPOSE --env-file .env.production.local down --remove-orphans || true
 
         # Rebuild images
         echo "Rebuilding Docker images..."
-        docker-compose --env-file .env.production.local build --no-cache
+        $DOCKER_COMPOSE --env-file .env.production.local build --no-cache
 
         # Start containers
         echo "Starting containers..."
-        docker-compose --env-file .env.production.local up -d
+        $DOCKER_COMPOSE --env-file .env.production.local up -d
 
         echo ""
         echo -e "${GREEN}=========================================${NC}"
@@ -167,20 +182,21 @@ case $option in
     3)
         echo -e "${YELLOW}Stopping containers...${NC}"
         echo -e "${YELLOW}Note: Uploads and backups will be preserved${NC}"
-        docker-compose --env-file .env.production.local down --remove-orphans
+        $DOCKER_COMPOSE --env-file .env.production.local down --remove-orphans
         echo -e "${GREEN}✓ Containers stopped (data preserved)${NC}"
         ;;
 
     4)
         echo -e "${YELLOW}Restarting containers...${NC}"
-        docker-compose --env-file .env.production.local restart
+        $DOCKER_COMPOSE --env-file .env.production.local restart
         echo -e "${GREEN}✓ Containers restarted${NC}"
         ;;
 
     5)
         echo -e "${GREEN}Viewing logs (Ctrl+C to exit)...${NC}"
-        docker-compose --env-file .env.production.local logs -f
+        $DOCKER_COMPOSE --env-file .env.production.local logs -f
         ;;
+
 
     6)
         echo -e "${GREEN}Creating backup...${NC}"
@@ -224,7 +240,7 @@ case $option in
         read -p "Are you sure? (yes/no): " confirm
         if [ "$confirm" = "yes" ]; then
             echo "Removing containers..."
-            docker-compose --env-file .env.production.local down --remove-orphans
+            $DOCKER_COMPOSE --env-file .env.production.local down --remove-orphans
             echo "Removing images..."
             docker rmi english-chat_backend english-chat_frontend || true
             echo -e "${GREEN}✓ Cleanup completed${NC}"
