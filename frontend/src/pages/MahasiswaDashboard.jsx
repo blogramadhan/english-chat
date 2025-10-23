@@ -125,10 +125,11 @@ const MahasiswaDashboard = () => {
             </Grid>
           </Box>
 
+          {/* Active Discussions */}
           <Box>
-            <Heading size="md" mb={4}>Available Discussions</Heading>
+            <Heading size="md" mb={4}>Active Discussions</Heading>
             <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-              {discussions.map((discussion) => (
+              {discussions.filter(discussion => discussion.isActive).map((discussion) => (
                 <Card
                   key={discussion._id}
                   cursor="pointer"
@@ -138,9 +139,7 @@ const MahasiswaDashboard = () => {
                   <CardHeader>
                     <HStack justify="space-between">
                       <Heading size="sm">{discussion.title}</Heading>
-                      <Badge colorScheme={discussion.isActive ? 'green' : 'gray'}>
-                        {discussion.isActive ? 'Active' : 'Completed'}
-                      </Badge>
+                      <Badge colorScheme="green">Active</Badge>
                     </HStack>
                   </CardHeader>
                   <CardBody>
@@ -159,6 +158,49 @@ const MahasiswaDashboard = () => {
                   </CardBody>
                 </Card>
               ))}
+              {discussions.filter(discussion => discussion.isActive).length === 0 && (
+                <Text color="gray.500">No active discussions</Text>
+              )}
+            </Grid>
+          </Box>
+
+          {/* Inactive Discussions */}
+          <Box>
+            <Heading size="md" mb={4}>Inactive Discussions</Heading>
+            <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
+              {discussions.filter(discussion => !discussion.isActive).map((discussion) => (
+                <Card
+                  key={discussion._id}
+                  cursor="pointer"
+                  _hover={{ shadow: 'lg' }}
+                  onClick={() => navigate(`/discussion/${discussion._id}`)}
+                  opacity={0.7}
+                >
+                  <CardHeader>
+                    <HStack justify="space-between">
+                      <Heading size="sm">{discussion.title}</Heading>
+                      <Badge colorScheme="red">Inactive</Badge>
+                    </HStack>
+                  </CardHeader>
+                  <CardBody>
+                    <Text fontSize="sm" color="gray.600" noOfLines={2} mb={2}>
+                      {discussion.content}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      Lecturer: {discussion.createdBy?.name}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      Group: {discussion.group?.name}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      {new Date(discussion.createdAt).toLocaleDateString('en-US')}
+                    </Text>
+                  </CardBody>
+                </Card>
+              ))}
+              {discussions.filter(discussion => !discussion.isActive).length === 0 && (
+                <Text color="gray.500">No inactive discussions</Text>
+              )}
             </Grid>
           </Box>
         </VStack>
