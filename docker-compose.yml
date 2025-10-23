@@ -31,7 +31,7 @@ services:
     container_name: english-chat-frontend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3090:3090"
     environment:
       - NODE_ENV=production
     depends_on:

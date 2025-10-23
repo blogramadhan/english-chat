@@ -26,8 +26,8 @@ ENV VITE_SOCKET_URL=$VITE_SOCKET_URL
 # Build the application
 RUN npm run build
 
-# Expose port 3000
-EXPOSE 3000
+# Expose port 3090
+EXPOSE 3090
 
 # Start the application using serve
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["serve", "-s", "dist", "-l", "3090"]

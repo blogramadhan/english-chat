@@ -56,3 +56,8 @@ backups/
 .npm
 .eslintcache
 .node_repl_history
+
+# Server-specific configuration (not for repository)
+Caddyfile
+Caddyfile.*
+CADDY_DEPLOYMENT.md
