@@ -60,4 +60,8 @@ backups/
 # Server-specific configuration (not for repository)
 Caddyfile
 Caddyfile.*
-CADDY_DEPLOYMENT.md
+
+# Markdown files - only README.md is tracked
+*.md
+!README.md
+
