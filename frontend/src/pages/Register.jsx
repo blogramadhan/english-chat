@@ -116,13 +116,15 @@ const Register = () => {
     <Container maxW="md" centerContent py={20}>
       <Card w="full" boxShadow="xl">
         <CardBody>
-          <VStack spacing={8}>
-            <LoomaLogo size={80} />
-            <VStack spacing={2}>
+          <VStack spacing={6}>
+            <Box pt={4}>
+              <LoomaLogo size={100} />
+            </Box>
+            <VStack spacing={1}>
               <Heading size="xl" color="brand.600">LOOMA</Heading>
               <Text fontSize="sm" color="gray.500" fontWeight="medium">Learning Online Platform</Text>
             </VStack>
-            <Text color="gray.600">Create new account</Text>
+            <Text color="gray.600" fontSize="md">Create new account</Text>
 
             <Box as="form" onSubmit={handleSubmit} w="full">
               <VStack spacing={4}>
