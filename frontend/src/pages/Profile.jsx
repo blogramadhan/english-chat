@@ -20,17 +20,22 @@ import {
   IconButton,
   InputGroup,
   InputRightElement,
+  Checkbox,
+  Stack,
 } from '@chakra-ui/react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import Navbar from '../components/Navbar';
+import axios from 'axios';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
+  const [lecturers, setLecturers] = useState([]);
+  const [selectedLecturers, setSelectedLecturers] = useState([]);
 
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -60,8 +65,46 @@ const Profile = () => {
         nim: user.nim || '',
         nip: user.nip || '',
       });
+
+      // Load lecturers if user is mahasiswa
+      if (user.role === 'mahasiswa') {
+        fetchLecturers();
+        fetchUserLecturers();
+      }
     }
   }, [user]);
+
+  const fetchLecturers = async () => {
+    try {
+      const response = await axios.get('/api/users/lecturers');
+      setLecturers(response.data);
+    } catch (error) {
+      console.error('Failed to fetch lecturers:', error);
+    }
+  };
+
+  const fetchUserLecturers = async () => {
+    try {
+      const response = await api.get('/users/me');
+      if (response.data.lecturers && response.data.lecturers.length > 0) {
+        setSelectedLecturers(response.data.lecturers);
+      } else if (response.data.lecturer) {
+        setSelectedLecturers([response.data.lecturer]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user lecturers:', error);
+    }
+  };
+
+  const handleLecturerToggle = (lecturerId) => {
+    setSelectedLecturers(prev => {
+      if (prev.includes(lecturerId)) {
+        return prev.filter(id => id !== lecturerId);
+      } else {
+        return [...prev, lecturerId];
+      }
+    });
+  };
 
   const handleProfileChange = (e) => {
     setProfileData({
@@ -79,10 +122,25 @@ const Profile = () => {
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
+
+    if (user.role === 'mahasiswa' && selectedLecturers.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Please select at least one lecturer',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { data } = await api.put('/users/profile', profileData);
+      const dataToSubmit = {
+        ...profileData,
+        lecturers: user.role === 'mahasiswa' ? selectedLecturers : undefined
+      };
+      const { data } = await api.put('/users/profile', dataToSubmit);
 
       // Update user in context and localStorage
       updateUser(data);
@@ -300,15 +358,50 @@ const Profile = () => {
                     </FormControl>
 
                     {user?.role === 'mahasiswa' && (
-                      <FormControl>
-                        <FormLabel>NIM</FormLabel>
-                        <Input
-                          type="text"
-                          name="nim"
-                          value={profileData.nim}
-                          onChange={handleProfileChange}
-                        />
-                      </FormControl>
+                      <>
+                        <FormControl>
+                          <FormLabel>NIM</FormLabel>
+                          <Input
+                            type="text"
+                            name="nim"
+                            value={profileData.nim}
+                            onChange={handleProfileChange}
+                          />
+                        </FormControl>
+
+                        <FormControl isRequired>
+                          <FormLabel>
+                            Your Lecturers ({selectedLecturers.length} selected)
+                          </FormLabel>
+                          <Box
+                            maxH="200px"
+                            overflowY="auto"
+                            border="1px"
+                            borderColor="gray.200"
+                            borderRadius="md"
+                            p={3}
+                          >
+                            {lecturers.length === 0 ? (
+                              <Text color="gray.500" fontSize="sm">No lecturers available</Text>
+                            ) : (
+                              <Stack spacing={2}>
+                                {lecturers.map((lecturer) => (
+                                  <Checkbox
+                                    key={lecturer._id}
+                                    isChecked={selectedLecturers.includes(lecturer._id)}
+                                    onChange={() => handleLecturerToggle(lecturer._id)}
+                                  >
+                                    {lecturer.name} {lecturer.nip ? `(${lecturer.nip})` : ''}
+                                  </Checkbox>
+                                ))}
+                              </Stack>
+                            )}
+                          </Box>
+                          <Text fontSize="xs" color="gray.500" mt={1}>
+                            You will appear in groups created by selected lecturers
+                          </Text>
+                        </FormControl>
+                      </>
                     )}
 
                     {user?.role === 'dosen' && (

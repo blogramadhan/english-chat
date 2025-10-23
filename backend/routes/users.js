@@ -40,7 +40,10 @@ router.get('/mahasiswa', protect, async (req, res) => {
 
     // If user is dosen, only return mahasiswa who selected this lecturer
     if (req.user.role === 'dosen') {
-      query.lecturer = req.user._id;
+      query.$or = [
+        { lecturers: req.user._id },
+        { lecturer: req.user._id } // Backward compatibility
+      ];
     }
 
     const mahasiswa = await User.find(query).select('-password');
@@ -91,9 +94,31 @@ router.put('/profile', protect, async (req, res) => {
     }
 
     // Update NIM/NIP based on role
-    if (user.role === 'mahasiswa' && req.body.nim) {
-      user.nim = req.body.nim;
+    if (user.role === 'mahasiswa') {
+      if (req.body.nim) user.nim = req.body.nim;
+
+      // Update lecturers if provided
+      if (req.body.lecturers !== undefined) {
+        const lecturerIds = Array.isArray(req.body.lecturers) ? req.body.lecturers : (req.body.lecturers ? [req.body.lecturers] : []);
+
+        // Verify all lecturers exist and are dosen
+        if (lecturerIds.length > 0) {
+          for (const lecturerId of lecturerIds) {
+            const lecturerUser = await User.findById(lecturerId);
+            if (!lecturerUser) {
+              return res.status(404).json({ message: `Lecturer not found: ${lecturerId}` });
+            }
+            if (lecturerUser.role !== 'dosen') {
+              return res.status(400).json({ message: `Selected user is not a lecturer: ${lecturerUser.name}` });
+            }
+          }
+        }
+
+        user.lecturers = lecturerIds;
+        user.lecturer = lecturerIds.length > 0 ? lecturerIds[0] : null; // Backward compatibility
+      }
     }
+
     if (user.role === 'dosen' && req.body.nip) {
       user.nip = req.body.nip;
     }

@@ -1,6 +1,6 @@
 # Data Persistence Guide
 
-Complete guide on how THYNK application data remains safe and persistent during deployment.
+Complete guide on how LOOMA application data remains safe and persistent during deployment.
 
 ## 📦 Persisted Data
 

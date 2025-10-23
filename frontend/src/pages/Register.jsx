@@ -15,6 +15,8 @@ import {
   Select,
   Card,
   CardBody,
+  Checkbox,
+  Stack,
 } from '@chakra-ui/react'
 import { useAuth } from '../context/AuthContext'
 import axios from 'axios'
@@ -26,9 +28,9 @@ const Register = () => {
     password: '',
     role: 'mahasiswa',
     nim: '',
-    nip: '',
-    lecturer: ''
+    nip: ''
   })
+  const [selectedLecturers, setSelectedLecturers] = useState([])
   const [lecturers, setLecturers] = useState([])
   const [loading, setLoading] = useState(false)
   const { register } = useAuth()
@@ -55,12 +57,37 @@ const Register = () => {
     })
   }
 
+  const handleLecturerToggle = (lecturerId) => {
+    setSelectedLecturers(prev => {
+      if (prev.includes(lecturerId)) {
+        return prev.filter(id => id !== lecturerId)
+      } else {
+        return [...prev, lecturerId]
+      }
+    })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (formData.role === 'mahasiswa' && selectedLecturers.length === 0) {
+      toast({
+        title: 'Error',
+        description: 'Please select at least one lecturer',
+        status: 'error',
+        duration: 3000,
+      })
+      return
+    }
+
     setLoading(true)
 
     try {
-      const response = await register(formData)
+      const dataToSubmit = {
+        ...formData,
+        lecturers: formData.role === 'mahasiswa' ? selectedLecturers : undefined
+      }
+      const response = await register(dataToSubmit)
 
       toast({
         title: 'Registration successful',
@@ -89,7 +116,7 @@ const Register = () => {
       <Card w="full" boxShadow="xl">
         <CardBody>
           <VStack spacing={8}>
-            <Heading size="xl" color="brand.600">THYNK</Heading>
+            <Heading size="xl" color="brand.600">LOOMA</Heading>
             <Text color="gray.600">Create new account</Text>
 
             <Box as="form" onSubmit={handleSubmit} w="full">
@@ -147,21 +174,35 @@ const Register = () => {
                     </FormControl>
 
                     <FormControl isRequired>
-                      <FormLabel>Select Your Lecturer</FormLabel>
-                      <Select
-                        name="lecturer"
-                        value={formData.lecturer}
-                        onChange={handleChange}
-                        placeholder="Choose a lecturer"
+                      <FormLabel>
+                        Select Your Lecturers ({selectedLecturers.length} selected)
+                      </FormLabel>
+                      <Box
+                        maxH="200px"
+                        overflowY="auto"
+                        border="1px"
+                        borderColor="gray.200"
+                        borderRadius="md"
+                        p={3}
                       >
-                        {lecturers.map((lecturer) => (
-                          <option key={lecturer._id} value={lecturer._id}>
-                            {lecturer.name} {lecturer.nip ? `(${lecturer.nip})` : ''}
-                          </option>
-                        ))}
-                      </Select>
+                        {lecturers.length === 0 ? (
+                          <Text color="gray.500" fontSize="sm">No lecturers available</Text>
+                        ) : (
+                          <Stack spacing={2}>
+                            {lecturers.map((lecturer) => (
+                              <Checkbox
+                                key={lecturer._id}
+                                isChecked={selectedLecturers.includes(lecturer._id)}
+                                onChange={() => handleLecturerToggle(lecturer._id)}
+                              >
+                                {lecturer.name} {lecturer.nip ? `(${lecturer.nip})` : ''}
+                              </Checkbox>
+                            ))}
+                          </Stack>
+                        )}
+                      </Box>
                       <Text fontSize="xs" color="gray.500" mt={1}>
-                        You will only appear in groups created by this lecturer
+                        Select one or more lecturers. You will appear in groups created by selected lecturers.
                       </Text>
                     </FormControl>
                   </>

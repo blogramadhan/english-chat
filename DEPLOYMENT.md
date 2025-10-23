@@ -1,6 +1,6 @@
-# Deployment Guide - THYNK Platform
+# Deployment Guide - LOOMA Platform
 
-Complete guide for deploying the THYNK application using Docker on production server.
+Complete guide for deploying the LOOMA application using Docker on production server.
 
 ## 📋 Prerequisites
 

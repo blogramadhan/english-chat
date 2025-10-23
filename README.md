@@ -1,4 +1,4 @@
-# THYNK - Online Discussion Platform
+# LOOMA - Online Discussion Platform
 
 A modern web-based discussion platform for English language learning with real-time chat, group management, and user approval system.
 

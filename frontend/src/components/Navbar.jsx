@@ -45,7 +45,7 @@ const Navbar = () => {
         >
           <ThynkLogo size={19} />
           <Heading size="md" color="brand.600">
-            THYNK
+            LOOMA
           </Heading>
         </HStack>
 

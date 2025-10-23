@@ -26,7 +26,7 @@ router.post('/register', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, role, nim, nip, lecturer } = req.body;
+    const { name, email, password, role, nim, nip, lecturers } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ email });
@@ -34,14 +34,20 @@ router.post('/register', [
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // If mahasiswa, verify lecturer exists and is a dosen
-    if (role === 'mahasiswa' && lecturer) {
-      const lecturerUser = await User.findById(lecturer);
-      if (!lecturerUser) {
-        return res.status(404).json({ message: 'Lecturer not found' });
-      }
-      if (lecturerUser.role !== 'dosen') {
-        return res.status(400).json({ message: 'Selected user is not a lecturer' });
+    // If mahasiswa, verify lecturers exist and are dosen
+    if (role === 'mahasiswa' && lecturers) {
+      const lecturerIds = Array.isArray(lecturers) ? lecturers : (lecturers ? [lecturers] : []);
+
+      if (lecturerIds.length > 0) {
+        for (const lecturerId of lecturerIds) {
+          const lecturerUser = await User.findById(lecturerId);
+          if (!lecturerUser) {
+            return res.status(404).json({ message: `Lecturer not found: ${lecturerId}` });
+          }
+          if (lecturerUser.role !== 'dosen') {
+            return res.status(400).json({ message: `Selected user is not a lecturer: ${lecturerUser.name}` });
+          }
+        }
       }
     }
 
@@ -49,7 +55,11 @@ router.post('/register', [
     const userData = { name, email, password, role };
     if (role === 'mahasiswa') {
       if (nim) userData.nim = nim;
-      if (lecturer) userData.lecturer = lecturer;
+      if (lecturers) {
+        const lecturerIds = Array.isArray(lecturers) ? lecturers : [lecturers];
+        userData.lecturers = lecturerIds;
+        userData.lecturer = lecturerIds[0]; // For backward compatibility
+      }
     }
     if (role === 'dosen' && nip) userData.nip = nip;
 

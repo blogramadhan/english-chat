@@ -59,7 +59,7 @@ const Login = () => {
       <Card w="full" boxShadow="xl">
         <CardBody>
           <VStack spacing={8}>
-            <Heading size="xl" color="brand.600">THYNK</Heading>
+            <Heading size="xl" color="brand.600">LOOMA</Heading>
             <Text color="gray.600">Sign in to your account</Text>
 
             <Box as="form" onSubmit={handleSubmit} w="full">

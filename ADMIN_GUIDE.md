@@ -1,4 +1,4 @@
-# Admin Guide - THYNK Platform
+# Admin Guide - LOOMA Platform
 
 ## Creating Admin Account
 

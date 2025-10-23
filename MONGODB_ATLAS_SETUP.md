@@ -1,6 +1,6 @@
 # MongoDB Atlas Setup Guide
 
-Complete guide for setting up MongoDB Atlas (cloud MongoDB) for the THYNK application.
+Complete guide for setting up MongoDB Atlas (cloud MongoDB) for the LOOMA application.
 
 ## 🌐 Why MongoDB Atlas?
 
@@ -34,7 +34,7 @@ Complete guide for setting up MongoDB Atlas (cloud MongoDB) for the THYNK applic
    - **Region**: Choose closest to your server
      - For Indonesia: Singapore (AWS ap-southeast-1)
      - Alternative: Mumbai, Tokyo
-5. Cluster Name: `THYNK` (or as desired)
+5. Cluster Name: `LOOMA` (or as desired)
 6. Click **"Create Cluster"**
 
 **⏱️ Wait 3-5 minutes** for cluster to be created.
