@@ -19,7 +19,7 @@ import {
   Stack,
 } from '@chakra-ui/react'
 import { useAuth } from '../context/AuthContext'
-import axios from 'axios'
+import api from '../utils/api'
 import LoomaLogo from '../components/LoomaLogo'
 
 const Register = () => {
@@ -44,7 +44,7 @@ const Register = () => {
 
   const fetchLecturers = async () => {
     try {
-      const response = await axios.get('/api/users/lecturers')
+      const response = await api.get('/users/lecturers')
       setLecturers(response.data)
     } catch (error) {
       console.error('Failed to fetch lecturers:', error)

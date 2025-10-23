@@ -27,7 +27,6 @@ import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import Navbar from '../components/Navbar';
-import axios from 'axios';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -76,7 +75,7 @@ const Profile = () => {
 
   const fetchLecturers = async () => {
     try {
-      const response = await axios.get('/api/users/lecturers');
+      const response = await api.get('/users/lecturers');
       setLecturers(response.data);
     } catch (error) {
       console.error('Failed to fetch lecturers:', error);
