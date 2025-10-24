@@ -217,7 +217,8 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
     const doc = new PDFDocument({
       margin: 50,
       bufferPages: true,
-      autoFirstPage: true
+      autoFirstPage: true,
+      compress: false // Disable compression to avoid corruption
     });
 
     // Set response headers
@@ -225,8 +226,17 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=discussion-${safeFilename}.pdf`);
 
+    // Handle stream errors
+    doc.on('error', (err) => {
+      console.error('PDF Document Error:', err);
+    });
+
     // Pipe PDF to response
-    doc.pipe(res);
+    const stream = doc.pipe(res);
+
+    stream.on('error', (err) => {
+      console.error('PDF Stream Error:', err);
+    });
 
     // Add content to PDF
     // Header - use standard fonts only
@@ -301,22 +311,28 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
                 doc.addPage();
               }
 
-              doc.text(`[Image: ${message.fileName}]`, leftMargin + contentIndent);
+              doc.text(`[Image: ${sanitizeText(message.fileName)}]`, leftMargin + contentIndent);
               doc.moveDown(0.3);
 
               // Add image with max width 400px, indented
               const imageX = leftMargin + contentIndent;
-              doc.image(imagePath, imageX, doc.y, {
-                fit: [380, 280],
-                align: 'left'
-              });
 
-              doc.moveDown(0.5);
+              // Wrap image embedding in try-catch
+              try {
+                doc.image(imagePath, imageX, doc.y, {
+                  fit: [380, 280],
+                  align: 'left'
+                });
+                doc.moveDown(0.5);
+              } catch (imgError) {
+                console.error('Error rendering image in PDF:', imgError);
+                doc.text(`[Image cannot be rendered: ${sanitizeText(message.fileName)}]`, leftMargin + contentIndent);
+              }
 
               // Add caption if different from filename
               if (message.content && message.content !== message.fileName) {
                 doc.fontSize(8).fillColor('gray');
-                doc.text(`Caption: ${message.content}`, leftMargin + contentIndent, doc.y, {
+                doc.text(`Caption: ${sanitizeText(message.content)}`, leftMargin + contentIndent, doc.y, {
                   width: doc.page.width - leftMargin - contentIndent - doc.page.margins.right,
                   align: 'left'
                 });
@@ -324,23 +340,23 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
               }
             } else {
               // File not found, show placeholder
-              doc.text(`[Image not found: ${message.fileName}]`, leftMargin + contentIndent);
+              doc.text(`[Image not found: ${sanitizeText(message.fileName)}]`, leftMargin + contentIndent);
               if (message.content !== message.fileName) {
-                doc.text(message.content, leftMargin + contentIndent);
+                doc.text(sanitizeText(message.content), leftMargin + contentIndent);
               }
             }
           } catch (error) {
             console.error('Error embedding image:', error);
-            doc.text(`[Image: ${message.fileName}]`, leftMargin + contentIndent);
+            doc.text(`[Image error: ${sanitizeText(message.fileName)}]`, leftMargin + contentIndent);
             if (message.content !== message.fileName) {
-              doc.text(message.content, leftMargin + contentIndent);
+              doc.text(sanitizeText(message.content), leftMargin + contentIndent);
             }
           }
         } else {
           // Non-image file (should not happen anymore, but keep for safety)
-          doc.text(`[File: ${message.fileName || 'attachment'}]`, leftMargin + contentIndent);
+          doc.text(`[File: ${sanitizeText(message.fileName) || 'attachment'}]`, leftMargin + contentIndent);
           if (message.content && message.content !== message.fileName) {
-            doc.text(message.content, leftMargin + contentIndent);
+            doc.text(sanitizeText(message.content), leftMargin + contentIndent);
           }
         }
       } else {
@@ -404,21 +420,26 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
     }
 
     // Add footer to all pages (must be done before doc.end())
-    const range = doc.bufferedPageRange();
-    for (let i = range.start; i < range.start + range.count; i++) {
-      doc.switchToPage(i);
+    try {
+      const range = doc.bufferedPageRange();
+      for (let i = range.start; i < range.start + range.count; i++) {
+        doc.switchToPage(i);
 
-      // Add footer
-      doc.fontSize(8).fillColor('gray');
-      doc.text(
-        `Page ${i - range.start + 1} of ${range.count}`,
-        50,
-        doc.page.height - 50,
-        { align: 'center', lineBreak: false }
-      );
+        // Add footer
+        doc.fontSize(8).fillColor('gray');
+        doc.text(
+          `Page ${i - range.start + 1} of ${range.count}`,
+          50,
+          doc.page.height - 50,
+          { align: 'center', lineBreak: false }
+        );
 
-      // Restore
-      doc.fillColor('black');
+        // Restore
+        doc.fillColor('black');
+      }
+    } catch (footerError) {
+      console.error('Error adding footer:', footerError);
+      // Continue without footer if error
     }
 
     // Finalize PDF (this will close the stream)
