@@ -203,34 +203,49 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
       .populate('sender', 'name email role')
       .sort('createdAt');
 
-    // Create PDF document
-    const doc = new PDFDocument({ margin: 50 });
+    // Helper function to sanitize text for PDF
+    const sanitizeText = (text) => {
+      if (!text) return '';
+      // Replace problematic characters
+      return text
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+        .replace(/[\uFFFD]/g, '') // Remove replacement character
+        .trim();
+    };
+
+    // Create PDF document with better configuration
+    const doc = new PDFDocument({
+      margin: 50,
+      bufferPages: true,
+      autoFirstPage: true
+    });
 
     // Set response headers
+    const safeFilename = discussion.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=discussion-${discussion.title.replace(/\s+/g, '-')}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=discussion-${safeFilename}.pdf`);
 
     // Pipe PDF to response
     doc.pipe(res);
 
     // Add content to PDF
-    // Header
-    doc.fontSize(20).font('Helvetica-Bold').text('Discussion Report', { align: 'center' });
+    // Header - use standard fonts only
+    doc.fontSize(20).font('Helvetica').text('Discussion Report', { align: 'center', underline: true });
     doc.moveDown();
 
     // Discussion Info
-    doc.fontSize(14).font('Helvetica-Bold').text('Discussion Information');
+    doc.fontSize(14).font('Helvetica').text('Discussion Information', { underline: true });
     doc.fontSize(10).font('Helvetica');
-    doc.text(`Title: ${discussion.title}`);
-    doc.text(`Group: ${discussion.group?.name || 'N/A'}`);
-    doc.text(`Lecturer: ${discussion.createdBy?.name || 'N/A'}`);
+    doc.text(`Title: ${sanitizeText(discussion.title)}`);
+    doc.text(`Group: ${sanitizeText(discussion.group?.name) || 'N/A'}`);
+    doc.text(`Lecturer: ${sanitizeText(discussion.createdBy?.name) || 'N/A'}`);
     doc.text(`Created: ${new Date(discussion.createdAt).toLocaleString('en-US')}`);
     doc.text(`Status: ${discussion.isActive ? 'Active' : 'Inactive'}`);
     doc.moveDown();
 
     // Discussion Content
-    doc.fontSize(12).font('Helvetica-Bold').text('Question/Topic:');
-    doc.fontSize(10).font('Helvetica').text(discussion.content, { align: 'justify' });
+    doc.fontSize(12).font('Helvetica').text('Question/Topic:', { underline: true });
+    doc.fontSize(10).font('Helvetica').text(sanitizeText(discussion.content) || 'N/A', { align: 'justify' });
     doc.moveDown();
 
     // Separator
@@ -238,7 +253,7 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
     doc.moveDown();
 
     // Messages
-    doc.fontSize(14).font('Helvetica-Bold').text('Discussion Messages');
+    doc.fontSize(14).font('Helvetica').text('Discussion Messages', { underline: true });
     doc.fontSize(10).font('Helvetica').text(`Total ${messages.length} messages`);
     doc.moveDown();
 
@@ -253,9 +268,10 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
       const contentIndent = 20; // Indent for message content
 
       // Message header with number and sender name
-      doc.fontSize(9).font('Helvetica-Bold').fillColor('black');
+      doc.fontSize(9).font('Helvetica').fillColor('black');
       const senderRole = message.sender?.role === 'dosen' ? '(Lecturer)' : '(Student)';
-      doc.text(`${index + 1}. ${message.sender?.name || 'Unknown'} ${senderRole}`, leftMargin);
+      const senderName = sanitizeText(message.sender?.name) || 'Unknown';
+      doc.text(`${index + 1}. ${senderName} ${senderRole}`, leftMargin, doc.y, { continued: false });
 
       // Timestamp and edit indicator on new line with indent
       doc.fontSize(8).font('Helvetica').fillColor('gray');
@@ -329,7 +345,7 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
         }
       } else {
         // Text message - convert emoji to text representation
-        let textContent = message.content;
+        let textContent = sanitizeText(message.content);
 
         // Replace common emoji with text (basic fallback)
         const emojiMap = {
