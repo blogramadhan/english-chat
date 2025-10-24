@@ -5,10 +5,8 @@ import {
   Container,
   Heading,
   VStack,
-  Grid,
   Card,
   CardBody,
-  CardHeader,
   Text,
   Badge,
   useToast,
@@ -31,7 +29,10 @@ const MahasiswaDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [currentActiveGroupPage, setCurrentActiveGroupPage] = useState(1)
   const [currentInactiveGroupPage, setCurrentInactiveGroupPage] = useState(1)
+  const [currentActiveDiscussionPage, setCurrentActiveDiscussionPage] = useState(1)
+  const [currentInactiveDiscussionPage, setCurrentInactiveDiscussionPage] = useState(1)
   const groupsPerPage = 6
+  const discussionsPerPage = 6
   const { user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
@@ -229,89 +230,157 @@ const MahasiswaDashboard = () => {
 
           {/* Active Discussions */}
           <Box>
-            <Heading size="md" mb={4}>Active Discussions</Heading>
-            <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-              {discussions.filter(discussion => discussion.isActive).map((discussion) => (
-                <Card
-                  key={discussion._id}
-                  cursor="pointer"
-                  _hover={{ shadow: 'lg' }}
-                  onClick={() => navigate(`/discussion/${discussion._id}`)}
+            <Flex justify="space-between" align="center" mb={4}>
+              <Heading size="md">Active Discussions</Heading>
+              <Text fontSize="sm" color="gray.600">
+                {discussions.filter(discussion => discussion.isActive).length} discussions
+              </Text>
+            </Flex>
+
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} mb={4}>
+              {discussions
+                .filter(discussion => discussion.isActive)
+                .slice((currentActiveDiscussionPage - 1) * discussionsPerPage, currentActiveDiscussionPage * discussionsPerPage)
+                .map((discussion) => (
+                  <Card
+                    key={discussion._id}
+                    cursor="pointer"
+                    _hover={{ shadow: 'md', transform: 'translateY(-2px)' }}
+                    transition="all 0.2s"
+                    onClick={() => navigate(`/discussion/${discussion._id}`)}
+                  >
+                    <CardBody>
+                      <Flex justify="space-between" align="start" mb={2}>
+                        <Box flex={1}>
+                          <Heading size="sm" mb={1} noOfLines={1}>{discussion.title}</Heading>
+                          <Badge colorScheme="green" fontSize="xs">Active</Badge>
+                        </Box>
+                      </Flex>
+                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
+                        {discussion.content}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500" mb={1}>
+                        <Text as="span" fontWeight="semibold">Lecturer:</Text> {discussion.createdBy?.name}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500" mb={1} noOfLines={1}>
+                        {discussion.groups && discussion.groups.length > 0 ? (
+                          <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
+                        ) : (
+                          <>Group: {discussion.group?.name}</>
+                        )}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500">
+                        {new Date(discussion.createdAt).toLocaleDateString('en-US')}
+                      </Text>
+                    </CardBody>
+                  </Card>
+                ))}
+            </SimpleGrid>
+
+            {discussions.filter(discussion => discussion.isActive).length === 0 && (
+              <Text color="gray.500" textAlign="center" py={8}>No active discussions</Text>
+            )}
+
+            {/* Pagination for Active Discussions */}
+            {discussions.filter(discussion => discussion.isActive).length > discussionsPerPage && (
+              <Flex justify="center" align="center" gap={2} mt={4}>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentActiveDiscussionPage(prev => Math.max(prev - 1, 1))}
+                  isDisabled={currentActiveDiscussionPage === 1}
                 >
-                  <CardHeader>
-                    <HStack justify="space-between">
-                      <Heading size="sm">{discussion.title}</Heading>
-                      <Badge colorScheme="green">Active</Badge>
-                    </HStack>
-                  </CardHeader>
-                  <CardBody>
-                    <Text fontSize="sm" color="gray.600" noOfLines={2} mb={2}>
-                      {discussion.content}
-                    </Text>
-                    <Text fontSize="xs" color="gray.500">
-                      Lecturer: {discussion.createdBy?.name}
-                    </Text>
-                    <Text fontSize="xs" color="gray.500">
-                      {discussion.groups && discussion.groups.length > 0 ? (
-                        <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
-                      ) : (
-                        <>Group: {discussion.group?.name}</>
-                      )}
-                    </Text>
-                    <Text fontSize="xs" color="gray.500">
-                      {new Date(discussion.createdAt).toLocaleDateString('en-US')}
-                    </Text>
-                  </CardBody>
-                </Card>
-              ))}
-              {discussions.filter(discussion => discussion.isActive).length === 0 && (
-                <Text color="gray.500">No active discussions</Text>
-              )}
-            </Grid>
+                  Previous
+                </Button>
+                <Text fontSize="sm">
+                  Page {currentActiveDiscussionPage} of {Math.ceil(discussions.filter(discussion => discussion.isActive).length / discussionsPerPage)}
+                </Text>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentActiveDiscussionPage(prev => prev + 1)}
+                  isDisabled={currentActiveDiscussionPage >= Math.ceil(discussions.filter(discussion => discussion.isActive).length / discussionsPerPage)}
+                >
+                  Next
+                </Button>
+              </Flex>
+            )}
           </Box>
 
           {/* Inactive Discussions */}
           <Box>
-            <Heading size="md" mb={4}>Inactive Discussions</Heading>
-            <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-              {discussions.filter(discussion => !discussion.isActive).map((discussion) => (
-                <Card
-                  key={discussion._id}
-                  cursor="pointer"
-                  _hover={{ shadow: 'lg' }}
-                  onClick={() => navigate(`/discussion/${discussion._id}`)}
-                  opacity={0.7}
+            <Flex justify="space-between" align="center" mb={4}>
+              <Heading size="md">Inactive Discussions</Heading>
+              <Text fontSize="sm" color="gray.600">
+                {discussions.filter(discussion => !discussion.isActive).length} discussions
+              </Text>
+            </Flex>
+
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} mb={4}>
+              {discussions
+                .filter(discussion => !discussion.isActive)
+                .slice((currentInactiveDiscussionPage - 1) * discussionsPerPage, currentInactiveDiscussionPage * discussionsPerPage)
+                .map((discussion) => (
+                  <Card
+                    key={discussion._id}
+                    cursor="pointer"
+                    _hover={{ shadow: 'md', transform: 'translateY(-2px)' }}
+                    transition="all 0.2s"
+                    onClick={() => navigate(`/discussion/${discussion._id}`)}
+                    opacity={0.7}
+                  >
+                    <CardBody>
+                      <Flex justify="space-between" align="start" mb={2}>
+                        <Box flex={1}>
+                          <Heading size="sm" mb={1} noOfLines={1}>{discussion.title}</Heading>
+                          <Badge colorScheme="red" fontSize="xs">Inactive</Badge>
+                        </Box>
+                      </Flex>
+                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
+                        {discussion.content}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500" mb={1}>
+                        <Text as="span" fontWeight="semibold">Lecturer:</Text> {discussion.createdBy?.name}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500" mb={1} noOfLines={1}>
+                        {discussion.groups && discussion.groups.length > 0 ? (
+                          <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
+                        ) : (
+                          <>Group: {discussion.group?.name}</>
+                        )}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500">
+                        {new Date(discussion.createdAt).toLocaleDateString('en-US')}
+                      </Text>
+                    </CardBody>
+                  </Card>
+                ))}
+            </SimpleGrid>
+
+            {discussions.filter(discussion => !discussion.isActive).length === 0 && (
+              <Text color="gray.500" textAlign="center" py={8}>No inactive discussions</Text>
+            )}
+
+            {/* Pagination for Inactive Discussions */}
+            {discussions.filter(discussion => !discussion.isActive).length > discussionsPerPage && (
+              <Flex justify="center" align="center" gap={2} mt={4}>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentInactiveDiscussionPage(prev => Math.max(prev - 1, 1))}
+                  isDisabled={currentInactiveDiscussionPage === 1}
                 >
-                  <CardHeader>
-                    <HStack justify="space-between">
-                      <Heading size="sm">{discussion.title}</Heading>
-                      <Badge colorScheme="red">Inactive</Badge>
-                    </HStack>
-                  </CardHeader>
-                  <CardBody>
-                    <Text fontSize="sm" color="gray.600" noOfLines={2} mb={2}>
-                      {discussion.content}
-                    </Text>
-                    <Text fontSize="xs" color="gray.500">
-                      Lecturer: {discussion.createdBy?.name}
-                    </Text>
-                    <Text fontSize="xs" color="gray.500">
-                      {discussion.groups && discussion.groups.length > 0 ? (
-                        <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
-                      ) : (
-                        <>Group: {discussion.group?.name}</>
-                      )}
-                    </Text>
-                    <Text fontSize="xs" color="gray.500">
-                      {new Date(discussion.createdAt).toLocaleDateString('en-US')}
-                    </Text>
-                  </CardBody>
-                </Card>
-              ))}
-              {discussions.filter(discussion => !discussion.isActive).length === 0 && (
-                <Text color="gray.500">No inactive discussions</Text>
-              )}
-            </Grid>
+                  Previous
+                </Button>
+                <Text fontSize="sm">
+                  Page {currentInactiveDiscussionPage} of {Math.ceil(discussions.filter(discussion => !discussion.isActive).length / discussionsPerPage)}
+                </Text>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentInactiveDiscussionPage(prev => prev + 1)}
+                  isDisabled={currentInactiveDiscussionPage >= Math.ceil(discussions.filter(discussion => !discussion.isActive).length / discussionsPerPage)}
+                >
+                  Next
+                </Button>
+              </Flex>
+            )}
           </Box>
         </VStack>
       </Container>
