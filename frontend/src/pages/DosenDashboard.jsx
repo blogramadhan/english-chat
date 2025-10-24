@@ -431,6 +431,7 @@ const DosenDashboard = () => {
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} mb={4}>
               {discussions
                 .filter(discussion => discussion.isActive)
+                .sort((a, b) => a.title.localeCompare(b.title))
                 .slice((currentActiveDiscussionPage - 1) * discussionsPerPage, currentActiveDiscussionPage * discussionsPerPage)
                 .map((discussion) => (
                   <Card
