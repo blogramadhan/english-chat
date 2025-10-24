@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const Category = require('../models/Category')
-const { protect, isDosen } = require('../middleware/authMiddleware')
+const { protect, isDosen } = require('../middleware/auth')
 
 // @route   GET /api/categories
 // @desc    Get all categories

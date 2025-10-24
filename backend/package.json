@@ -7,7 +7,9 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "create-admin": "node scripts/createAdmin.js",
-    "reset-admin": "node resetAdmin.js"
+    "reset-admin": "node resetAdmin.js",
+    "seed": "node scripts/seedData.js",
+    "reset-db": "node scripts/resetDatabase.js"
   },
   "keywords": ["express", "discussion", "chat"],
   "author": "",
