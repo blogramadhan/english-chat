@@ -19,13 +19,15 @@ import {
   Stack,
   Text,
   Box,
+  Select,
 } from '@chakra-ui/react'
 import api from '../utils/api'
 
-const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups }) => {
+const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups, categories }) => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [selectedGroups, setSelectedGroups] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState('')
   const [loading, setLoading] = useState(false)
   const toast = useToast()
 
@@ -78,7 +80,8 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups }) => {
       const response = await api.post('/discussions', {
         title,
         content,
-        groups: selectedGroups
+        groups: selectedGroups,
+        category: selectedCategory || null
       })
 
       console.log('✅ Discussion created:', response.data)
@@ -92,6 +95,7 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups }) => {
       setTitle('')
       setContent('')
       setSelectedGroups([])
+      setSelectedCategory('')
       onSuccess()
       onClose()
     } catch (error) {
@@ -138,6 +142,24 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups }) => {
                   placeholder="Describe the question or discussion topic..."
                   rows={6}
                 />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Category (Optional)</FormLabel>
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  placeholder="Select category"
+                >
+                  {categories?.filter(cat => cat.isActive).map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Select>
+                <Text fontSize="xs" color="gray.500" mt={1}>
+                  Optionally assign this discussion to a category for better organization.
+                </Text>
               </FormControl>
 
               <FormControl isInvalid={selectedGroups.length === 0}>

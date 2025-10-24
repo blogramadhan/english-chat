@@ -22,13 +22,15 @@ import {
   Badge,
   Checkbox,
   Stack,
+  Select,
 } from '@chakra-ui/react'
 import api from '../utils/api'
 
-const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups }) => {
+const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups, categories }) => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [selectedGroups, setSelectedGroups] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [loading, setLoading] = useState(false)
   const toast = useToast()
@@ -55,6 +57,15 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
       }
 
       setSelectedGroups(groupIds)
+
+      // Set category
+      if (discussion.category) {
+        const categoryId = typeof discussion.category === 'string' ? discussion.category : discussion.category._id
+        setSelectedCategory(categoryId)
+      } else {
+        setSelectedCategory('')
+      }
+
       setIsActive(discussion.isActive)
     }
   }, [isOpen, discussion])
@@ -104,7 +115,8 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
         title,
         content,
         isActive,
-        groups: selectedGroups
+        groups: selectedGroups,
+        category: selectedCategory || null
       })
 
       console.log('✅ Discussion updated:', response.data)
@@ -165,6 +177,24 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
                   placeholder="Describe the question or discussion topic..."
                   rows={6}
                 />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Category (Optional)</FormLabel>
+                <Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  placeholder="Select category"
+                >
+                  {categories?.filter(cat => cat.isActive).map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Select>
+                <Text fontSize="xs" color="gray.500" mt={1}>
+                  Optionally assign this discussion to a category for better organization.
+                </Text>
               </FormControl>
 
               <FormControl isInvalid={selectedGroups.length === 0}>

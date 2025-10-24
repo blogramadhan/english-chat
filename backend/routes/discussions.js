@@ -13,7 +13,7 @@ const path = require('path');
 // @access  Private/Dosen
 router.post('/', protect, isDosen, async (req, res) => {
   try {
-    const { title, content, groups, tags } = req.body;
+    const { title, content, groups, category, tags } = req.body;
 
     // Support both single group (backward compatibility) and multiple groups
     const groupIds = Array.isArray(groups) ? groups : (groups ? [groups] : []);
@@ -40,10 +40,11 @@ router.post('/', protect, isDosen, async (req, res) => {
       createdBy: req.user._id,
       groups: groupIds,
       group: groupIds[0], // For backward compatibility
+      category: category || null,
       tags
     });
 
-    await discussion.populate('createdBy groups group', '-password');
+    await discussion.populate('createdBy groups group category', '-password');
 
     res.status(201).json(discussion);
   } catch (error) {
@@ -61,7 +62,7 @@ router.get('/', protect, async (req, res) => {
     if (req.user.role === 'dosen') {
       // Get discussions created by dosen
       discussions = await Discussion.find({ createdBy: req.user._id })
-        .populate('createdBy groups group', '-password')
+        .populate('createdBy groups group category', '-password')
         .sort('-createdAt');
     } else {
       // Get groups where mahasiswa is a member
@@ -75,7 +76,7 @@ router.get('/', protect, async (req, res) => {
           { group: { $in: groupIds } }
         ]
       })
-        .populate('createdBy groups group', '-password')
+        .populate('createdBy groups group category', '-password')
         .sort('-createdAt');
     }
 
@@ -91,7 +92,7 @@ router.get('/', protect, async (req, res) => {
 router.get('/:id', protect, async (req, res) => {
   try {
     const discussion = await Discussion.findById(req.params.id)
-      .populate('createdBy groups group', '-password');
+      .populate('createdBy groups group category', '-password');
 
     if (!discussion) {
       return res.status(404).json({ message: 'Discussion not found' });
@@ -108,7 +109,7 @@ router.get('/:id', protect, async (req, res) => {
 // @access  Private/Dosen
 router.put('/:id', protect, isDosen, async (req, res) => {
   try {
-    const { title, content, tags, isActive, groups } = req.body;
+    const { title, content, tags, isActive, groups, category } = req.body;
 
     const discussion = await Discussion.findById(req.params.id);
 
@@ -148,9 +149,10 @@ router.put('/:id', protect, isDosen, async (req, res) => {
     discussion.content = content || discussion.content;
     discussion.tags = tags || discussion.tags;
     discussion.isActive = isActive !== undefined ? isActive : discussion.isActive;
+    if (category !== undefined) discussion.category = category || null;
 
     const updatedDiscussion = await discussion.save();
-    await updatedDiscussion.populate('createdBy groups group', '-password');
+    await updatedDiscussion.populate('createdBy groups group category', '-password');
 
     res.json(updatedDiscussion);
   } catch (error) {

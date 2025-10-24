@@ -280,6 +280,11 @@ const MahasiswaDashboard = () => {
                       <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
                         {discussion.content}
                       </Text>
+                      {discussion.category && (
+                        <Badge colorScheme="purple" fontSize="xs" mb={1}>
+                          {discussion.category.name}
+                        </Badge>
+                      )}
                       <Text fontSize="xs" color="gray.500" mb={1}>
                         <Text as="span" fontWeight="semibold">Lecturer:</Text> {discussion.createdBy?.name}
                       </Text>
@@ -358,6 +363,11 @@ const MahasiswaDashboard = () => {
                       <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
                         {discussion.content}
                       </Text>
+                      {discussion.category && (
+                        <Badge colorScheme="purple" fontSize="xs" mb={1}>
+                          {discussion.category.name}
+                        </Badge>
+                      )}
                       <Text fontSize="xs" color="gray.500" mb={1}>
                         <Text as="span" fontWeight="semibold">Lecturer:</Text> {discussion.createdBy?.name}
                       </Text>
