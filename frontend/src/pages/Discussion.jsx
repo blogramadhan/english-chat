@@ -84,6 +84,12 @@ const Discussion = () => {
   const fetchDiscussion = async () => {
     try {
       const { data } = await api.get(`/discussions/${id}`)
+      console.log('📋 Discussion fetched:', {
+        id: data._id,
+        title: data.title,
+        groups: data.groups?.map(g => ({ id: g._id, name: g.name })) || [],
+        groupCount: data.groups?.length || 0
+      })
       setDiscussion(data)
 
       // Find user's group in this discussion (for mahasiswa)
@@ -94,6 +100,7 @@ const Discussion = () => {
             return memberIdStr === user._id || memberIdStr.toString() === user._id.toString()
           })
           if (isMember) {
+            console.log('👤 User group found:', { groupId: group._id, groupName: group.name })
             setUserGroup(group._id)
             break
           }
@@ -114,6 +121,17 @@ const Discussion = () => {
   const fetchMessages = async () => {
     try {
       const { data } = await api.get(`/messages/${id}`)
+      console.log('📥 Messages fetched:', {
+        count: data.length,
+        sampleMessage: data[0] ? {
+          id: data[0]._id,
+          content: data[0].content?.substring(0, 30),
+          group: data[0].group,
+          groupType: typeof data[0].group,
+          hasGroupId: data[0].group?._id ? true : false
+        } : 'No messages',
+        allGroups: [...new Set(data.map(m => m.group?._id || m.group).filter(Boolean))]
+      })
       setMessages(data)
     } catch (error) {
       toast({
@@ -198,27 +216,51 @@ const Discussion = () => {
         // Jika message tidak punya group, skip (jangan tampilkan)
         // Karena semua message seharusnya punya group di sistem multi-group
         if (!msg.group) {
-          console.log('Message without group:', msg._id, msg.content?.substring(0, 30))
+          console.log('❌ Message without group:', msg._id, msg.content?.substring(0, 30))
           return false
         }
 
-        const messageGroupId = typeof msg.group === 'object' ? msg.group._id || msg.group : msg.group
-        const shouldShow = messageGroupId === selectedGroupFilter
-
-        // Debug logging
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Filter check:', {
-            messageId: msg._id,
-            messageGroupId,
-            selectedGroupFilter,
-            shouldShow,
-            groupObject: msg.group
-          })
+        // Extract group ID - handle berbagai format
+        let messageGroupId
+        if (typeof msg.group === 'object' && msg.group !== null) {
+          // Group is populated object: { _id: '...', name: '...', ... }
+          messageGroupId = msg.group._id
+        } else if (typeof msg.group === 'string') {
+          // Group is just an ObjectId string
+          messageGroupId = msg.group
+        } else {
+          console.warn('⚠️ Unknown group format:', msg.group)
+          return false
         }
+
+        // Convert both to string for comparison
+        const messageGroupStr = String(messageGroupId)
+        const selectedGroupStr = String(selectedGroupFilter)
+        const shouldShow = messageGroupStr === selectedGroupStr
+
+        // Debug logging - always show for troubleshooting
+        console.log('🔍 Filter check:', {
+          messageId: msg._id,
+          messageContent: msg.content?.substring(0, 30),
+          messageGroupId: messageGroupStr,
+          messageGroupType: typeof msg.group,
+          selectedGroupFilter: selectedGroupStr,
+          shouldShow,
+          comparison: `"${messageGroupStr}" === "${selectedGroupStr}"`,
+          groupObject: msg.group
+        })
 
         return shouldShow
       })
     : messages
+
+  // Log summary
+  console.log('📊 Filter Summary:', {
+    totalMessages: messages.length,
+    displayedMessages: displayedMessages.length,
+    selectedGroupFilter,
+    isFiltering: user?.role === 'dosen' && selectedGroupFilter !== 'all'
+  })
 
   if (loading) return null
 
@@ -261,7 +303,15 @@ const Discussion = () => {
                 size="sm"
                 maxW="300px"
                 value={selectedGroupFilter}
-                onChange={(e) => setSelectedGroupFilter(e.target.value)}
+                onChange={(e) => {
+                  const newValue = e.target.value
+                  console.log('🎯 Group filter changed:', {
+                    oldValue: selectedGroupFilter,
+                    newValue: newValue,
+                    availableGroups: discussion.groups.map(g => ({ id: g._id, name: g.name }))
+                  })
+                  setSelectedGroupFilter(newValue)
+                }}
               >
                 <option value="all">All Groups</option>
                 {discussion.groups.map((group) => (
