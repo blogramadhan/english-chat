@@ -24,3 +24,30 @@ export const getAvatarUrl = (avatarPath) => {
   // In development, Vite proxy will handle the /uploads path
   return avatarPath
 }
+
+/**
+ * Get the full URL for uploaded files (images, documents, etc)
+ * @param {string} filePath - The file path stored in database (e.g., "/uploads/file-123.jpg")
+ * @returns {string} - The full URL to the file
+ */
+export const getFileUrl = (filePath) => {
+  if (!filePath) {
+    return ''
+  }
+
+  // If the path is already a full URL, return it as is
+  if (filePath.startsWith('http')) {
+    return filePath
+  }
+
+  // In production, we need to prepend the API URL to the file path
+  const API_URL = import.meta.env.VITE_API_URL
+  if (API_URL) {
+    // Remove /api from API_URL if it exists, and append the file path
+    const baseUrl = API_URL.replace('/api', '')
+    return `${baseUrl}${filePath}`
+  }
+
+  // In development, Vite proxy will handle the /uploads path
+  return filePath
+}

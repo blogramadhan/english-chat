@@ -9,7 +9,7 @@ import {
   Link,
 } from '@chakra-ui/react'
 import { AttachmentIcon } from '@chakra-ui/icons'
-import { getAvatarUrl } from '../utils/avatar'
+import { getAvatarUrl, getFileUrl } from '../utils/avatar'
 
 const ChatBox = ({ messages, currentUser }) => {
   const messagesEndRef = useRef(null)
@@ -34,14 +34,14 @@ const ChatBox = ({ messages, currentUser }) => {
         <Box>
           {isImage ? (
             <Image
-              src={`http://localhost:5000${message.fileUrl}`}
+              src={getFileUrl(message.fileUrl)}
               alt={message.fileName}
               maxW="300px"
               borderRadius="md"
             />
           ) : (
             <Link
-              href={`http://localhost:5000${message.fileUrl}`}
+              href={getFileUrl(message.fileUrl)}
               isExternal
               color="blue.500"
             >
