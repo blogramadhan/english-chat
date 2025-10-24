@@ -10,6 +10,7 @@ import {
   Button,
   FormControl,
   FormLabel,
+  FormErrorMessage,
   Input,
   Textarea,
   VStack,
@@ -60,16 +61,31 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
 
   const handleGroupToggle = (groupId) => {
     setSelectedGroups(prev => {
-      if (prev.includes(groupId)) {
-        return prev.filter(id => id !== groupId)
-      } else {
-        return [...prev, groupId]
-      }
+      const newSelection = prev.includes(groupId)
+        ? prev.filter(id => id !== groupId)
+        : [...prev, groupId]
+
+      console.log('✅ Group toggled (Edit):', {
+        groupId,
+        action: prev.includes(groupId) ? 'removed' : 'added',
+        selectedGroups: newSelection
+      })
+
+      return newSelection
     })
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    console.log('🚀 Update discussion:', {
+      discussionId: discussion._id,
+      title,
+      content: content.substring(0, 50),
+      selectedGroups,
+      groupCount: selectedGroups.length,
+      isActive
+    })
 
     if (selectedGroups.length === 0) {
       toast({
@@ -84,12 +100,14 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
     setLoading(true)
 
     try {
-      await api.put(`/discussions/${discussion._id}`, {
+      const response = await api.put(`/discussions/${discussion._id}`, {
         title,
         content,
         isActive,
         groups: selectedGroups
       })
+
+      console.log('✅ Discussion updated:', response.data)
 
       toast({
         title: 'Discussion updated successfully',
@@ -98,12 +116,15 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
       })
 
       onSuccess()
+      handleClose()
     } catch (error) {
+      console.error('❌ Failed to update discussion:', error.response?.data || error.message)
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to update discussion',
         status: 'error',
-        duration: 3000,
+        duration: 5000,
+        isClosable: true,
       })
     } finally {
       setLoading(false)
@@ -146,36 +167,47 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
                 />
               </FormControl>
 
-              <FormControl isRequired>
+              <FormControl isInvalid={selectedGroups.length === 0}>
                 <FormLabel>
-                  Groups ({selectedGroups.length} selected)
+                  Groups ({selectedGroups.length} selected) <Text as="span" color="red.500">*</Text>
                 </FormLabel>
                 <Box
                   maxH="200px"
                   overflowY="auto"
                   border="1px"
-                  borderColor="gray.200"
+                  borderColor={selectedGroups.length === 0 ? "red.200" : "gray.200"}
                   borderRadius="md"
                   p={3}
                 >
                   {groups && groups.length === 0 ? (
-                    <Text color="gray.500" fontSize="sm">No groups available</Text>
+                    <Text color="gray.500" fontSize="sm">No groups available. Please create a group first.</Text>
                   ) : (
-                    <Stack spacing={2}>
-                      {groups
-                        ?.filter(group => group.isActive)
-                        .map((group) => (
-                          <Checkbox
-                            key={group._id}
-                            isChecked={selectedGroups.includes(group._id)}
-                            onChange={() => handleGroupToggle(group._id)}
-                          >
-                            {group.name}
-                          </Checkbox>
-                        ))}
-                    </Stack>
+                    <>
+                      {groups?.filter(group => group.isActive).length === 0 ? (
+                        <Text color="orange.500" fontSize="sm">
+                          No active groups available. Please activate a group first.
+                        </Text>
+                      ) : (
+                        <Stack spacing={2}>
+                          {groups
+                            ?.filter(group => group.isActive)
+                            .map((group) => (
+                              <Checkbox
+                                key={group._id}
+                                isChecked={selectedGroups.includes(group._id)}
+                                onChange={() => handleGroupToggle(group._id)}
+                              >
+                                {group.name} ({group.members?.length || 0} members)
+                              </Checkbox>
+                            ))}
+                        </Stack>
+                      )}
+                    </>
                   )}
                 </Box>
+                <FormErrorMessage>
+                  Please select at least one group for this discussion.
+                </FormErrorMessage>
                 <Text fontSize="xs" color="gray.500" mt={1}>
                   You can update which groups this discussion is available to
                 </Text>
@@ -209,7 +241,12 @@ const EditDiscussionModal = ({ isOpen, onClose, onSuccess, discussion, groups })
             <Button variant="ghost" mr={3} onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit" colorScheme="brand" isLoading={loading}>
+            <Button
+              type="submit"
+              colorScheme="brand"
+              isLoading={loading}
+              isDisabled={!title || !content || selectedGroups.length === 0}
+            >
               Update Discussion
             </Button>
           </ModalFooter>
