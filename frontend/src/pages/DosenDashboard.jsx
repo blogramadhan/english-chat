@@ -22,6 +22,11 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   SimpleGrid,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
 } from '@chakra-ui/react'
 import { AddIcon, EditIcon, DownloadIcon, DeleteIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
@@ -227,20 +232,26 @@ const DosenDashboard = () => {
       <Navbar />
       <Container maxW="container.xl" py={8}>
         <VStack spacing={8} align="stretch">
-          <HStack justify="space-between">
-            <Heading size="lg">Lecturer Dashboard</Heading>
-            <HStack>
-              <Button leftIcon={<AddIcon />} colorScheme="brand" onClick={onGroupOpen}>
-                Create Group
-              </Button>
-              <Button leftIcon={<AddIcon />} colorScheme="green" onClick={onDiscussionOpen}>
-                Create Discussion
-              </Button>
-            </HStack>
-          </HStack>
+          <Heading size="lg">Lecturer Dashboard</Heading>
 
-          {/* Active Groups */}
-          <Box>
+          <Tabs colorScheme="brand" variant="enclosed">
+            <TabList>
+              <Tab>Groups</Tab>
+              <Tab>Discussions</Tab>
+            </TabList>
+
+            <TabPanels>
+              {/* Groups Tab Panel */}
+              <TabPanel px={0}>
+                <VStack spacing={6} align="stretch">
+                  <Flex justify="flex-end">
+                    <Button leftIcon={<AddIcon />} colorScheme="brand" onClick={onGroupOpen}>
+                      Create Group
+                    </Button>
+                  </Flex>
+
+                  {/* Active Groups */}
+                  <Box>
             <Flex justify="space-between" align="center" mb={4}>
               <Heading size="md">Active Groups</Heading>
               <Text fontSize="sm" color="gray.600">
@@ -396,9 +407,20 @@ const DosenDashboard = () => {
               </Flex>
             )}
           </Box>
+                </VStack>
+              </TabPanel>
 
-          {/* Active Discussions */}
-          <Box>
+              {/* Discussions Tab Panel */}
+              <TabPanel px={0}>
+                <VStack spacing={6} align="stretch">
+                  <Flex justify="flex-end">
+                    <Button leftIcon={<AddIcon />} colorScheme="green" onClick={onDiscussionOpen}>
+                      Create Discussion
+                    </Button>
+                  </Flex>
+
+                  {/* Active Discussions */}
+                  <Box>
             <Flex justify="space-between" align="center" mb={4}>
               <Heading size="md">Active Discussions</Heading>
               <Text fontSize="sm" color="gray.600">
@@ -603,6 +625,10 @@ const DosenDashboard = () => {
               </Flex>
             )}
           </Box>
+                </VStack>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </VStack>
       </Container>
 

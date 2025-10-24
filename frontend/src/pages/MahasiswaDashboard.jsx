@@ -15,6 +15,11 @@ import {
   useDisclosure,
   Flex,
   SimpleGrid,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
 } from '@chakra-ui/react'
 import { ViewIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
@@ -74,8 +79,18 @@ const MahasiswaDashboard = () => {
         <VStack spacing={8} align="stretch">
           <Heading size="lg">Student Dashboard</Heading>
 
-          {/* Active Groups */}
-          <Box>
+          <Tabs colorScheme="brand" variant="enclosed">
+            <TabList>
+              <Tab>Groups</Tab>
+              <Tab>Discussions</Tab>
+            </TabList>
+
+            <TabPanels>
+              {/* Groups Tab Panel */}
+              <TabPanel px={0}>
+                <VStack spacing={6} align="stretch">
+                  {/* Active Groups */}
+                  <Box>
             <Flex justify="space-between" align="center" mb={4}>
               <Heading size="md">Active Groups</Heading>
               <Text fontSize="sm" color="gray.600">
@@ -227,9 +242,14 @@ const MahasiswaDashboard = () => {
               </Flex>
             )}
           </Box>
+                </VStack>
+              </TabPanel>
 
-          {/* Active Discussions */}
-          <Box>
+              {/* Discussions Tab Panel */}
+              <TabPanel px={0}>
+                <VStack spacing={6} align="stretch">
+                  {/* Active Discussions */}
+                  <Box>
             <Flex justify="space-between" align="center" mb={4}>
               <Heading size="md">Active Discussions</Heading>
               <Text fontSize="sm" color="gray.600">
@@ -382,6 +402,10 @@ const MahasiswaDashboard = () => {
               </Flex>
             )}
           </Box>
+                </VStack>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </VStack>
       </Container>
 
