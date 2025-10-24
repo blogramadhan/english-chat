@@ -10,6 +10,7 @@ import {
   Button,
   FormControl,
   FormLabel,
+  FormErrorMessage,
   Input,
   Textarea,
   VStack,
@@ -139,15 +140,15 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups }) => {
                 />
               </FormControl>
 
-              <FormControl isRequired>
+              <FormControl isInvalid={selectedGroups.length === 0}>
                 <FormLabel>
-                  Groups ({selectedGroups.length} selected)
+                  Groups ({selectedGroups.length} selected) <Text as="span" color="red.500">*</Text>
                 </FormLabel>
                 <Box
                   maxH="200px"
                   overflowY="auto"
                   border="1px"
-                  borderColor="gray.200"
+                  borderColor={selectedGroups.length === 0 ? "red.200" : "gray.200"}
                   borderRadius="md"
                   p={3}
                 >
@@ -177,6 +178,9 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups }) => {
                     </>
                   )}
                 </Box>
+                <FormErrorMessage>
+                  Please select at least one group for this discussion.
+                </FormErrorMessage>
                 <Text fontSize="xs" color="gray.500" mt={1}>
                   Select one or more groups for this discussion. Only active groups are shown.
                 </Text>
