@@ -33,6 +33,7 @@ const Discussion = () => {
   const [loading, setLoading] = useState(true)
   const [userGroup, setUserGroup] = useState(null) // Track user's group in this discussion
   const [selectedGroupFilter, setSelectedGroupFilter] = useState('all') // For dosen to filter by group
+  const [replyToMessage, setReplyToMessage] = useState(null) // Track message being replied to
 
   useEffect(() => {
     fetchDiscussion()
@@ -55,14 +56,16 @@ const Discussion = () => {
         // For mahasiswa: only show messages from their own group
         if (user.role === 'mahasiswa' && userGroup) {
           // If message has a group, check if it matches user's group
-          if (message.group && message.group !== userGroup) {
+          const messageGroupId = typeof message.group === 'object' ? message.group._id || message.group : message.group
+          if (message.group && messageGroupId !== userGroup) {
             return prev // Don't add messages from other groups
           }
         }
 
         // For dosen: filter by selected group if not 'all'
         if (user.role === 'dosen' && selectedGroupFilter !== 'all') {
-          if (message.group !== selectedGroupFilter) {
+          const messageGroupId = typeof message.group === 'object' ? message.group._id || message.group : message.group
+          if (message.group && messageGroupId !== selectedGroupFilter) {
             return prev // Don't add messages from other groups
           }
         }
@@ -86,7 +89,10 @@ const Discussion = () => {
       // Find user's group in this discussion (for mahasiswa)
       if (user.role === 'mahasiswa' && data.groups && data.groups.length > 0) {
         for (const group of data.groups) {
-          const isMember = group.members?.some(memberId => memberId === user._id)
+          const isMember = group.members?.some(memberId => {
+            const memberIdStr = typeof memberId === 'object' ? memberId._id || memberId : memberId
+            return memberIdStr === user._id || memberIdStr.toString() === user._id.toString()
+          })
           if (isMember) {
             setUserGroup(group._id)
             break
@@ -134,6 +140,9 @@ const Discussion = () => {
         discussionId: id,
         ...data
       })
+
+      // Clear reply state after sending
+      setReplyToMessage(null)
     } catch (error) {
       toast({
         title: 'Error',
@@ -142,6 +151,14 @@ const Discussion = () => {
         duration: 3000,
       })
     }
+  }
+
+  const handleReply = (message) => {
+    setReplyToMessage(message)
+  }
+
+  const handleCancelReply = () => {
+    setReplyToMessage(null)
   }
 
   const handleSendFile = async (file, content) => {
@@ -177,7 +194,11 @@ const Discussion = () => {
 
   // Filter messages for display based on selected group (for dosen)
   const displayedMessages = user?.role === 'dosen' && selectedGroupFilter !== 'all'
-    ? messages.filter(msg => msg.group === selectedGroupFilter || !msg.group)
+    ? messages.filter(msg => {
+        if (!msg.group) return true // Show messages without group
+        const messageGroupId = typeof msg.group === 'object' ? msg.group._id || msg.group : msg.group
+        return messageGroupId === selectedGroupFilter
+      })
     : messages
 
   if (loading) return null
@@ -235,11 +256,17 @@ const Discussion = () => {
 
           <Divider />
 
-          <ChatBox messages={displayedMessages} currentUser={user} />
+          <ChatBox
+            messages={displayedMessages}
+            currentUser={user}
+            onReply={handleReply}
+          />
 
           <MessageInput
             onSendMessage={handleSendMessage}
             onSendFile={handleSendFile}
+            replyToMessage={replyToMessage}
+            onCancelReply={handleCancelReply}
           />
         </VStack>
       </Container>

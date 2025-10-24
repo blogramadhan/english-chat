@@ -11,12 +11,23 @@ const Group = require('../models/Group');
 // @access  Private
 router.post('/', protect, async (req, res) => {
   try {
-    const { discussion, content, messageType } = req.body;
+    const { discussion, content, messageType, replyTo } = req.body;
 
     // Verify discussion exists
     const discussionDoc = await Discussion.findById(discussion).populate('groups');
     if (!discussionDoc) {
       return res.status(404).json({ message: 'Discussion not found' });
+    }
+
+    // If replyTo is provided, verify the message exists and belongs to the same discussion
+    if (replyTo) {
+      const replyToMessage = await Message.findById(replyTo);
+      if (!replyToMessage) {
+        return res.status(404).json({ message: 'Reply target message not found' });
+      }
+      if (replyToMessage.discussion.toString() !== discussion) {
+        return res.status(400).json({ message: 'Cannot reply to message from different discussion' });
+      }
     }
 
     // Find which group the user belongs to in this discussion
@@ -36,10 +47,19 @@ router.post('/', protect, async (req, res) => {
       sender: req.user._id,
       group: userGroup, // Add group to message
       content,
-      messageType: messageType || 'text'
+      messageType: messageType || 'text',
+      replyTo: replyTo || null
     });
 
     await message.populate('sender', '-password');
+
+    // Populate replyTo message if exists
+    if (message.replyTo) {
+      await message.populate({
+        path: 'replyTo',
+        populate: { path: 'sender', select: '-password' }
+      });
+    }
 
     res.status(201).json(message);
   } catch (error) {
@@ -110,6 +130,10 @@ router.get('/:discussionId', protect, async (req, res) => {
     if (req.user.role === 'dosen') {
       const messages = await Message.find({ discussion: req.params.discussionId })
         .populate('sender', '-password')
+        .populate({
+          path: 'replyTo',
+          populate: { path: 'sender', select: '-password' }
+        })
         .sort('createdAt');
       return res.json(messages);
     }
@@ -134,6 +158,10 @@ router.get('/:discussionId', protect, async (req, res) => {
 
     const messages = await Message.find(query)
       .populate('sender', '-password')
+      .populate({
+        path: 'replyTo',
+        populate: { path: 'sender', select: '-password' }
+      })
       .sort('createdAt');
 
     res.json(messages);

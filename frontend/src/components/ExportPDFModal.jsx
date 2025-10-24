@@ -27,8 +27,11 @@ const ExportPDFModal = ({ isOpen, onClose, discussion }) => {
       const userInfo = localStorage.getItem('userInfo')
       const { token } = JSON.parse(userInfo)
 
+      // Get API URL - use environment variable if set, otherwise use relative path with proxy
+      const API_URL = import.meta.env.VITE_API_URL || ''
+
       // Build URL with group parameter
-      let url = `/api/discussions/${discussion._id}/export-pdf`
+      let url = `${API_URL}/api/discussions/${discussion._id}/export-pdf`
       if (selectedGroup !== 'all') {
         url += `?group=${selectedGroup}`
       }

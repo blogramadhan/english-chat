@@ -16,6 +16,11 @@ const messageSchema = new mongoose.Schema({
     ref: 'Group',
     required: false // Optional for backward compatibility
   },
+  replyTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message',
+    required: false // Optional - only set when replying to a message
+  },
   content: {
     type: String,
     required: true
