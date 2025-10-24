@@ -187,7 +187,7 @@ router.delete('/:id', protect, isDosen, async (req, res) => {
 router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
   try {
     const discussion = await Discussion.findById(req.params.id)
-      .populate('createdBy group', '-password');
+      .populate('createdBy groups group', '-password');
 
     if (!discussion) {
       return res.status(404).json({ message: 'Discussion not found' });
@@ -198,8 +198,19 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    // Get all messages for this discussion
-    const messages = await Message.find({ discussion: req.params.id })
+    // Get group filter from query parameter
+    const groupFilter = req.query.group;
+
+    // Build message query
+    const messageQuery = { discussion: req.params.id };
+
+    // If group filter is specified, filter messages by that group
+    if (groupFilter && groupFilter !== 'all') {
+      messageQuery.group = groupFilter;
+    }
+
+    // Get messages for this discussion (filtered by group if specified)
+    const messages = await Message.find(messageQuery)
       .populate('sender', 'name email role')
       .sort('createdAt');
 
@@ -247,7 +258,18 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
     doc.fontSize(14).font('Helvetica').text('Discussion Information', { underline: true });
     doc.fontSize(10).font('Helvetica');
     doc.text(`Title: ${sanitizeText(discussion.title)}`);
-    doc.text(`Group: ${sanitizeText(discussion.group?.name) || 'N/A'}`);
+
+    // Show group information based on filter
+    if (groupFilter && groupFilter !== 'all') {
+      const selectedGroup = discussion.groups?.find(g => g._id.toString() === groupFilter);
+      doc.text(`Group: ${sanitizeText(selectedGroup?.name) || 'N/A'}`);
+    } else if (discussion.groups && discussion.groups.length > 0) {
+      const groupNames = discussion.groups.map(g => sanitizeText(g.name)).join(', ');
+      doc.text(`Groups: ${groupNames}`);
+    } else {
+      doc.text(`Group: ${sanitizeText(discussion.group?.name) || 'N/A'}`);
+    }
+
     doc.text(`Lecturer: ${sanitizeText(discussion.createdBy?.name) || 'N/A'}`);
     doc.text(`Created: ${new Date(discussion.createdAt).toLocaleString('en-US')}`);
     doc.text(`Status: ${discussion.isActive ? 'Active' : 'Inactive'}`);

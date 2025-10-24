@@ -11,6 +11,7 @@ import {
   Divider,
   Badge,
   IconButton,
+  Select,
 } from '@chakra-ui/react'
 import { ArrowBackIcon } from '@chakra-ui/icons'
 import { io } from 'socket.io-client'
@@ -30,6 +31,8 @@ const Discussion = () => {
   const [discussion, setDiscussion] = useState(null)
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
+  const [userGroup, setUserGroup] = useState(null) // Track user's group in this discussion
+  const [selectedGroupFilter, setSelectedGroupFilter] = useState('all') // For dosen to filter by group
 
   useEffect(() => {
     fetchDiscussion()
@@ -48,6 +51,22 @@ const Discussion = () => {
         // Check if message already exists (by _id or timestamp + sender)
         const exists = prev.some(m => m._id === message._id)
         if (exists) return prev
+
+        // For mahasiswa: only show messages from their own group
+        if (user.role === 'mahasiswa' && userGroup) {
+          // If message has a group, check if it matches user's group
+          if (message.group && message.group !== userGroup) {
+            return prev // Don't add messages from other groups
+          }
+        }
+
+        // For dosen: filter by selected group if not 'all'
+        if (user.role === 'dosen' && selectedGroupFilter !== 'all') {
+          if (message.group !== selectedGroupFilter) {
+            return prev // Don't add messages from other groups
+          }
+        }
+
         return [...prev, message]
       })
     })
@@ -57,12 +76,23 @@ const Discussion = () => {
         socketRef.current.disconnect()
       }
     }
-  }, [id])
+  }, [id, user, userGroup, selectedGroupFilter])
 
   const fetchDiscussion = async () => {
     try {
       const { data } = await api.get(`/discussions/${id}`)
       setDiscussion(data)
+
+      // Find user's group in this discussion (for mahasiswa)
+      if (user.role === 'mahasiswa' && data.groups && data.groups.length > 0) {
+        for (const group of data.groups) {
+          const isMember = group.members?.some(memberId => memberId === user._id)
+          if (isMember) {
+            setUserGroup(group._id)
+            break
+          }
+        }
+      }
     } catch (error) {
       toast({
         title: 'Error',
@@ -145,6 +175,11 @@ const Discussion = () => {
     }
   }
 
+  // Filter messages for display based on selected group (for dosen)
+  const displayedMessages = user?.role === 'dosen' && selectedGroupFilter !== 'all'
+    ? messages.filter(msg => msg.group === selectedGroupFilter || !msg.group)
+    : messages
+
   if (loading) return null
 
   return (
@@ -178,9 +213,29 @@ const Discussion = () => {
             </Box>
           </HStack>
 
+          {/* Group selector for dosen */}
+          {user?.role === 'dosen' && discussion?.groups && discussion.groups.length > 1 && (
+            <HStack>
+              <Text fontSize="sm" fontWeight="medium">View Group:</Text>
+              <Select
+                size="sm"
+                maxW="300px"
+                value={selectedGroupFilter}
+                onChange={(e) => setSelectedGroupFilter(e.target.value)}
+              >
+                <option value="all">All Groups</option>
+                {discussion.groups.map((group) => (
+                  <option key={group._id} value={group._id}>
+                    {group.name}
+                  </option>
+                ))}
+              </Select>
+            </HStack>
+          )}
+
           <Divider />
 
-          <ChatBox messages={messages} currentUser={user} />
+          <ChatBox messages={displayedMessages} currentUser={user} />
 
           <MessageInput
             onSendMessage={handleSendMessage}

@@ -49,6 +49,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send-message', (data) => {
+    // Emit message to discussion room
+    // Backend already filtered messages by group when fetching
+    // Real-time messages will be filtered on client side based on group
     io.to(data.discussionId).emit('receive-message', data);
   });
 

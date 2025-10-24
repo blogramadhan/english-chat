@@ -11,6 +11,11 @@ const messageSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  group: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group',
+    required: false // Optional for backward compatibility
+  },
   content: {
     type: String,
     required: true

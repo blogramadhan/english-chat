@@ -4,6 +4,7 @@ const { protect } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const Message = require('../models/Message');
 const Discussion = require('../models/Discussion');
+const Group = require('../models/Group');
 
 // @route   POST /api/messages
 // @desc    Send message in discussion
@@ -13,14 +14,27 @@ router.post('/', protect, async (req, res) => {
     const { discussion, content, messageType } = req.body;
 
     // Verify discussion exists
-    const discussionDoc = await Discussion.findById(discussion);
+    const discussionDoc = await Discussion.findById(discussion).populate('groups');
     if (!discussionDoc) {
       return res.status(404).json({ message: 'Discussion not found' });
+    }
+
+    // Find which group the user belongs to in this discussion
+    let userGroup = null;
+    if (discussionDoc.groups && discussionDoc.groups.length > 0) {
+      for (const group of discussionDoc.groups) {
+        const isMember = group.members.some(memberId => memberId.toString() === req.user._id.toString());
+        if (isMember) {
+          userGroup = group._id;
+          break;
+        }
+      }
     }
 
     const message = await Message.create({
       discussion,
       sender: req.user._id,
+      group: userGroup, // Add group to message
       content,
       messageType: messageType || 'text'
     });
@@ -45,14 +59,27 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
     }
 
     // Verify discussion exists
-    const discussionDoc = await Discussion.findById(discussion);
+    const discussionDoc = await Discussion.findById(discussion).populate('groups');
     if (!discussionDoc) {
       return res.status(404).json({ message: 'Discussion not found' });
+    }
+
+    // Find which group the user belongs to in this discussion
+    let userGroup = null;
+    if (discussionDoc.groups && discussionDoc.groups.length > 0) {
+      for (const group of discussionDoc.groups) {
+        const isMember = group.members.some(memberId => memberId.toString() === req.user._id.toString());
+        if (isMember) {
+          userGroup = group._id;
+          break;
+        }
+      }
     }
 
     const message = await Message.create({
       discussion,
       sender: req.user._id,
+      group: userGroup, // Add group to message
       content: content || req.file.originalname,
       messageType: 'file',
       fileUrl: `/uploads/${req.file.filename}`,
@@ -69,11 +96,43 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
 });
 
 // @route   GET /api/messages/:discussionId
-// @desc    Get messages for a discussion
+// @desc    Get messages for a discussion (filtered by user's group)
 // @access  Private
 router.get('/:discussionId', protect, async (req, res) => {
   try {
-    const messages = await Message.find({ discussion: req.params.discussionId })
+    // Get discussion with groups
+    const discussionDoc = await Discussion.findById(req.params.discussionId).populate('groups');
+    if (!discussionDoc) {
+      return res.status(404).json({ message: 'Discussion not found' });
+    }
+
+    // If user is dosen (creator), show all messages
+    if (req.user.role === 'dosen') {
+      const messages = await Message.find({ discussion: req.params.discussionId })
+        .populate('sender', '-password')
+        .sort('createdAt');
+      return res.json(messages);
+    }
+
+    // For mahasiswa, find which group they belong to
+    let userGroup = null;
+    if (discussionDoc.groups && discussionDoc.groups.length > 0) {
+      for (const group of discussionDoc.groups) {
+        const isMember = group.members.some(memberId => memberId.toString() === req.user._id.toString());
+        if (isMember) {
+          userGroup = group._id;
+          break;
+        }
+      }
+    }
+
+    // Filter messages by user's group
+    const query = { discussion: req.params.discussionId };
+    if (userGroup) {
+      query.group = userGroup; // Only show messages from user's group
+    }
+
+    const messages = await Message.find(query)
       .populate('sender', '-password')
       .sort('createdAt');
 

@@ -24,6 +24,7 @@ import CreateGroupModal from '../components/CreateGroupModal'
 import CreateDiscussionModal from '../components/CreateDiscussionModal'
 import EditGroupModal from '../components/EditGroupModal'
 import EditDiscussionModal from '../components/EditDiscussionModal'
+import ExportPDFModal from '../components/ExportPDFModal'
 import Navbar from '../components/Navbar'
 
 const DosenDashboard = () => {
@@ -31,6 +32,7 @@ const DosenDashboard = () => {
   const [discussions, setDiscussions] = useState([])
   const [selectedGroup, setSelectedGroup] = useState(null)
   const [selectedDiscussion, setSelectedDiscussion] = useState(null)
+  const [selectedDiscussionForPDF, setSelectedDiscussionForPDF] = useState(null)
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -39,6 +41,7 @@ const DosenDashboard = () => {
   const { isOpen: isDiscussionOpen, onOpen: onDiscussionOpen, onClose: onDiscussionClose } = useDisclosure()
   const { isOpen: isEditGroupOpen, onOpen: onEditGroupOpen, onClose: onEditGroupClose } = useDisclosure()
   const { isOpen: isEditDiscussionOpen, onOpen: onEditDiscussionOpen, onClose: onEditDiscussionClose } = useDisclosure()
+  const { isOpen: isExportPDFOpen, onOpen: onExportPDFOpen, onClose: onExportPDFClose } = useDisclosure()
 
   useEffect(() => {
     fetchData()
@@ -95,47 +98,10 @@ const DosenDashboard = () => {
     onEditDiscussionClose()
   }
 
-  const handleDownloadPDF = async (e, discussionId, discussionTitle) => {
+  const handleDownloadPDF = (e, discussion) => {
     e.stopPropagation() // Prevent card click
-
-    try {
-      const userInfo = localStorage.getItem('userInfo')
-      const { token } = JSON.parse(userInfo)
-
-      const response = await fetch(`/api/discussions/${discussionId}/export-pdf`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to download PDF')
-      }
-
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `discussion-${discussionTitle.replace(/\s+/g, '-')}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-
-      toast({
-        title: 'PDF downloaded successfully',
-        status: 'success',
-        duration: 3000,
-      })
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to download PDF',
-        status: 'error',
-        duration: 3000,
-      })
-    }
+    setSelectedDiscussionForPDF(discussion)
+    onExportPDFOpen()
   }
 
   return (
@@ -252,7 +218,7 @@ const DosenDashboard = () => {
                           size="sm"
                           colorScheme="green"
                           variant="ghost"
-                          onClick={(e) => handleDownloadPDF(e, discussion._id, discussion.title)}
+                          onClick={(e) => handleDownloadPDF(e, discussion)}
                           aria-label="Download PDF"
                           title="Download PDF"
                         />
@@ -313,7 +279,7 @@ const DosenDashboard = () => {
                           size="sm"
                           colorScheme="green"
                           variant="ghost"
-                          onClick={(e) => handleDownloadPDF(e, discussion._id, discussion.title)}
+                          onClick={(e) => handleDownloadPDF(e, discussion)}
                           aria-label="Download PDF"
                           title="Download PDF"
                         />
@@ -380,6 +346,12 @@ const DosenDashboard = () => {
         onSuccess={handleDiscussionUpdated}
         discussion={selectedDiscussion}
         groups={groups}
+      />
+
+      <ExportPDFModal
+        isOpen={isExportPDFOpen}
+        onClose={onExportPDFClose}
+        discussion={selectedDiscussionForPDF}
       />
     </Box>
   )
