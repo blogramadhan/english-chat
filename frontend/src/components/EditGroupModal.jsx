@@ -22,7 +22,10 @@ import {
   Text,
   Box,
   Badge,
+  InputGroup,
+  InputLeftElement,
 } from '@chakra-ui/react'
+import { SearchIcon } from '@chakra-ui/icons'
 import api from '../utils/api'
 
 const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
@@ -31,6 +34,7 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
   const [isActive, setIsActive] = useState(true)
   const [mahasiswa, setMahasiswa] = useState([])
   const [selectedMembers, setSelectedMembers] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const toast = useToast()
 
@@ -94,8 +98,28 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
     setDescription('')
     setIsActive(true)
     setSelectedMembers([])
+    setSearchQuery('')
     onClose()
   }
+
+  // Filter mahasiswa berdasarkan search query
+  const filteredMahasiswa = mahasiswa.filter((m) => {
+    const query = searchQuery.toLowerCase()
+    return (
+      m.name.toLowerCase().includes(query) ||
+      m.email.toLowerCase().includes(query) ||
+      (m.nim && m.nim.toLowerCase().includes(query))
+    )
+  })
+
+  // Sort: mahasiswa yang dipilih di atas
+  const sortedMahasiswa = [...filteredMahasiswa].sort((a, b) => {
+    const aSelected = selectedMembers.includes(a._id)
+    const bSelected = selectedMembers.includes(b._id)
+    if (aSelected && !bSelected) return -1
+    if (!aSelected && bSelected) return 1
+    return 0
+  })
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="xl">
@@ -151,6 +175,16 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
                 <FormLabel>
                   Student Members ({selectedMembers.length} selected)
                 </FormLabel>
+                <InputGroup mb={3}>
+                  <InputLeftElement pointerEvents="none">
+                    <SearchIcon color="gray.300" />
+                  </InputLeftElement>
+                  <Input
+                    placeholder="Search by name, email, or NIM..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </InputGroup>
                 <Box
                   maxH="300px"
                   overflowY="auto"
@@ -161,21 +195,36 @@ const EditGroupModal = ({ isOpen, onClose, onSuccess, group }) => {
                 >
                   <CheckboxGroup value={selectedMembers} onChange={setSelectedMembers}>
                     <Stack spacing={2}>
-                      {mahasiswa.map((m) => (
-                        <Checkbox key={m._id} value={m._id}>
-                          <HStack spacing={2}>
-                            <Text>{m.name}</Text>
-                            <Text fontSize="sm" color="gray.500">
-                              ({m.email})
-                            </Text>
-                            {m.nim && (
-                              <Badge colorScheme="cyan" fontSize="xs">
-                                {m.nim}
-                              </Badge>
-                            )}
-                          </HStack>
-                        </Checkbox>
-                      ))}
+                      {sortedMahasiswa.length > 0 ? (
+                        sortedMahasiswa.map((m) => {
+                          const isSelected = selectedMembers.includes(m._id)
+                          return (
+                            <Checkbox
+                              key={m._id}
+                              value={m._id}
+                              colorScheme="red"
+                            >
+                              <HStack spacing={2}>
+                                <Text color={isSelected ? 'red.600' : 'inherit'} fontWeight={isSelected ? 'semibold' : 'normal'}>
+                                  {m.name}
+                                </Text>
+                                <Text fontSize="sm" color={isSelected ? 'red.500' : 'gray.500'}>
+                                  ({m.email})
+                                </Text>
+                                {m.nim && (
+                                  <Badge colorScheme={isSelected ? 'red' : 'cyan'} fontSize="xs">
+                                    {m.nim}
+                                  </Badge>
+                                )}
+                              </HStack>
+                            </Checkbox>
+                          )
+                        })
+                      ) : (
+                        <Text color="gray.500" textAlign="center" py={4}>
+                          {searchQuery ? 'No students found' : 'No students available'}
+                        </Text>
+                      )}
                     </Stack>
                   </CheckboxGroup>
                 </Box>
