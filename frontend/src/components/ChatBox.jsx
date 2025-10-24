@@ -9,6 +9,7 @@ import {
   Link,
 } from '@chakra-ui/react'
 import { AttachmentIcon } from '@chakra-ui/icons'
+import { getAvatarUrl } from '../utils/avatar'
 
 const ChatBox = ({ messages, currentUser }) => {
   const messagesEndRef = useRef(null)
@@ -83,7 +84,7 @@ const ChatBox = ({ messages, currentUser }) => {
                 <Avatar
                   size="sm"
                   name={message.sender?.name}
-                  src={message.sender?.avatar}
+                  src={getAvatarUrl(message.sender?.avatar)}
                 />
               )}
 
@@ -121,7 +122,7 @@ const ChatBox = ({ messages, currentUser }) => {
                 <Avatar
                   size="sm"
                   name={message.sender?.name}
-                  src={message.sender?.avatar}
+                  src={getAvatarUrl(message.sender?.avatar)}
                 />
               )}
             </HStack>

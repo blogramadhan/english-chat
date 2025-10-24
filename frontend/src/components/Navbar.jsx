@@ -17,6 +17,7 @@ import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import LoomaLogo from './LoomaLogo'
+import { getAvatarUrl } from '../utils/avatar'
 
 const Navbar = () => {
   const { user, logout } = useAuth()
@@ -25,14 +26,6 @@ const Navbar = () => {
   const handleLogout = () => {
     logout()
     navigate('/login')
-  }
-
-  const getAvatarSrc = () => {
-    if (user?.avatar) {
-      // Return the avatar path directly since Vite proxy will handle it
-      return user.avatar
-    }
-    return ''
   }
 
   return (
@@ -57,7 +50,7 @@ const Navbar = () => {
         <Menu>
           <MenuButton as={Button} rightIcon={<ChevronDownIcon />} variant="ghost">
             <HStack spacing={2}>
-              <Avatar size="sm" name={user?.name} src={getAvatarSrc()} />
+              <Avatar size="sm" name={user?.name} src={getAvatarUrl(user?.avatar)} />
               <Text>{user?.name}</Text>
             </HStack>
           </MenuButton>

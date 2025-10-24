@@ -27,6 +27,7 @@ import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import Navbar from '../components/Navbar';
+import { getAvatarUrl } from '../utils/avatar';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -277,14 +278,6 @@ const Profile = () => {
     }
   };
 
-  const getAvatarSrc = () => {
-    if (user?.avatar) {
-      // Return the avatar path directly since Vite proxy will handle it
-      return user.avatar;
-    }
-    return '';
-  };
-
   return (
     <>
       <Navbar />
@@ -298,7 +291,7 @@ const Profile = () => {
             <Avatar
               size="2xl"
               name={user?.name}
-              src={getAvatarSrc()}
+              src={getAvatarUrl(user?.avatar)}
             />
             <Input
               type="file"
