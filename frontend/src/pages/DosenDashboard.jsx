@@ -7,6 +7,7 @@ import {
   Heading,
   VStack,
   HStack,
+  Flex,
   useToast,
   useDisclosure,
   Grid,
@@ -22,6 +23,8 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  SimpleGrid,
+  Stack,
 } from '@chakra-ui/react'
 import { AddIcon, EditIcon, DownloadIcon, DeleteIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
@@ -44,6 +47,9 @@ const DosenDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeletingDiscussion, setIsDeletingDiscussion] = useState(false)
+  const [currentActiveGroupPage, setCurrentActiveGroupPage] = useState(1)
+  const [currentInactiveGroupPage, setCurrentInactiveGroupPage] = useState(1)
+  const groupsPerPage = 6
   const { user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
@@ -235,94 +241,160 @@ const DosenDashboard = () => {
 
           {/* Active Groups */}
           <Box>
-            <Heading size="md" mb={4}>Active Groups</Heading>
-            <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-              {groups.filter(group => group.isActive).map((group) => (
-                <Card key={group._id} _hover={{ shadow: 'lg' }}>
-                  <CardHeader>
-                    <HStack justify="space-between">
-                      <Heading size="sm">{group.name}</Heading>
-                      <HStack>
-                        <Badge colorScheme="green">Active</Badge>
-                        <IconButton
-                          icon={<EditIcon />}
-                          size="sm"
-                          colorScheme="blue"
-                          variant="ghost"
-                          onClick={() => handleEditGroup(group)}
-                          aria-label="Edit group"
-                        />
-                        <IconButton
-                          icon={<DeleteIcon />}
-                          size="sm"
-                          colorScheme="red"
-                          variant="ghost"
-                          onClick={(e) => handleDeleteGroup(e, group)}
-                          aria-label="Delete group"
-                        />
-                      </HStack>
-                    </HStack>
-                  </CardHeader>
-                  <CardBody>
-                    <Text fontSize="sm" color="gray.600" mb={2}>
-                      {group.description || 'No description'}
-                    </Text>
-                    <Text fontSize="sm" fontWeight="bold">
-                      {group.members?.length || 0} Students
-                    </Text>
-                  </CardBody>
-                </Card>
-              ))}
-              {groups.filter(group => group.isActive).length === 0 && (
-                <Text color="gray.500">No active groups</Text>
-              )}
-            </Grid>
+            <Flex justify="space-between" align="center" mb={4}>
+              <Heading size="md">Active Groups</Heading>
+              <Text fontSize="sm" color="gray.600">
+                {groups.filter(group => group.isActive).length} groups
+              </Text>
+            </Flex>
+
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} mb={4}>
+              {groups
+                .filter(group => group.isActive)
+                .slice((currentActiveGroupPage - 1) * groupsPerPage, currentActiveGroupPage * groupsPerPage)
+                .map((group) => (
+                  <Card key={group._id} _hover={{ shadow: 'md', transform: 'translateY(-2px)' }} transition="all 0.2s">
+                    <CardBody>
+                      <Flex justify="space-between" align="start" mb={2}>
+                        <Box flex={1}>
+                          <Heading size="sm" mb={1}>{group.name}</Heading>
+                          <Badge colorScheme="green" fontSize="xs">Active</Badge>
+                        </Box>
+                        <HStack spacing={0}>
+                          <IconButton
+                            icon={<EditIcon />}
+                            size="xs"
+                            colorScheme="blue"
+                            variant="ghost"
+                            onClick={() => handleEditGroup(group)}
+                            aria-label="Edit group"
+                          />
+                          <IconButton
+                            icon={<DeleteIcon />}
+                            size="xs"
+                            colorScheme="red"
+                            variant="ghost"
+                            onClick={(e) => handleDeleteGroup(e, group)}
+                            aria-label="Delete group"
+                          />
+                        </HStack>
+                      </Flex>
+                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
+                        {group.description || 'No description'}
+                      </Text>
+                      <Text fontSize="xs" fontWeight="semibold" color="gray.700">
+                        {group.members?.length || 0} Students
+                      </Text>
+                    </CardBody>
+                  </Card>
+                ))}
+            </SimpleGrid>
+
+            {groups.filter(group => group.isActive).length === 0 && (
+              <Text color="gray.500" textAlign="center" py={8}>No active groups</Text>
+            )}
+
+            {/* Pagination for Active Groups */}
+            {groups.filter(group => group.isActive).length > groupsPerPage && (
+              <Flex justify="center" align="center" gap={2} mt={4}>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentActiveGroupPage(prev => Math.max(prev - 1, 1))}
+                  isDisabled={currentActiveGroupPage === 1}
+                >
+                  Previous
+                </Button>
+                <Text fontSize="sm">
+                  Page {currentActiveGroupPage} of {Math.ceil(groups.filter(group => group.isActive).length / groupsPerPage)}
+                </Text>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentActiveGroupPage(prev => prev + 1)}
+                  isDisabled={currentActiveGroupPage >= Math.ceil(groups.filter(group => group.isActive).length / groupsPerPage)}
+                >
+                  Next
+                </Button>
+              </Flex>
+            )}
           </Box>
 
           {/* Inactive Groups */}
           <Box>
-            <Heading size="md" mb={4}>Inactive Groups</Heading>
-            <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-              {groups.filter(group => !group.isActive).map((group) => (
-                <Card key={group._id} _hover={{ shadow: 'lg' }} opacity={0.7}>
-                  <CardHeader>
-                    <HStack justify="space-between">
-                      <Heading size="sm">{group.name}</Heading>
-                      <HStack>
-                        <Badge colorScheme="red">Inactive</Badge>
-                        <IconButton
-                          icon={<EditIcon />}
-                          size="sm"
-                          colorScheme="blue"
-                          variant="ghost"
-                          onClick={() => handleEditGroup(group)}
-                          aria-label="Edit group"
-                        />
-                        <IconButton
-                          icon={<DeleteIcon />}
-                          size="sm"
-                          colorScheme="red"
-                          variant="ghost"
-                          onClick={(e) => handleDeleteGroup(e, group)}
-                          aria-label="Delete group"
-                        />
-                      </HStack>
-                    </HStack>
-                  </CardHeader>
-                  <CardBody>
-                    <Text fontSize="sm" color="gray.600" mb={2}>
-                      {group.description || 'No description'}
-                    </Text>
-                    <Text fontSize="sm" fontWeight="bold">
-                      {group.members?.length || 0} Students
-                    </Text>
-                  </CardBody>
-                </Card>
-              ))}
-              {groups.filter(group => !group.isActive).length === 0 && (
-                <Text color="gray.500">No inactive groups</Text>
-              )}
-            </Grid>
+            <Flex justify="space-between" align="center" mb={4}>
+              <Heading size="md">Inactive Groups</Heading>
+              <Text fontSize="sm" color="gray.600">
+                {groups.filter(group => !group.isActive).length} groups
+              </Text>
+            </Flex>
+
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} mb={4}>
+              {groups
+                .filter(group => !group.isActive)
+                .slice((currentInactiveGroupPage - 1) * groupsPerPage, currentInactiveGroupPage * groupsPerPage)
+                .map((group) => (
+                  <Card key={group._id} _hover={{ shadow: 'md', transform: 'translateY(-2px)' }} transition="all 0.2s" opacity={0.7}>
+                    <CardBody>
+                      <Flex justify="space-between" align="start" mb={2}>
+                        <Box flex={1}>
+                          <Heading size="sm" mb={1}>{group.name}</Heading>
+                          <Badge colorScheme="red" fontSize="xs">Inactive</Badge>
+                        </Box>
+                        <HStack spacing={0}>
+                          <IconButton
+                            icon={<EditIcon />}
+                            size="xs"
+                            colorScheme="blue"
+                            variant="ghost"
+                            onClick={() => handleEditGroup(group)}
+                            aria-label="Edit group"
+                          />
+                          <IconButton
+                            icon={<DeleteIcon />}
+                            size="xs"
+                            colorScheme="red"
+                            variant="ghost"
+                            onClick={(e) => handleDeleteGroup(e, group)}
+                            aria-label="Delete group"
+                          />
+                        </HStack>
+                      </Flex>
+                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
+                        {group.description || 'No description'}
+                      </Text>
+                      <Text fontSize="xs" fontWeight="semibold" color="gray.700">
+                        {group.members?.length || 0} Students
+                      </Text>
+                    </CardBody>
+                  </Card>
+                ))}
+            </SimpleGrid>
+
+            {groups.filter(group => !group.isActive).length === 0 && (
+              <Text color="gray.500" textAlign="center" py={8}>No inactive groups</Text>
+            )}
+
+            {/* Pagination for Inactive Groups */}
+            {groups.filter(group => !group.isActive).length > groupsPerPage && (
+              <Flex justify="center" align="center" gap={2} mt={4}>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentInactiveGroupPage(prev => Math.max(prev - 1, 1))}
+                  isDisabled={currentInactiveGroupPage === 1}
+                >
+                  Previous
+                </Button>
+                <Text fontSize="sm">
+                  Page {currentInactiveGroupPage} of {Math.ceil(groups.filter(group => !group.isActive).length / groupsPerPage)}
+                </Text>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentInactiveGroupPage(prev => prev + 1)}
+                  isDisabled={currentInactiveGroupPage >= Math.ceil(groups.filter(group => !group.isActive).length / groupsPerPage)}
+                >
+                  Next
+                </Button>
+              </Flex>
+            )}
           </Box>
 
           {/* Active Discussions */}

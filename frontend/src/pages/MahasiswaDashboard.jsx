@@ -15,6 +15,8 @@ import {
   HStack,
   Button,
   useDisclosure,
+  Flex,
+  SimpleGrid,
 } from '@chakra-ui/react'
 import { ViewIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
@@ -27,6 +29,9 @@ const MahasiswaDashboard = () => {
   const [discussions, setDiscussions] = useState([])
   const [selectedGroup, setSelectedGroup] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [currentActiveGroupPage, setCurrentActiveGroupPage] = useState(1)
+  const [currentInactiveGroupPage, setCurrentInactiveGroupPage] = useState(1)
+  const groupsPerPage = 6
   const { user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
@@ -70,90 +75,156 @@ const MahasiswaDashboard = () => {
 
           {/* Active Groups */}
           <Box>
-            <Heading size="md" mb={4}>Active Groups</Heading>
-            <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-              {groups.filter(group => group.isActive).map((group) => (
-                <Card key={group._id}>
-                  <CardHeader>
-                    <HStack justify="space-between">
-                      <Heading size="sm">{group.name}</Heading>
-                      <HStack>
-                        <Badge colorScheme="green">Active</Badge>
-                        <Badge colorScheme="blue">Member</Badge>
-                      </HStack>
-                    </HStack>
-                  </CardHeader>
-                  <CardBody>
-                    <Text fontSize="sm" color="gray.600" mb={2}>
-                      {group.description || 'No description'}
-                    </Text>
-                    <Text fontSize="sm">
-                      Lecturer: {group.createdBy?.name}
-                    </Text>
-                    <Text fontSize="sm" color="gray.500" mb={3}>
-                      {group.members?.length || 0} Students
-                    </Text>
-                    <Button
-                      size="sm"
-                      colorScheme="blue"
-                      variant="outline"
-                      leftIcon={<ViewIcon />}
-                      onClick={() => handleViewMembers(group)}
-                      width="full"
-                    >
-                      View Members
-                    </Button>
-                  </CardBody>
-                </Card>
-              ))}
-              {groups.filter(group => group.isActive).length === 0 && (
-                <Text color="gray.500">No active groups</Text>
-              )}
-            </Grid>
+            <Flex justify="space-between" align="center" mb={4}>
+              <Heading size="md">Active Groups</Heading>
+              <Text fontSize="sm" color="gray.600">
+                {groups.filter(group => group.isActive).length} groups
+              </Text>
+            </Flex>
+
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} mb={4}>
+              {groups
+                .filter(group => group.isActive)
+                .slice((currentActiveGroupPage - 1) * groupsPerPage, currentActiveGroupPage * groupsPerPage)
+                .map((group) => (
+                  <Card key={group._id} _hover={{ shadow: 'md', transform: 'translateY(-2px)' }} transition="all 0.2s">
+                    <CardBody>
+                      <Flex justify="space-between" align="start" mb={2}>
+                        <Box flex={1}>
+                          <Heading size="sm" mb={1}>{group.name}</Heading>
+                          <HStack spacing={1}>
+                            <Badge colorScheme="green" fontSize="xs">Active</Badge>
+                            <Badge colorScheme="blue" fontSize="xs">Member</Badge>
+                          </HStack>
+                        </Box>
+                      </Flex>
+                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
+                        {group.description || 'No description'}
+                      </Text>
+                      <Text fontSize="xs" mb={1}>
+                        <Text as="span" fontWeight="semibold">Lecturer:</Text> {group.createdBy?.name}
+                      </Text>
+                      <Text fontSize="xs" color="gray.600" mb={3}>
+                        {group.members?.length || 0} Students
+                      </Text>
+                      <Button
+                        size="xs"
+                        colorScheme="blue"
+                        variant="outline"
+                        leftIcon={<ViewIcon />}
+                        onClick={() => handleViewMembers(group)}
+                        width="full"
+                      >
+                        View Members
+                      </Button>
+                    </CardBody>
+                  </Card>
+                ))}
+            </SimpleGrid>
+
+            {groups.filter(group => group.isActive).length === 0 && (
+              <Text color="gray.500" textAlign="center" py={8}>No active groups</Text>
+            )}
+
+            {/* Pagination for Active Groups */}
+            {groups.filter(group => group.isActive).length > groupsPerPage && (
+              <Flex justify="center" align="center" gap={2} mt={4}>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentActiveGroupPage(prev => Math.max(prev - 1, 1))}
+                  isDisabled={currentActiveGroupPage === 1}
+                >
+                  Previous
+                </Button>
+                <Text fontSize="sm">
+                  Page {currentActiveGroupPage} of {Math.ceil(groups.filter(group => group.isActive).length / groupsPerPage)}
+                </Text>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentActiveGroupPage(prev => prev + 1)}
+                  isDisabled={currentActiveGroupPage >= Math.ceil(groups.filter(group => group.isActive).length / groupsPerPage)}
+                >
+                  Next
+                </Button>
+              </Flex>
+            )}
           </Box>
 
           {/* Inactive Groups */}
           <Box>
-            <Heading size="md" mb={4}>Inactive Groups</Heading>
-            <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={4}>
-              {groups.filter(group => !group.isActive).map((group) => (
-                <Card key={group._id} opacity={0.7}>
-                  <CardHeader>
-                    <HStack justify="space-between">
-                      <Heading size="sm">{group.name}</Heading>
-                      <HStack>
-                        <Badge colorScheme="red">Inactive</Badge>
-                        <Badge colorScheme="blue">Member</Badge>
-                      </HStack>
-                    </HStack>
-                  </CardHeader>
-                  <CardBody>
-                    <Text fontSize="sm" color="gray.600" mb={2}>
-                      {group.description || 'No description'}
-                    </Text>
-                    <Text fontSize="sm">
-                      Lecturer: {group.createdBy?.name}
-                    </Text>
-                    <Text fontSize="sm" color="gray.500" mb={3}>
-                      {group.members?.length || 0} Students
-                    </Text>
-                    <Button
-                      size="sm"
-                      colorScheme="blue"
-                      variant="outline"
-                      leftIcon={<ViewIcon />}
-                      onClick={() => handleViewMembers(group)}
-                      width="full"
-                    >
-                      View Members
-                    </Button>
-                  </CardBody>
-                </Card>
-              ))}
-              {groups.filter(group => !group.isActive).length === 0 && (
-                <Text color="gray.500">No inactive groups</Text>
-              )}
-            </Grid>
+            <Flex justify="space-between" align="center" mb={4}>
+              <Heading size="md">Inactive Groups</Heading>
+              <Text fontSize="sm" color="gray.600">
+                {groups.filter(group => !group.isActive).length} groups
+              </Text>
+            </Flex>
+
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} mb={4}>
+              {groups
+                .filter(group => !group.isActive)
+                .slice((currentInactiveGroupPage - 1) * groupsPerPage, currentInactiveGroupPage * groupsPerPage)
+                .map((group) => (
+                  <Card key={group._id} _hover={{ shadow: 'md', transform: 'translateY(-2px)' }} transition="all 0.2s" opacity={0.7}>
+                    <CardBody>
+                      <Flex justify="space-between" align="start" mb={2}>
+                        <Box flex={1}>
+                          <Heading size="sm" mb={1}>{group.name}</Heading>
+                          <HStack spacing={1}>
+                            <Badge colorScheme="red" fontSize="xs">Inactive</Badge>
+                            <Badge colorScheme="blue" fontSize="xs">Member</Badge>
+                          </HStack>
+                        </Box>
+                      </Flex>
+                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
+                        {group.description || 'No description'}
+                      </Text>
+                      <Text fontSize="xs" mb={1}>
+                        <Text as="span" fontWeight="semibold">Lecturer:</Text> {group.createdBy?.name}
+                      </Text>
+                      <Text fontSize="xs" color="gray.600" mb={3}>
+                        {group.members?.length || 0} Students
+                      </Text>
+                      <Button
+                        size="xs"
+                        colorScheme="blue"
+                        variant="outline"
+                        leftIcon={<ViewIcon />}
+                        onClick={() => handleViewMembers(group)}
+                        width="full"
+                      >
+                        View Members
+                      </Button>
+                    </CardBody>
+                  </Card>
+                ))}
+            </SimpleGrid>
+
+            {groups.filter(group => !group.isActive).length === 0 && (
+              <Text color="gray.500" textAlign="center" py={8}>No inactive groups</Text>
+            )}
+
+            {/* Pagination for Inactive Groups */}
+            {groups.filter(group => !group.isActive).length > groupsPerPage && (
+              <Flex justify="center" align="center" gap={2} mt={4}>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentInactiveGroupPage(prev => Math.max(prev - 1, 1))}
+                  isDisabled={currentInactiveGroupPage === 1}
+                >
+                  Previous
+                </Button>
+                <Text fontSize="sm">
+                  Page {currentInactiveGroupPage} of {Math.ceil(groups.filter(group => !group.isActive).length / groupsPerPage)}
+                </Text>
+                <Button
+                  size="sm"
+                  onClick={() => setCurrentInactiveGroupPage(prev => prev + 1)}
+                  isDisabled={currentInactiveGroupPage >= Math.ceil(groups.filter(group => !group.isActive).length / groupsPerPage)}
+                >
+                  Next
+                </Button>
+              </Flex>
+            )}
           </Box>
 
           {/* Active Discussions */}
