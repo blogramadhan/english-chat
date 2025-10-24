@@ -36,8 +36,11 @@ import {
   StatLabel,
   StatNumber,
   StatHelpText,
+  Input,
+  InputGroup,
+  InputLeftElement,
 } from '@chakra-ui/react'
-import { CheckIcon, CloseIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons'
+import { CheckIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import Navbar from '../components/Navbar'
@@ -48,6 +51,8 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({})
   const [pendingUsers, setPendingUsers] = useState([])
   const [allUsers, setAllUsers] = useState([])
+  const [searchPending, setSearchPending] = useState('')
+  const [searchAll, setSearchAll] = useState('')
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState(null)
   const [userToEdit, setUserToEdit] = useState(null)
@@ -197,6 +202,31 @@ const AdminDashboard = () => {
     )
   }
 
+  // Filter pending users berdasarkan search query
+  const filteredPendingUsers = pendingUsers.filter((user) => {
+    const query = searchPending.toLowerCase()
+    return (
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      (user.nim && user.nim.toLowerCase().includes(query)) ||
+      (user.nip && user.nip.toLowerCase().includes(query)) ||
+      user.role.toLowerCase().includes(query)
+    )
+  })
+
+  // Filter all users berdasarkan search query
+  const filteredAllUsers = allUsers.filter((user) => {
+    const query = searchAll.toLowerCase()
+    return (
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      (user.nim && user.nim.toLowerCase().includes(query)) ||
+      (user.nip && user.nip.toLowerCase().includes(query)) ||
+      user.role.toLowerCase().includes(query) ||
+      user.status.toLowerCase().includes(query)
+    )
+  })
+
   return (
     <Box minH="100vh" bg="gray.50">
       <Navbar />
@@ -269,11 +299,25 @@ const AdminDashboard = () => {
               <TabPanel>
                 <Card>
                   <CardHeader>
-                    <Heading size="md">Pending Users</Heading>
+                    <VStack align="stretch" spacing={4}>
+                      <Heading size="md">Pending Users</Heading>
+                      <InputGroup>
+                        <InputLeftElement pointerEvents="none">
+                          <SearchIcon color="gray.300" />
+                        </InputLeftElement>
+                        <Input
+                          placeholder="Search by name, email, NIM/NIP, or role..."
+                          value={searchPending}
+                          onChange={(e) => setSearchPending(e.target.value)}
+                        />
+                      </InputGroup>
+                    </VStack>
                   </CardHeader>
                   <CardBody>
                     {pendingUsers.length === 0 ? (
                       <Text color="gray.500">No users waiting for approval</Text>
+                    ) : filteredPendingUsers.length === 0 ? (
+                      <Text color="gray.500">No users found matching your search</Text>
                     ) : (
                       <Table variant="simple">
                         <Thead>
@@ -287,7 +331,7 @@ const AdminDashboard = () => {
                           </Tr>
                         </Thead>
                         <Tbody>
-                          {pendingUsers.map((user) => (
+                          {filteredPendingUsers.map((user) => (
                             <Tr key={user._id}>
                               <Td>{user.name}</Td>
                               <Td>{user.email}</Td>
@@ -327,23 +371,40 @@ const AdminDashboard = () => {
               <TabPanel>
                 <Card>
                   <CardHeader>
-                    <Heading size="md">All Users</Heading>
+                    <VStack align="stretch" spacing={4}>
+                      <Heading size="md">All Users</Heading>
+                      <InputGroup>
+                        <InputLeftElement pointerEvents="none">
+                          <SearchIcon color="gray.300" />
+                        </InputLeftElement>
+                        <Input
+                          placeholder="Search by name, email, NIM/NIP, role, or status..."
+                          value={searchAll}
+                          onChange={(e) => setSearchAll(e.target.value)}
+                        />
+                      </InputGroup>
+                    </VStack>
                   </CardHeader>
                   <CardBody>
-                    <Table variant="simple">
-                      <Thead>
-                        <Tr>
-                          <Th>Name</Th>
-                          <Th>Email</Th>
-                          <Th>Role</Th>
-                          <Th>Status</Th>
-                          <Th>NIM/NIP</Th>
-                          <Th>Registered At</Th>
-                          <Th>Actions</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {allUsers.map((user) => (
+                    {filteredAllUsers.length === 0 ? (
+                      <Text color="gray.500">
+                        {allUsers.length === 0 ? 'No users found' : 'No users found matching your search'}
+                      </Text>
+                    ) : (
+                      <Table variant="simple">
+                        <Thead>
+                          <Tr>
+                            <Th>Name</Th>
+                            <Th>Email</Th>
+                            <Th>Role</Th>
+                            <Th>Status</Th>
+                            <Th>NIM/NIP</Th>
+                            <Th>Registered At</Th>
+                            <Th>Actions</Th>
+                          </Tr>
+                        </Thead>
+                        <Tbody>
+                          {filteredAllUsers.map((user) => (
                           <Tr key={user._id}>
                             <Td>{user.name}</Td>
                             <Td>{user.email}</Td>
@@ -394,9 +455,10 @@ const AdminDashboard = () => {
                               </HStack>
                             </Td>
                           </Tr>
-                        ))}
-                      </Tbody>
-                    </Table>
+                          ))}
+                        </Tbody>
+                      </Table>
+                    )}
                   </CardBody>
                 </Card>
               </TabPanel>
