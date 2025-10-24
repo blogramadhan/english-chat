@@ -13,18 +13,24 @@ import {
   Badge,
   useToast,
   HStack,
+  Button,
+  useDisclosure,
 } from '@chakra-ui/react'
+import { ViewIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import Navbar from '../components/Navbar'
+import GroupMembersModal from '../components/GroupMembersModal'
 
 const MahasiswaDashboard = () => {
   const [groups, setGroups] = useState([])
   const [discussions, setDiscussions] = useState([])
+  const [selectedGroup, setSelectedGroup] = useState(null)
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
+  const { isOpen: isMembersOpen, onOpen: onMembersOpen, onClose: onMembersClose } = useDisclosure()
 
   useEffect(() => {
     fetchData()
@@ -48,6 +54,11 @@ const MahasiswaDashboard = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleViewMembers = (group) => {
+    setSelectedGroup(group)
+    onMembersOpen()
   }
 
   return (
@@ -79,9 +90,19 @@ const MahasiswaDashboard = () => {
                     <Text fontSize="sm">
                       Lecturer: {group.createdBy?.name}
                     </Text>
-                    <Text fontSize="sm" color="gray.500">
+                    <Text fontSize="sm" color="gray.500" mb={3}>
                       {group.members?.length || 0} Students
                     </Text>
+                    <Button
+                      size="sm"
+                      colorScheme="blue"
+                      variant="outline"
+                      leftIcon={<ViewIcon />}
+                      onClick={() => handleViewMembers(group)}
+                      width="full"
+                    >
+                      View Members
+                    </Button>
                   </CardBody>
                 </Card>
               ))}
@@ -113,9 +134,19 @@ const MahasiswaDashboard = () => {
                     <Text fontSize="sm">
                       Lecturer: {group.createdBy?.name}
                     </Text>
-                    <Text fontSize="sm" color="gray.500">
+                    <Text fontSize="sm" color="gray.500" mb={3}>
                       {group.members?.length || 0} Students
                     </Text>
+                    <Button
+                      size="sm"
+                      colorScheme="blue"
+                      variant="outline"
+                      leftIcon={<ViewIcon />}
+                      onClick={() => handleViewMembers(group)}
+                      width="full"
+                    >
+                      View Members
+                    </Button>
                   </CardBody>
                 </Card>
               ))}
@@ -213,6 +244,13 @@ const MahasiswaDashboard = () => {
           </Box>
         </VStack>
       </Container>
+
+      {/* Group Members Modal */}
+      <GroupMembersModal
+        isOpen={isMembersOpen}
+        onClose={onMembersClose}
+        group={selectedGroup}
+      />
     </Box>
   )
 }
