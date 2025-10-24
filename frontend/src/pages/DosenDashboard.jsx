@@ -27,6 +27,11 @@ import {
   TabPanels,
   Tab,
   TabPanel,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
 } from '@chakra-ui/react'
 import { AddIcon, EditIcon, DownloadIcon, DeleteIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
@@ -51,18 +56,14 @@ const DosenDashboard = () => {
   const [groupToDelete, setGroupToDelete] = useState(null)
   const [discussionToDelete, setDiscussionToDelete] = useState(null)
   const [categoryToDelete, setCategoryToDelete] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeletingDiscussion, setIsDeletingDiscussion] = useState(false)
   const [isDeletingCategory, setIsDeletingCategory] = useState(false)
   const [currentActiveGroupPage, setCurrentActiveGroupPage] = useState(1)
   const [currentInactiveGroupPage, setCurrentInactiveGroupPage] = useState(1)
-  const [currentActiveDiscussionPage, setCurrentActiveDiscussionPage] = useState(1)
-  const [currentInactiveDiscussionPage, setCurrentInactiveDiscussionPage] = useState(1)
   const [currentActiveCategoryPage, setCurrentActiveCategoryPage] = useState(1)
   const [currentInactiveCategoryPage, setCurrentInactiveCategoryPage] = useState(1)
   const groupsPerPage = 6
-  const discussionsPerPage = 6
   const categoriesPerPage = 6
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -302,6 +303,37 @@ const DosenDashboard = () => {
     console.log('❌ Delete category cancelled')
     setCategoryToDelete(null)
     onDeleteCategoryAlertClose()
+  }
+
+  // Group discussions by category
+  const groupDiscussionsByCategory = (discussions, isActive = true) => {
+    const filtered = discussions.filter(d => d.isActive === isActive).sort((a, b) => a.title.localeCompare(b.title))
+
+    // Get all categories (including "Uncategorized")
+    const categorizedGroups = {}
+
+    // Group by category
+    filtered.forEach(discussion => {
+      const categoryId = discussion.category?._id || 'uncategorized'
+      const categoryName = discussion.category?.name || 'Uncategorized'
+
+      if (!categorizedGroups[categoryId]) {
+        categorizedGroups[categoryId] = {
+          id: categoryId,
+          name: categoryName,
+          discussions: []
+        }
+      }
+
+      categorizedGroups[categoryId].discussions.push(discussion)
+    })
+
+    // Convert to array and sort (Uncategorized at the end)
+    return Object.values(categorizedGroups).sort((a, b) => {
+      if (a.id === 'uncategorized') return 1
+      if (b.id === 'uncategorized') return -1
+      return a.name.localeCompare(b.name)
+    })
   }
 
   return (
@@ -662,19 +694,35 @@ const DosenDashboard = () => {
 
                   {/* Active Discussions */}
                   <Box>
-            <Flex justify="space-between" align="center" mb={4}>
-              <Heading size="md">Active Discussions</Heading>
-              <Text fontSize="sm" color="gray.600">
-                {discussions.filter(discussion => discussion.isActive).length} discussions
-              </Text>
-            </Flex>
+                    <Flex justify="space-between" align="center" mb={4}>
+                      <Heading size="md">Active Discussions</Heading>
+                      <Text fontSize="sm" color="gray.600">
+                        {discussions.filter(discussion => discussion.isActive).length} discussions
+                      </Text>
+                    </Flex>
 
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} mb={4}>
-              {discussions
-                .filter(discussion => discussion.isActive)
-                .sort((a, b) => a.title.localeCompare(b.title))
-                .slice((currentActiveDiscussionPage - 1) * discussionsPerPage, currentActiveDiscussionPage * discussionsPerPage)
-                .map((discussion) => (
+                    {discussions.filter(discussion => discussion.isActive).length === 0 ? (
+                      <Text color="gray.500" textAlign="center" py={8}>No active discussions</Text>
+                    ) : (
+                      <Accordion allowMultiple>
+                        {groupDiscussionsByCategory(discussions, true).map((categoryGroup) => (
+                          <AccordionItem key={categoryGroup.id} border="1px" borderColor="gray.200" borderRadius="md" mb={3}>
+                            <AccordionButton _expanded={{ bg: 'brand.50', color: 'brand.700' }}>
+                              <Box flex="1" textAlign="left">
+                                <HStack>
+                                  <Badge colorScheme={categoryGroup.id === 'uncategorized' ? 'gray' : 'purple'} fontSize="sm">
+                                    {categoryGroup.name}
+                                  </Badge>
+                                  <Text fontSize="sm" color="gray.600">
+                                    ({categoryGroup.discussions.length} discussions)
+                                  </Text>
+                                </HStack>
+                              </Box>
+                              <AccordionIcon />
+                            </AccordionButton>
+                            <AccordionPanel pb={4}>
+                              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                                {categoryGroup.discussions.map((discussion) => (
                   <Card
                     key={discussion._id}
                     cursor="pointer"
@@ -716,167 +764,130 @@ const DosenDashboard = () => {
                             aria-label="Delete discussion"
                             title="Delete Discussion"
                           />
-                        </HStack>
-                      </Flex>
-                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
-                        {discussion.content}
-                      </Text>
-                      {discussion.category && (
-                        <Badge colorScheme="purple" fontSize="xs" mb={1}>
-                          {discussion.category.name}
-                        </Badge>
-                      )}
-                      <Text fontSize="xs" color="gray.500" mb={1} noOfLines={1}>
-                        {discussion.groups && discussion.groups.length > 0 ? (
-                          <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
-                        ) : (
-                          <>Group: {discussion.group?.name}</>
-                        )}
-                      </Text>
-                      <Text fontSize="xs" color="gray.500">
-                        {new Date(discussion.createdAt).toLocaleDateString('en-US')}
-                      </Text>
-                    </CardBody>
-                  </Card>
-                ))}
-            </SimpleGrid>
+                                        </HStack>
+                                      </Flex>
+                                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
+                                        {discussion.content}
+                                      </Text>
+                                      <Text fontSize="xs" color="gray.500" mb={1} noOfLines={1}>
+                                        {discussion.groups && discussion.groups.length > 0 ? (
+                                          <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
+                                        ) : (
+                                          <>Group: {discussion.group?.name}</>
+                                        )}
+                                      </Text>
+                                      <Text fontSize="xs" color="gray.500">
+                                        {new Date(discussion.createdAt).toLocaleDateString('en-US')}
+                                      </Text>
+                                    </CardBody>
+                                  </Card>
+                                ))}
+                              </SimpleGrid>
+                            </AccordionPanel>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
+                    )}
+                  </Box>
 
-            {discussions.filter(discussion => discussion.isActive).length === 0 && (
-              <Text color="gray.500" textAlign="center" py={8}>No active discussions</Text>
-            )}
-
-            {/* Pagination for Active Discussions */}
-            {discussions.filter(discussion => discussion.isActive).length > discussionsPerPage && (
-              <Flex justify="center" align="center" gap={2} mt={4}>
-                <Button
-                  size="sm"
-                  onClick={() => setCurrentActiveDiscussionPage(prev => Math.max(prev - 1, 1))}
-                  isDisabled={currentActiveDiscussionPage === 1}
-                >
-                  Previous
-                </Button>
-                <Text fontSize="sm">
-                  Page {currentActiveDiscussionPage} of {Math.ceil(discussions.filter(discussion => discussion.isActive).length / discussionsPerPage)}
-                </Text>
-                <Button
-                  size="sm"
-                  onClick={() => setCurrentActiveDiscussionPage(prev => prev + 1)}
-                  isDisabled={currentActiveDiscussionPage >= Math.ceil(discussions.filter(discussion => discussion.isActive).length / discussionsPerPage)}
-                >
-                  Next
-                </Button>
-              </Flex>
-            )}
-          </Box>
-
-          {/* Inactive Discussions */}
-          <Box>
-            <Flex justify="space-between" align="center" mb={4}>
-              <Heading size="md">Inactive Discussions</Heading>
-              <Text fontSize="sm" color="gray.600">
-                {discussions.filter(discussion => !discussion.isActive).length} discussions
-              </Text>
-            </Flex>
-
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4} mb={4}>
-              {discussions
-                .filter(discussion => !discussion.isActive)
-                .slice((currentInactiveDiscussionPage - 1) * discussionsPerPage, currentInactiveDiscussionPage * discussionsPerPage)
-                .map((discussion) => (
-                  <Card
-                    key={discussion._id}
-                    cursor="pointer"
-                    _hover={{ shadow: 'md', transform: 'translateY(-2px)' }}
-                    transition="all 0.2s"
-                    onClick={() => navigate(`/discussion/${discussion._id}`)}
-                    opacity={0.7}
-                  >
-                    <CardBody>
-                      <Flex justify="space-between" align="start" mb={2}>
-                        <Box flex={1}>
-                          <Heading size="sm" mb={1} noOfLines={1}>{discussion.title}</Heading>
-                          <Badge colorScheme="red" fontSize="xs">Inactive</Badge>
-                        </Box>
-                        <HStack spacing={0}>
-                          <IconButton
-                            icon={<DownloadIcon />}
-                            size="xs"
-                            colorScheme="green"
-                            variant="ghost"
-                            onClick={(e) => handleDownloadPDF(e, discussion)}
-                            aria-label="Download PDF"
-                            title="Download PDF"
-                          />
-                          <IconButton
-                            icon={<EditIcon />}
-                            size="xs"
-                            colorScheme="blue"
-                            variant="ghost"
-                            onClick={(e) => handleEditDiscussion(e, discussion)}
-                            aria-label="Edit discussion"
-                            title="Edit Discussion"
-                          />
-                          <IconButton
-                            icon={<DeleteIcon />}
-                            size="xs"
-                            colorScheme="red"
-                            variant="ghost"
-                            onClick={(e) => handleDeleteDiscussion(e, discussion)}
-                            aria-label="Delete discussion"
-                            title="Delete Discussion"
-                          />
-                        </HStack>
-                      </Flex>
-                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
-                        {discussion.content}
+                  {/* Inactive Discussions */}
+                  <Box>
+                    <Flex justify="space-between" align="center" mb={4}>
+                      <Heading size="md">Inactive Discussions</Heading>
+                      <Text fontSize="sm" color="gray.600">
+                        {discussions.filter(discussion => !discussion.isActive).length} discussions
                       </Text>
-                      {discussion.category && (
-                        <Badge colorScheme="purple" fontSize="xs" mb={1}>
-                          {discussion.category.name}
-                        </Badge>
-                      )}
-                      <Text fontSize="xs" color="gray.500" mb={1} noOfLines={1}>
-                        {discussion.groups && discussion.groups.length > 0 ? (
-                          <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
-                        ) : (
-                          <>Group: {discussion.group?.name}</>
-                        )}
-                      </Text>
-                      <Text fontSize="xs" color="gray.500">
-                        {new Date(discussion.createdAt).toLocaleDateString('en-US')}
-                      </Text>
-                    </CardBody>
-                  </Card>
-                ))}
-            </SimpleGrid>
+                    </Flex>
 
-            {discussions.filter(discussion => !discussion.isActive).length === 0 && (
-              <Text color="gray.500" textAlign="center" py={8}>No inactive discussions</Text>
-            )}
-
-            {/* Pagination for Inactive Discussions */}
-            {discussions.filter(discussion => !discussion.isActive).length > discussionsPerPage && (
-              <Flex justify="center" align="center" gap={2} mt={4}>
-                <Button
-                  size="sm"
-                  onClick={() => setCurrentInactiveDiscussionPage(prev => Math.max(prev - 1, 1))}
-                  isDisabled={currentInactiveDiscussionPage === 1}
-                >
-                  Previous
-                </Button>
-                <Text fontSize="sm">
-                  Page {currentInactiveDiscussionPage} of {Math.ceil(discussions.filter(discussion => !discussion.isActive).length / discussionsPerPage)}
-                </Text>
-                <Button
-                  size="sm"
-                  onClick={() => setCurrentInactiveDiscussionPage(prev => prev + 1)}
-                  isDisabled={currentInactiveDiscussionPage >= Math.ceil(discussions.filter(discussion => !discussion.isActive).length / discussionsPerPage)}
-                >
-                  Next
-                </Button>
-              </Flex>
-            )}
-          </Box>
+                    {discussions.filter(discussion => !discussion.isActive).length === 0 ? (
+                      <Text color="gray.500" textAlign="center" py={8}>No inactive discussions</Text>
+                    ) : (
+                      <Accordion allowMultiple>
+                        {groupDiscussionsByCategory(discussions, false).map((categoryGroup) => (
+                          <AccordionItem key={categoryGroup.id} border="1px" borderColor="gray.200" borderRadius="md" mb={3}>
+                            <AccordionButton _expanded={{ bg: 'gray.50' }}>
+                              <Box flex="1" textAlign="left">
+                                <HStack>
+                                  <Badge colorScheme={categoryGroup.id === 'uncategorized' ? 'gray' : 'purple'} fontSize="sm">
+                                    {categoryGroup.name}
+                                  </Badge>
+                                  <Text fontSize="sm" color="gray.600">
+                                    ({categoryGroup.discussions.length} discussions)
+                                  </Text>
+                                </HStack>
+                              </Box>
+                              <AccordionIcon />
+                            </AccordionButton>
+                            <AccordionPanel pb={4}>
+                              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                                {categoryGroup.discussions.map((discussion) => (
+                                  <Card
+                                    key={discussion._id}
+                                    cursor="pointer"
+                                    _hover={{ shadow: 'md', transform: 'translateY(-2px)' }}
+                                    transition="all 0.2s"
+                                    onClick={() => navigate(`/discussion/${discussion._id}`)}
+                                    opacity={0.7}
+                                  >
+                                    <CardBody>
+                                      <Flex justify="space-between" align="start" mb={2}>
+                                        <Box flex={1}>
+                                          <Heading size="sm" mb={1} noOfLines={1}>{discussion.title}</Heading>
+                                          <Badge colorScheme="red" fontSize="xs">Inactive</Badge>
+                                        </Box>
+                                        <HStack spacing={0}>
+                                          <IconButton
+                                            icon={<DownloadIcon />}
+                                            size="xs"
+                                            colorScheme="green"
+                                            variant="ghost"
+                                            onClick={(e) => handleDownloadPDF(e, discussion)}
+                                            aria-label="Download PDF"
+                                            title="Download PDF"
+                                          />
+                                          <IconButton
+                                            icon={<EditIcon />}
+                                            size="xs"
+                                            colorScheme="blue"
+                                            variant="ghost"
+                                            onClick={(e) => handleEditDiscussion(e, discussion)}
+                                            aria-label="Edit discussion"
+                                            title="Edit Discussion"
+                                          />
+                                          <IconButton
+                                            icon={<DeleteIcon />}
+                                            size="xs"
+                                            colorScheme="red"
+                                            variant="ghost"
+                                            onClick={(e) => handleDeleteDiscussion(e, discussion)}
+                                            aria-label="Delete discussion"
+                                            title="Delete Discussion"
+                                          />
+                                        </HStack>
+                                      </Flex>
+                                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
+                                        {discussion.content}
+                                      </Text>
+                                      <Text fontSize="xs" color="gray.500" mb={1} noOfLines={1}>
+                                        {discussion.groups && discussion.groups.length > 0 ? (
+                                          <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
+                                        ) : (
+                                          <>Group: {discussion.group?.name}</>
+                                        )}
+                                      </Text>
+                                      <Text fontSize="xs" color="gray.500">
+                                        {new Date(discussion.createdAt).toLocaleDateString('en-US')}
+                                      </Text>
+                                    </CardBody>
+                                  </Card>
+                                ))}
+                              </SimpleGrid>
+                            </AccordionPanel>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
+                    )}
+                  </Box>
                 </VStack>
               </TabPanel>
             </TabPanels>
