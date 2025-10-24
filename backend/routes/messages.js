@@ -53,6 +53,11 @@ router.post('/', protect, async (req, res) => {
 
     await message.populate('sender', '-password');
 
+    // Populate group untuk filter di frontend
+    if (message.group) {
+      await message.populate('group');
+    }
+
     // Populate replyTo message if exists
     if (message.replyTo) {
       await message.populate({
@@ -109,6 +114,11 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
 
     await message.populate('sender', '-password');
 
+    // Populate group untuk filter di frontend
+    if (message.group) {
+      await message.populate('group');
+    }
+
     res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -130,6 +140,7 @@ router.get('/:discussionId', protect, async (req, res) => {
     if (req.user.role === 'dosen') {
       const messages = await Message.find({ discussion: req.params.discussionId })
         .populate('sender', '-password')
+        .populate('group') // Populate group untuk filter di frontend
         .populate({
           path: 'replyTo',
           populate: { path: 'sender', select: '-password' }
@@ -158,6 +169,7 @@ router.get('/:discussionId', protect, async (req, res) => {
 
     const messages = await Message.find(query)
       .populate('sender', '-password')
+      .populate('group') // Populate group untuk konsistensi
       .populate({
         path: 'replyTo',
         populate: { path: 'sender', select: '-password' }

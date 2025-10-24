@@ -27,14 +27,19 @@ const ExportPDFModal = ({ isOpen, onClose, discussion }) => {
       const userInfo = localStorage.getItem('userInfo')
       const { token } = JSON.parse(userInfo)
 
-      // Get API URL - use environment variable if set, otherwise use relative path with proxy
-      const API_URL = import.meta.env.VITE_API_URL || ''
+      // Get API URL - match the same pattern as api.js
+      // In development: use '/api' (proxied by Vite)
+      // In production: use VITE_API_URL environment variable (e.g., 'https://example.com/api')
+      const API_URL = import.meta.env.VITE_API_URL || '/api'
 
       // Build URL with group parameter
-      let url = `${API_URL}/api/discussions/${discussion._id}/export-pdf`
+      // API_URL already contains '/api', so we just append the endpoint path
+      let url = `${API_URL}/discussions/${discussion._id}/export-pdf`
       if (selectedGroup !== 'all') {
         url += `?group=${selectedGroup}`
       }
+
+      console.log('Downloading PDF from:', url) // Debug log
 
       const response = await fetch(url, {
         method: 'GET',
@@ -44,7 +49,9 @@ const ExportPDFModal = ({ isOpen, onClose, discussion }) => {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to download PDF')
+        const errorText = await response.text()
+        console.error('PDF download failed:', response.status, errorText)
+        throw new Error(`Failed to download PDF: ${response.status}`)
       }
 
       const blob = await response.blob()
@@ -71,11 +78,13 @@ const ExportPDFModal = ({ isOpen, onClose, discussion }) => {
 
       onClose()
     } catch (error) {
+      console.error('Download error:', error)
       toast({
         title: 'Error',
-        description: 'Failed to download PDF',
+        description: error.message || 'Failed to download PDF',
         status: 'error',
-        duration: 3000,
+        duration: 5000,
+        isClosable: true,
       })
     } finally {
       setIsDownloading(false)

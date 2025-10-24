@@ -195,9 +195,28 @@ const Discussion = () => {
   // Filter messages for display based on selected group (for dosen)
   const displayedMessages = user?.role === 'dosen' && selectedGroupFilter !== 'all'
     ? messages.filter(msg => {
-        if (!msg.group) return true // Show messages without group
+        // Jika message tidak punya group, skip (jangan tampilkan)
+        // Karena semua message seharusnya punya group di sistem multi-group
+        if (!msg.group) {
+          console.log('Message without group:', msg._id, msg.content?.substring(0, 30))
+          return false
+        }
+
         const messageGroupId = typeof msg.group === 'object' ? msg.group._id || msg.group : msg.group
-        return messageGroupId === selectedGroupFilter
+        const shouldShow = messageGroupId === selectedGroupFilter
+
+        // Debug logging
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Filter check:', {
+            messageId: msg._id,
+            messageGroupId,
+            selectedGroupFilter,
+            shouldShow,
+            groupObject: msg.group
+          })
+        }
+
+        return shouldShow
       })
     : messages
 
