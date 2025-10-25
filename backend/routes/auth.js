@@ -28,10 +28,32 @@ router.post('/register', [
 
     const { name, email, password, role, nim, nip, lecturers } = req.body;
 
-    // Check if user exists
+    // Check if user exists with the same email
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({
+        message: 'Email already registered. Please use a different email or login if you already have an account.'
+      });
+    }
+
+    // Check if NIM already exists (for mahasiswa)
+    if (role === 'mahasiswa' && nim) {
+      const nimExists = await User.findOne({ nim, role: 'mahasiswa' });
+      if (nimExists) {
+        return res.status(400).json({
+          message: 'NIM already registered. Please use a different NIM.'
+        });
+      }
+    }
+
+    // Check if NIP already exists (for dosen)
+    if (role === 'dosen' && nip) {
+      const nipExists = await User.findOne({ nip, role: 'dosen' });
+      if (nipExists) {
+        return res.status(400).json({
+          message: 'NIP already registered. Please use a different NIP.'
+        });
+      }
     }
 
     // If mahasiswa, verify lecturers exist and are dosen

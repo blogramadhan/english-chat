@@ -52,8 +52,11 @@ const AdminDashboard = () => {
   const [allUsers, setAllUsers] = useState([])
   const [searchPending, setSearchPending] = useState('')
   const [searchAll, setSearchAll] = useState('')
+  const [currentPendingPage, setCurrentPendingPage] = useState(1)
+  const [currentAllUsersPage, setCurrentAllUsersPage] = useState(1)
   const [selectedUser, setSelectedUser] = useState(null)
   const [userToEdit, setUserToEdit] = useState(null)
+  const usersPerPage = 10
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure()
   const cancelRef = useRef()
@@ -62,6 +65,15 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchData()
   }, [])
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    setCurrentPendingPage(1)
+  }, [searchPending])
+
+  useEffect(() => {
+    setCurrentAllUsersPage(1)
+  }, [searchAll])
 
   const fetchData = async () => {
     try {
@@ -210,6 +222,12 @@ const AdminDashboard = () => {
     )
   })
 
+  // Pagination for pending users
+  const indexOfLastPendingUser = currentPendingPage * usersPerPage
+  const indexOfFirstPendingUser = indexOfLastPendingUser - usersPerPage
+  const currentPendingUsers = filteredPendingUsers.slice(indexOfFirstPendingUser, indexOfLastPendingUser)
+  const totalPendingPages = Math.ceil(filteredPendingUsers.length / usersPerPage)
+
   // Filter all users berdasarkan search query
   const filteredAllUsers = allUsers.filter((user) => {
     const query = searchAll.toLowerCase()
@@ -222,6 +240,12 @@ const AdminDashboard = () => {
       user.status.toLowerCase().includes(query)
     )
   })
+
+  // Pagination for all users
+  const indexOfLastAllUser = currentAllUsersPage * usersPerPage
+  const indexOfFirstAllUser = indexOfLastAllUser - usersPerPage
+  const currentAllUsers = filteredAllUsers.slice(indexOfFirstAllUser, indexOfLastAllUser)
+  const totalAllUsersPages = Math.ceil(filteredAllUsers.length / usersPerPage)
 
   return (
     <Box minH="100vh" bg="gray.50">
@@ -327,7 +351,7 @@ const AdminDashboard = () => {
                           </Tr>
                         </Thead>
                         <Tbody>
-                          {filteredPendingUsers.map((user) => (
+                          {currentPendingUsers.map((user) => (
                             <Tr key={user._id}>
                               <Td fontSize="sm" py={2}>{user.name}</Td>
                               <Td fontSize="sm" py={2}>{user.email}</Td>
@@ -358,6 +382,34 @@ const AdminDashboard = () => {
                           ))}
                         </Tbody>
                       </Table>
+                    )}
+
+                    {/* Pagination for Pending Users */}
+                    {filteredPendingUsers.length > usersPerPage && (
+                      <Flex justify="space-between" align="center" mt={4} pt={3} borderTop="1px" borderColor="gray.200">
+                        <Text fontSize="sm" color="gray.600">
+                          Showing {indexOfFirstPendingUser + 1} to {Math.min(indexOfLastPendingUser, filteredPendingUsers.length)} of {filteredPendingUsers.length} users
+                        </Text>
+                        <HStack spacing={2}>
+                          <Button
+                            size="sm"
+                            onClick={() => setCurrentPendingPage(prev => Math.max(prev - 1, 1))}
+                            isDisabled={currentPendingPage === 1}
+                          >
+                            Previous
+                          </Button>
+                          <Text fontSize="sm" px={2}>
+                            Page {currentPendingPage} of {totalPendingPages}
+                          </Text>
+                          <Button
+                            size="sm"
+                            onClick={() => setCurrentPendingPage(prev => Math.min(prev + 1, totalPendingPages))}
+                            isDisabled={currentPendingPage === totalPendingPages}
+                          >
+                            Next
+                          </Button>
+                        </HStack>
+                      </Flex>
                     )}
                   </CardBody>
                 </Card>
@@ -400,7 +452,7 @@ const AdminDashboard = () => {
                           </Tr>
                         </Thead>
                         <Tbody>
-                          {filteredAllUsers.map((user) => (
+                          {currentAllUsers.map((user) => (
                           <Tr key={user._id}>
                             <Td fontSize="sm" py={2}>{user.name}</Td>
                             <Td fontSize="sm" py={2}>{user.email}</Td>
@@ -454,6 +506,34 @@ const AdminDashboard = () => {
                           ))}
                         </Tbody>
                       </Table>
+                    )}
+
+                    {/* Pagination for All Users */}
+                    {filteredAllUsers.length > usersPerPage && (
+                      <Flex justify="space-between" align="center" mt={4} pt={3} borderTop="1px" borderColor="gray.200">
+                        <Text fontSize="sm" color="gray.600">
+                          Showing {indexOfFirstAllUser + 1} to {Math.min(indexOfLastAllUser, filteredAllUsers.length)} of {filteredAllUsers.length} users
+                        </Text>
+                        <HStack spacing={2}>
+                          <Button
+                            size="sm"
+                            onClick={() => setCurrentAllUsersPage(prev => Math.max(prev - 1, 1))}
+                            isDisabled={currentAllUsersPage === 1}
+                          >
+                            Previous
+                          </Button>
+                          <Text fontSize="sm" px={2}>
+                            Page {currentAllUsersPage} of {totalAllUsersPages}
+                          </Text>
+                          <Button
+                            size="sm"
+                            onClick={() => setCurrentAllUsersPage(prev => Math.min(prev + 1, totalAllUsersPages))}
+                            isDisabled={currentAllUsersPage === totalAllUsersPages}
+                          >
+                            Next
+                          </Button>
+                        </HStack>
+                      </Flex>
                     )}
                   </CardBody>
                 </Card>
