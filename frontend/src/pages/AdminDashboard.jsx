@@ -41,7 +41,6 @@ import {
   InputLeftElement,
 } from '@chakra-ui/react'
 import { CheckIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon } from '@chakra-ui/icons'
-import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import Navbar from '../components/Navbar'
 import EditUserModal from '../components/EditUserModal'
@@ -53,7 +52,6 @@ const AdminDashboard = () => {
   const [allUsers, setAllUsers] = useState([])
   const [searchPending, setSearchPending] = useState('')
   const [searchAll, setSearchAll] = useState('')
-  const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState(null)
   const [userToEdit, setUserToEdit] = useState(null)
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -83,8 +81,6 @@ const AdminDashboard = () => {
         status: 'error',
         duration: 3000,
       })
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -182,7 +178,7 @@ const AdminDashboard = () => {
     }
 
     return (
-      <Badge colorScheme={colors[status]}>
+      <Badge colorScheme={colors[status]} fontSize="xs">
         {status.toUpperCase()}
       </Badge>
     )
@@ -196,7 +192,7 @@ const AdminDashboard = () => {
     }
 
     return (
-      <Badge colorScheme={colors[role]}>
+      <Badge colorScheme={colors[role]} fontSize="xs">
         {role.toUpperCase()}
       </Badge>
     )
@@ -230,78 +226,78 @@ const AdminDashboard = () => {
   return (
     <Box minH="100vh" bg="gray.50">
       <Navbar />
-      <Container maxW="container.xl" py={8}>
-        <VStack spacing={8} align="stretch">
-          <Heading size="lg">Admin Dashboard</Heading>
+      <Container maxW="container.xl" py={6}>
+        <VStack spacing={5} align="stretch">
+          <Heading size="md">Admin Dashboard</Heading>
 
           {/* Statistics */}
-          <Grid templateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap={4}>
-            <Card>
-              <CardBody>
+          <Grid templateColumns="repeat(auto-fit, minmax(180px, 1fr))" gap={3}>
+            <Card size="sm">
+              <CardBody py={3}>
                 <Stat>
-                  <StatLabel>Total Users</StatLabel>
-                  <StatNumber>{stats.totalUsers || 0}</StatNumber>
-                  <StatHelpText>Lecturers & Students</StatHelpText>
+                  <StatLabel fontSize="xs">Total Users</StatLabel>
+                  <StatNumber fontSize="2xl">{stats.totalUsers || 0}</StatNumber>
+                  <StatHelpText fontSize="xs" mb={0}>Lecturers & Students</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
 
-            <Card>
-              <CardBody>
+            <Card size="sm">
+              <CardBody py={3}>
                 <Stat>
-                  <StatLabel>Pending Approval</StatLabel>
-                  <StatNumber color="yellow.500">{stats.pendingUsers || 0}</StatNumber>
-                  <StatHelpText>Waiting for approval</StatHelpText>
+                  <StatLabel fontSize="xs">Pending Approval</StatLabel>
+                  <StatNumber fontSize="2xl" color="yellow.500">{stats.pendingUsers || 0}</StatNumber>
+                  <StatHelpText fontSize="xs" mb={0}>Waiting approval</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
 
-            <Card>
-              <CardBody>
+            <Card size="sm">
+              <CardBody py={3}>
                 <Stat>
-                  <StatLabel>Approved Users</StatLabel>
-                  <StatNumber color="green.500">{stats.approvedUsers || 0}</StatNumber>
-                  <StatHelpText>Active users</StatHelpText>
+                  <StatLabel fontSize="xs">Approved Users</StatLabel>
+                  <StatNumber fontSize="2xl" color="green.500">{stats.approvedUsers || 0}</StatNumber>
+                  <StatHelpText fontSize="xs" mb={0}>Active users</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
 
-            <Card>
-              <CardBody>
+            <Card size="sm">
+              <CardBody py={3}>
                 <Stat>
-                  <StatLabel>Total Lecturers</StatLabel>
-                  <StatNumber color="blue.500">{stats.totalDosen || 0}</StatNumber>
-                  <StatHelpText>Active lecturers</StatHelpText>
+                  <StatLabel fontSize="xs">Total Lecturers</StatLabel>
+                  <StatNumber fontSize="2xl" color="blue.500">{stats.totalDosen || 0}</StatNumber>
+                  <StatHelpText fontSize="xs" mb={0}>Active lecturers</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
 
-            <Card>
-              <CardBody>
+            <Card size="sm">
+              <CardBody py={3}>
                 <Stat>
-                  <StatLabel>Total Students</StatLabel>
-                  <StatNumber color="cyan.500">{stats.totalMahasiswa || 0}</StatNumber>
-                  <StatHelpText>Active students</StatHelpText>
+                  <StatLabel fontSize="xs">Total Students</StatLabel>
+                  <StatNumber fontSize="2xl" color="cyan.500">{stats.totalMahasiswa || 0}</StatNumber>
+                  <StatHelpText fontSize="xs" mb={0}>Active students</StatHelpText>
                 </Stat>
               </CardBody>
             </Card>
           </Grid>
 
           {/* Tabs */}
-          <Tabs colorScheme="brand">
+          <Tabs colorScheme="brand" size="sm">
             <TabList>
-              <Tab>Pending Approval ({pendingUsers.length})</Tab>
-              <Tab>All Users ({allUsers.length})</Tab>
+              <Tab fontSize="sm">Pending Approval ({pendingUsers.length})</Tab>
+              <Tab fontSize="sm">All Users ({allUsers.length})</Tab>
             </TabList>
 
             <TabPanels>
               {/* Pending Users Tab */}
-              <TabPanel>
-                <Card>
-                  <CardHeader>
-                    <VStack align="stretch" spacing={4}>
-                      <Heading size="md">Pending Users</Heading>
-                      <InputGroup>
+              <TabPanel px={0}>
+                <Card size="sm">
+                  <CardHeader pb={2}>
+                    <VStack align="stretch" spacing={3}>
+                      <Heading size="sm">Pending Users</Heading>
+                      <InputGroup size="sm">
                         <InputLeftElement pointerEvents="none">
                           <SearchIcon color="gray.300" />
                         </InputLeftElement>
@@ -313,46 +309,46 @@ const AdminDashboard = () => {
                       </InputGroup>
                     </VStack>
                   </CardHeader>
-                  <CardBody>
+                  <CardBody pt={2}>
                     {pendingUsers.length === 0 ? (
-                      <Text color="gray.500">No users waiting for approval</Text>
+                      <Text color="gray.500" fontSize="sm" py={4}>No users waiting for approval</Text>
                     ) : filteredPendingUsers.length === 0 ? (
-                      <Text color="gray.500">No users found matching your search</Text>
+                      <Text color="gray.500" fontSize="sm" py={4}>No users found matching your search</Text>
                     ) : (
-                      <Table variant="simple">
+                      <Table variant="simple" size="sm">
                         <Thead>
                           <Tr>
-                            <Th>Name</Th>
-                            <Th>Email</Th>
-                            <Th>Role</Th>
-                            <Th>NIM/NIP</Th>
-                            <Th>Registered At</Th>
-                            <Th>Actions</Th>
+                            <Th fontSize="xs" py={2}>Name</Th>
+                            <Th fontSize="xs" py={2}>Email</Th>
+                            <Th fontSize="xs" py={2}>Role</Th>
+                            <Th fontSize="xs" py={2}>NIM/NIP</Th>
+                            <Th fontSize="xs" py={2}>Registered</Th>
+                            <Th fontSize="xs" py={2}>Actions</Th>
                           </Tr>
                         </Thead>
                         <Tbody>
                           {filteredPendingUsers.map((user) => (
                             <Tr key={user._id}>
-                              <Td>{user.name}</Td>
-                              <Td>{user.email}</Td>
-                              <Td>{getRoleBadge(user.role)}</Td>
-                              <Td>{user.nim || user.nip || '-'}</Td>
-                              <Td>
-                                {new Date(user.createdAt).toLocaleDateString('id-ID')}
+                              <Td fontSize="sm" py={2}>{user.name}</Td>
+                              <Td fontSize="sm" py={2}>{user.email}</Td>
+                              <Td py={2}>{getRoleBadge(user.role)}</Td>
+                              <Td fontSize="sm" py={2}>{user.nim || user.nip || '-'}</Td>
+                              <Td fontSize="sm" py={2}>
+                                {new Date(user.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                               </Td>
-                              <Td>
-                                <HStack spacing={2}>
+                              <Td py={2}>
+                                <HStack spacing={1}>
                                   <IconButton
                                     icon={<CheckIcon />}
                                     colorScheme="green"
-                                    size="sm"
+                                    size="xs"
                                     onClick={() => handleApprove(user._id)}
                                     aria-label="Approve"
                                   />
                                   <IconButton
                                     icon={<CloseIcon />}
                                     colorScheme="red"
-                                    size="sm"
+                                    size="xs"
                                     onClick={() => handleReject(user._id)}
                                     aria-label="Reject"
                                   />
@@ -368,12 +364,12 @@ const AdminDashboard = () => {
               </TabPanel>
 
               {/* All Users Tab */}
-              <TabPanel>
-                <Card>
-                  <CardHeader>
-                    <VStack align="stretch" spacing={4}>
-                      <Heading size="md">All Users</Heading>
-                      <InputGroup>
+              <TabPanel px={0}>
+                <Card size="sm">
+                  <CardHeader pb={2}>
+                    <VStack align="stretch" spacing={3}>
+                      <Heading size="sm">All Users</Heading>
+                      <InputGroup size="sm">
                         <InputLeftElement pointerEvents="none">
                           <SearchIcon color="gray.300" />
                         </InputLeftElement>
@@ -385,50 +381,50 @@ const AdminDashboard = () => {
                       </InputGroup>
                     </VStack>
                   </CardHeader>
-                  <CardBody>
+                  <CardBody pt={2}>
                     {filteredAllUsers.length === 0 ? (
-                      <Text color="gray.500">
+                      <Text color="gray.500" fontSize="sm" py={4}>
                         {allUsers.length === 0 ? 'No users found' : 'No users found matching your search'}
                       </Text>
                     ) : (
-                      <Table variant="simple">
+                      <Table variant="simple" size="sm">
                         <Thead>
                           <Tr>
-                            <Th>Name</Th>
-                            <Th>Email</Th>
-                            <Th>Role</Th>
-                            <Th>Status</Th>
-                            <Th>NIM/NIP</Th>
-                            <Th>Registered At</Th>
-                            <Th>Actions</Th>
+                            <Th fontSize="xs" py={2}>Name</Th>
+                            <Th fontSize="xs" py={2}>Email</Th>
+                            <Th fontSize="xs" py={2}>Role</Th>
+                            <Th fontSize="xs" py={2}>Status</Th>
+                            <Th fontSize="xs" py={2}>NIM/NIP</Th>
+                            <Th fontSize="xs" py={2}>Registered</Th>
+                            <Th fontSize="xs" py={2}>Actions</Th>
                           </Tr>
                         </Thead>
                         <Tbody>
                           {filteredAllUsers.map((user) => (
                           <Tr key={user._id}>
-                            <Td>{user.name}</Td>
-                            <Td>{user.email}</Td>
-                            <Td>{getRoleBadge(user.role)}</Td>
-                            <Td>{getStatusBadge(user.status)}</Td>
-                            <Td>{user.nim || user.nip || '-'}</Td>
-                            <Td>
-                              {new Date(user.createdAt).toLocaleDateString('id-ID')}
+                            <Td fontSize="sm" py={2}>{user.name}</Td>
+                            <Td fontSize="sm" py={2}>{user.email}</Td>
+                            <Td py={2}>{getRoleBadge(user.role)}</Td>
+                            <Td py={2}>{getStatusBadge(user.status)}</Td>
+                            <Td fontSize="sm" py={2}>{user.nim || user.nip || '-'}</Td>
+                            <Td fontSize="sm" py={2}>
+                              {new Date(user.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </Td>
-                            <Td>
-                              <HStack spacing={2}>
+                            <Td py={2}>
+                              <HStack spacing={1}>
                                 {user.status === 'pending' && (
                                   <>
                                     <IconButton
                                       icon={<CheckIcon />}
                                       colorScheme="green"
-                                      size="sm"
+                                      size="xs"
                                       onClick={() => handleApprove(user._id)}
                                       aria-label="Approve"
                                     />
                                     <IconButton
                                       icon={<CloseIcon />}
                                       colorScheme="orange"
-                                      size="sm"
+                                      size="xs"
                                       onClick={() => handleReject(user._id)}
                                       aria-label="Reject"
                                     />
@@ -439,14 +435,14 @@ const AdminDashboard = () => {
                                     <IconButton
                                       icon={<EditIcon />}
                                       colorScheme="blue"
-                                      size="sm"
+                                      size="xs"
                                       onClick={() => handleEditClick(user)}
                                       aria-label="Edit"
                                     />
                                     <IconButton
                                       icon={<DeleteIcon />}
                                       colorScheme="red"
-                                      size="sm"
+                                      size="xs"
                                       onClick={() => handleDeleteClick(user)}
                                       aria-label="Delete"
                                     />
