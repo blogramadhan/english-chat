@@ -56,52 +56,55 @@ const Login = () => {
   }
 
   return (
-    <Container maxW="md" centerContent py={20}>
-      <Card w="full" boxShadow="xl">
-        <CardBody>
-          <VStack spacing={6}>
-            <Box pt={4}>
-              <LoomaLogo size={100} />
+    <Container maxW="sm" centerContent py={12}>
+      <Card w="full" boxShadow="md">
+        <CardBody p={6}>
+          <VStack spacing={4}>
+            <Box pt={2}>
+              <LoomaLogo size={70} />
             </Box>
-            <VStack spacing={1}>
-              <Heading size="xl" color="brand.600">LOOMA</Heading>
-              <Text fontSize="sm" color="gray.500" fontWeight="medium">Learning Online Platform</Text>
+            <VStack spacing={0.5}>
+              <Heading size="lg" color="brand.600">LOOMA</Heading>
+              <Text fontSize="xs" color="gray.500" fontWeight="medium">Learning Online Platform</Text>
             </VStack>
-            <Text color="gray.600" fontSize="md">Sign in to your account</Text>
+            <Text color="gray.600" fontSize="sm">Sign in to your account</Text>
 
             <Box as="form" onSubmit={handleSubmit} w="full">
-              <VStack spacing={4}>
+              <VStack spacing={3}>
                 <FormControl isRequired>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel fontSize="sm">Email</FormLabel>
                   <Input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="email@example.com"
+                    size="sm"
                   />
                 </FormControl>
 
                 <FormControl isRequired>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel fontSize="sm">Password</FormLabel>
                   <Input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="******"
+                    size="sm"
                   />
                 </FormControl>
 
                 <Button
                   type="submit"
                   colorScheme="brand"
-                  size="lg"
+                  size="md"
                   w="full"
                   isLoading={loading}
+                  mt={2}
                 >
                   Sign In
                 </Button>
 
-                <Text>
+                <Text fontSize="sm">
                   Don't have an account?{' '}
                   <Link as={RouterLink} to="/register" color="brand.500" fontWeight="bold">
                     Register here

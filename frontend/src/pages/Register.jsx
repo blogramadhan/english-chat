@@ -113,56 +113,59 @@ const Register = () => {
   }
 
   return (
-    <Container maxW="md" centerContent py={20}>
-      <Card w="full" boxShadow="xl">
-        <CardBody>
-          <VStack spacing={6}>
-            <Box pt={4}>
-              <LoomaLogo size={100} />
+    <Container maxW="sm" centerContent py={12}>
+      <Card w="full" boxShadow="md">
+        <CardBody p={6}>
+          <VStack spacing={4}>
+            <Box pt={2}>
+              <LoomaLogo size={70} />
             </Box>
-            <VStack spacing={1}>
-              <Heading size="xl" color="brand.600">LOOMA</Heading>
-              <Text fontSize="sm" color="gray.500" fontWeight="medium">Learning Online Platform</Text>
+            <VStack spacing={0.5}>
+              <Heading size="lg" color="brand.600">LOOMA</Heading>
+              <Text fontSize="xs" color="gray.500" fontWeight="medium">Learning Online Platform</Text>
             </VStack>
-            <Text color="gray.600" fontSize="md">Create new account</Text>
+            <Text color="gray.600" fontSize="sm">Create new account</Text>
 
             <Box as="form" onSubmit={handleSubmit} w="full">
-              <VStack spacing={4}>
+              <VStack spacing={3}>
                 <FormControl isRequired>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel fontSize="sm">Full Name</FormLabel>
                   <Input
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Your full name"
+                    size="sm"
                   />
                 </FormControl>
 
                 <FormControl isRequired>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel fontSize="sm">Email</FormLabel>
                   <Input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="email@example.com"
+                    size="sm"
                   />
                 </FormControl>
 
                 <FormControl isRequired>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel fontSize="sm">Password</FormLabel>
                   <Input
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Minimum 6 characters"
+                    size="sm"
                   />
                 </FormControl>
 
                 <FormControl isRequired>
-                  <FormLabel>Role</FormLabel>
-                  <Select name="role" value={formData.role} onChange={handleChange}>
+                  <FormLabel fontSize="sm">Role</FormLabel>
+                  <Select name="role" value={formData.role} onChange={handleChange} size="sm">
                     <option value="mahasiswa">Student</option>
                     <option value="dosen">Lecturer</option>
                   </Select>
@@ -171,44 +174,46 @@ const Register = () => {
                 {formData.role === 'mahasiswa' && (
                   <>
                     <FormControl>
-                      <FormLabel>Student ID (NIM)</FormLabel>
+                      <FormLabel fontSize="sm">Student ID (NIM)</FormLabel>
                       <Input
                         name="nim"
                         value={formData.nim}
                         onChange={handleChange}
                         placeholder="Student ID number"
+                        size="sm"
                       />
                     </FormControl>
 
                     <FormControl isRequired>
-                      <FormLabel>
+                      <FormLabel fontSize="sm">
                         Select Your Lecturers ({selectedLecturers.length} selected)
                       </FormLabel>
                       <Box
-                        maxH="200px"
+                        maxH="150px"
                         overflowY="auto"
                         border="1px"
                         borderColor="gray.200"
                         borderRadius="md"
-                        p={3}
+                        p={2}
                       >
                         {lecturers.length === 0 ? (
-                          <Text color="gray.500" fontSize="sm">No lecturers available</Text>
+                          <Text color="gray.500" fontSize="xs">No lecturers available</Text>
                         ) : (
-                          <Stack spacing={2}>
+                          <Stack spacing={1.5}>
                             {lecturers.map((lecturer) => (
                               <Checkbox
                                 key={lecturer._id}
                                 isChecked={selectedLecturers.includes(lecturer._id)}
                                 onChange={() => handleLecturerToggle(lecturer._id)}
+                                size="sm"
                               >
-                                {lecturer.name} {lecturer.nip ? `(${lecturer.nip})` : ''}
+                                <Text fontSize="sm">{lecturer.name} {lecturer.nip ? `(${lecturer.nip})` : ''}</Text>
                               </Checkbox>
                             ))}
                           </Stack>
                         )}
                       </Box>
-                      <Text fontSize="xs" color="gray.500" mt={1}>
+                      <Text fontSize="2xs" color="gray.500" mt={1}>
                         Select one or more lecturers. You will appear in groups created by selected lecturers.
                       </Text>
                     </FormControl>
@@ -217,12 +222,13 @@ const Register = () => {
 
                 {formData.role === 'dosen' && (
                   <FormControl>
-                    <FormLabel>Employee ID (NIP)</FormLabel>
+                    <FormLabel fontSize="sm">Employee ID (NIP)</FormLabel>
                     <Input
                       name="nip"
                       value={formData.nip}
                       onChange={handleChange}
                       placeholder="Employee ID number"
+                      size="sm"
                     />
                   </FormControl>
                 )}
@@ -230,14 +236,15 @@ const Register = () => {
                 <Button
                   type="submit"
                   colorScheme="brand"
-                  size="lg"
+                  size="md"
                   w="full"
                   isLoading={loading}
+                  mt={2}
                 >
                   Register
                 </Button>
 
-                <Text>
+                <Text fontSize="sm">
                   Already have an account?{' '}
                   <Link as={RouterLink} to="/login" color="brand.500" fontWeight="bold">
                     Sign in here
