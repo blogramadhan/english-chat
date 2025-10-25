@@ -45,6 +45,7 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Flex,
 } from '@chakra-ui/react'
 import { CheckIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon } from '@chakra-ui/icons'
 import api from '../utils/api'
@@ -85,6 +86,7 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
+      console.log('AdminDashboard: Starting to fetch data...')
       setLoading(true)
       setError(null)
 
@@ -94,11 +96,22 @@ const AdminDashboard = () => {
         api.get('/admin/users')
       ])
 
+      console.log('AdminDashboard: Data fetched successfully', {
+        stats: statsRes.data,
+        pendingUsers: pendingRes.data?.length || 0,
+        allUsers: usersRes.data?.length || 0
+      })
+
       setStats(statsRes.data || {})
       setPendingUsers(pendingRes.data || [])
       setAllUsers(usersRes.data || [])
     } catch (error) {
-      console.error('Error fetching admin data:', error)
+      console.error('AdminDashboard: Error fetching data:', error)
+      console.error('AdminDashboard: Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      })
       setError(error.response?.data?.message || 'Failed to load data')
       toast({
         title: 'Error',
@@ -107,6 +120,7 @@ const AdminDashboard = () => {
         duration: 5000,
       })
     } finally {
+      console.log('AdminDashboard: Setting loading to false')
       setLoading(false)
     }
   }
@@ -225,6 +239,65 @@ const AdminDashboard = () => {
     )
   }
 
+  // Show loading state
+  if (loading) {
+    console.log('AdminDashboard: Rendering loading state')
+    return (
+      <Box minH="100vh" bg="gray.50">
+        <Navbar />
+        <Container maxW="container.xl" py={6}>
+          <Center py={20}>
+            <VStack spacing={4}>
+              <Spinner size="xl" color="brand.500" thickness="4px" />
+              <Text color="gray.600">Loading dashboard data...</Text>
+            </VStack>
+          </Center>
+        </Container>
+      </Box>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    console.log('AdminDashboard: Rendering error state', error)
+    return (
+      <Box minH="100vh" bg="gray.50">
+        <Navbar />
+        <Container maxW="container.xl" py={6}>
+          <Alert
+            status="error"
+            variant="subtle"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            textAlign="center"
+            minH="200px"
+            borderRadius="md"
+          >
+            <AlertIcon boxSize="40px" mr={0} />
+            <AlertTitle mt={4} mb={1} fontSize="lg">
+              Failed to Load Dashboard
+            </AlertTitle>
+            <AlertDescription maxW="sm" mb={4}>
+              {error}
+            </AlertDescription>
+            <Button colorScheme="brand" onClick={fetchData}>
+              Retry
+            </Button>
+          </Alert>
+        </Container>
+      </Box>
+    )
+  }
+
+  console.log('AdminDashboard: Rendering main dashboard', {
+    loading,
+    error,
+    statsLoaded: !!stats,
+    pendingUsersCount: pendingUsers.length,
+    allUsersCount: allUsers.length
+  })
+
   // Filter pending users berdasarkan search query
   const filteredPendingUsers = pendingUsers.filter((user) => {
     if (!user) return false
@@ -263,55 +336,6 @@ const AdminDashboard = () => {
   const indexOfFirstAllUser = indexOfLastAllUser - usersPerPage
   const currentAllUsers = filteredAllUsers.slice(indexOfFirstAllUser, indexOfLastAllUser)
   const totalAllUsersPages = Math.max(1, Math.ceil(filteredAllUsers.length / usersPerPage))
-
-  // Show loading state
-  if (loading) {
-    return (
-      <Box minH="100vh" bg="gray.50">
-        <Navbar />
-        <Container maxW="container.xl" py={6}>
-          <Center py={20}>
-            <VStack spacing={4}>
-              <Spinner size="xl" color="brand.500" thickness="4px" />
-              <Text color="gray.600">Loading dashboard data...</Text>
-            </VStack>
-          </Center>
-        </Container>
-      </Box>
-    )
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <Box minH="100vh" bg="gray.50">
-        <Navbar />
-        <Container maxW="container.xl" py={6}>
-          <Alert
-            status="error"
-            variant="subtle"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            textAlign="center"
-            minH="200px"
-            borderRadius="md"
-          >
-            <AlertIcon boxSize="40px" mr={0} />
-            <AlertTitle mt={4} mb={1} fontSize="lg">
-              Failed to Load Dashboard
-            </AlertTitle>
-            <AlertDescription maxW="sm" mb={4}>
-              {error}
-            </AlertDescription>
-            <Button colorScheme="brand" onClick={fetchData}>
-              Retry
-            </Button>
-          </Alert>
-        </Container>
-      </Box>
-    )
-  }
 
   return (
     <Box minH="100vh" bg="gray.50">
