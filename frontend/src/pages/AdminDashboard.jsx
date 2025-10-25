@@ -39,6 +39,12 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  Spinner,
+  Center,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from '@chakra-ui/react'
 import { CheckIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon } from '@chakra-ui/icons'
 import api from '../utils/api'
@@ -56,6 +62,8 @@ const AdminDashboard = () => {
   const [currentAllUsersPage, setCurrentAllUsersPage] = useState(1)
   const [selectedUser, setSelectedUser] = useState(null)
   const [userToEdit, setUserToEdit] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const usersPerPage = 10
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure()
@@ -77,22 +85,29 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
+      setLoading(true)
+      setError(null)
+
       const [statsRes, pendingRes, usersRes] = await Promise.all([
         api.get('/admin/stats'),
         api.get('/admin/users/pending'),
         api.get('/admin/users')
       ])
 
-      setStats(statsRes.data)
-      setPendingUsers(pendingRes.data)
-      setAllUsers(usersRes.data)
+      setStats(statsRes.data || {})
+      setPendingUsers(pendingRes.data || [])
+      setAllUsers(usersRes.data || [])
     } catch (error) {
+      console.error('Error fetching admin data:', error)
+      setError(error.response?.data?.message || 'Failed to load data')
       toast({
         title: 'Error',
-        description: 'Gagal memuat data',
+        description: error.response?.data?.message || 'Gagal memuat data',
         status: 'error',
-        duration: 3000,
+        duration: 5000,
       })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -212,13 +227,14 @@ const AdminDashboard = () => {
 
   // Filter pending users berdasarkan search query
   const filteredPendingUsers = pendingUsers.filter((user) => {
+    if (!user) return false
     const query = searchPending.toLowerCase()
     return (
-      user.name.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
+      user.name?.toLowerCase().includes(query) ||
+      user.email?.toLowerCase().includes(query) ||
       (user.nim && user.nim.toLowerCase().includes(query)) ||
       (user.nip && user.nip.toLowerCase().includes(query)) ||
-      user.role.toLowerCase().includes(query)
+      user.role?.toLowerCase().includes(query)
     )
   })
 
@@ -226,18 +242,19 @@ const AdminDashboard = () => {
   const indexOfLastPendingUser = currentPendingPage * usersPerPage
   const indexOfFirstPendingUser = indexOfLastPendingUser - usersPerPage
   const currentPendingUsers = filteredPendingUsers.slice(indexOfFirstPendingUser, indexOfLastPendingUser)
-  const totalPendingPages = Math.ceil(filteredPendingUsers.length / usersPerPage)
+  const totalPendingPages = Math.max(1, Math.ceil(filteredPendingUsers.length / usersPerPage))
 
   // Filter all users berdasarkan search query
   const filteredAllUsers = allUsers.filter((user) => {
+    if (!user) return false
     const query = searchAll.toLowerCase()
     return (
-      user.name.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
+      user.name?.toLowerCase().includes(query) ||
+      user.email?.toLowerCase().includes(query) ||
       (user.nim && user.nim.toLowerCase().includes(query)) ||
       (user.nip && user.nip.toLowerCase().includes(query)) ||
-      user.role.toLowerCase().includes(query) ||
-      user.status.toLowerCase().includes(query)
+      user.role?.toLowerCase().includes(query) ||
+      user.status?.toLowerCase().includes(query)
     )
   })
 
@@ -245,7 +262,56 @@ const AdminDashboard = () => {
   const indexOfLastAllUser = currentAllUsersPage * usersPerPage
   const indexOfFirstAllUser = indexOfLastAllUser - usersPerPage
   const currentAllUsers = filteredAllUsers.slice(indexOfFirstAllUser, indexOfLastAllUser)
-  const totalAllUsersPages = Math.ceil(filteredAllUsers.length / usersPerPage)
+  const totalAllUsersPages = Math.max(1, Math.ceil(filteredAllUsers.length / usersPerPage))
+
+  // Show loading state
+  if (loading) {
+    return (
+      <Box minH="100vh" bg="gray.50">
+        <Navbar />
+        <Container maxW="container.xl" py={6}>
+          <Center py={20}>
+            <VStack spacing={4}>
+              <Spinner size="xl" color="brand.500" thickness="4px" />
+              <Text color="gray.600">Loading dashboard data...</Text>
+            </VStack>
+          </Center>
+        </Container>
+      </Box>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Box minH="100vh" bg="gray.50">
+        <Navbar />
+        <Container maxW="container.xl" py={6}>
+          <Alert
+            status="error"
+            variant="subtle"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            textAlign="center"
+            minH="200px"
+            borderRadius="md"
+          >
+            <AlertIcon boxSize="40px" mr={0} />
+            <AlertTitle mt={4} mb={1} fontSize="lg">
+              Failed to Load Dashboard
+            </AlertTitle>
+            <AlertDescription maxW="sm" mb={4}>
+              {error}
+            </AlertDescription>
+            <Button colorScheme="brand" onClick={fetchData}>
+              Retry
+            </Button>
+          </Alert>
+        </Container>
+      </Box>
+    )
+  }
 
   return (
     <Box minH="100vh" bg="gray.50">
