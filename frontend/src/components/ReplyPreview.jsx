@@ -23,27 +23,28 @@ const ReplyPreview = ({ replyToMessage, onCancel }) => {
   return (
     <Box
       bg="gray.50"
-      borderLeft="3px solid"
+      borderLeft="2px solid"
       borderColor="brand.500"
-      p={3}
-      mb={2}
-      borderRadius="md"
+      px={2}
+      py={1.5}
+      mb={1.5}
+      borderRadius="sm"
     >
-      <HStack justify="space-between">
-        <HStack spacing={2} flex={1} overflow="hidden">
-          <FaReply color="gray" size={12} />
+      <HStack justify="space-between" spacing={1}>
+        <HStack spacing={1.5} flex={1} overflow="hidden">
+          <FaReply color="gray" size={10} />
           <Box flex={1} overflow="hidden">
-            <Text fontSize="xs" fontWeight="medium" color="brand.600">
+            <Text fontSize="2xs" fontWeight="semibold" color="brand.600">
               Replying to {replyToMessage.sender?.name || 'User'}
             </Text>
-            <Text fontSize="sm" color="gray.600" noOfLines={1}>
+            <Text fontSize="xs" color="gray.600" noOfLines={1}>
               {getTruncatedContent(replyToMessage)}
             </Text>
           </Box>
         </HStack>
         <IconButton
           icon={<CloseIcon />}
-          size="xs"
+          size="2xs"
           variant="ghost"
           onClick={onCancel}
           aria-label="Cancel reply"

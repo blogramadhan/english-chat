@@ -38,16 +38,17 @@ const ChatBox = ({ messages, currentUser, onReply }) => {
     return (
       <Box
         bg={isOwn ? 'whiteAlpha.300' : 'gray.200'}
-        borderLeft="3px solid"
+        borderLeft="2px solid"
         borderColor={isOwn ? 'whiteAlpha.600' : 'brand.400'}
-        p={2}
-        mb={2}
-        borderRadius="md"
+        px={2}
+        py={1}
+        mb={1.5}
+        borderRadius="sm"
       >
-        <Text fontSize="xs" fontWeight="medium" color={isOwn ? 'whiteAlpha.800' : 'brand.600'}>
+        <Text fontSize="2xs" fontWeight="semibold" color={isOwn ? 'whiteAlpha.900' : 'brand.600'}>
           {replyTo.sender?.name || 'User'}
         </Text>
-        <Text fontSize="xs" color={isOwn ? 'whiteAlpha.700' : 'gray.600'} noOfLines={2}>
+        <Text fontSize="2xs" color={isOwn ? 'whiteAlpha.800' : 'gray.600'} noOfLines={1}>
           {replyContent}
         </Text>
       </Box>
@@ -64,41 +65,42 @@ const ChatBox = ({ messages, currentUser, onReply }) => {
             <Image
               src={getFileUrl(message.fileUrl)}
               alt={message.fileName}
-              maxW="300px"
+              maxW="250px"
               borderRadius="md"
             />
           ) : (
             <Link
               href={getFileUrl(message.fileUrl)}
               isExternal
-              color="blue.500"
+              color="blue.400"
+              fontSize="sm"
             >
-              <HStack>
-                <AttachmentIcon />
+              <HStack spacing={1}>
+                <AttachmentIcon boxSize={3} />
                 <Text>{message.fileName}</Text>
               </HStack>
             </Link>
           )}
           {message.content !== message.fileName && (
-            <Text mt={2}>{message.content}</Text>
+            <Text mt={1} fontSize="sm">{message.content}</Text>
           )}
         </Box>
       )
     }
 
-    return <Text whiteSpace="pre-wrap">{message.content}</Text>
+    return <Text whiteSpace="pre-wrap" fontSize="sm">{message.content}</Text>
   }
 
   return (
     <Box
       flex={1}
       bg="white"
-      borderRadius="lg"
-      p={4}
+      borderRadius="md"
+      p={3}
       overflowY="auto"
       boxShadow="sm"
     >
-      <VStack spacing={4} align="stretch">
+      <VStack spacing={2} align="stretch">
         {messages.map((message) => {
           const isOwn = isOwnMessage(message)
 
@@ -107,35 +109,37 @@ const ChatBox = ({ messages, currentUser, onReply }) => {
               key={message._id}
               justify={isOwn ? 'flex-end' : 'flex-start'}
               align="flex-start"
+              spacing={2}
             >
               {!isOwn && (
                 <Avatar
-                  size="sm"
+                  size="xs"
                   name={message.sender?.name}
                   src={getAvatarUrl(message.sender?.avatar)}
                 />
               )}
 
-              <Box maxW="70%" position="relative" role="group">
+              <Box maxW="75%" position="relative" role="group">
                 {!isOwn && (
-                  <Text fontSize="xs" color="gray.500" mb={1}>
+                  <Text fontSize="xs" color="gray.600" mb={0.5} fontWeight="medium">
                     {message.sender?.name}
                   </Text>
                 )}
                 <Box
                   bg={isOwn ? 'brand.500' : 'gray.100'}
                   color={isOwn ? 'white' : 'black'}
-                  px={4}
+                  px={3}
                   py={2}
                   borderRadius="lg"
-                  borderTopLeftRadius={!isOwn ? 0 : 'lg'}
-                  borderTopRightRadius={isOwn ? 0 : 'lg'}
+                  borderTopLeftRadius={!isOwn ? 'sm' : 'lg'}
+                  borderTopRightRadius={isOwn ? 'sm' : 'lg'}
                   position="relative"
+                  fontSize="sm"
                 >
                   {renderReplyMessage(message.replyTo, isOwn)}
                   {renderMessageContent(message)}
                   {message.isEdited && (
-                    <Text fontSize="xs" color={isOwn ? 'whiteAlpha.700' : 'gray.500'} mt={1}>
+                    <Text fontSize="2xs" color={isOwn ? 'whiteAlpha.700' : 'gray.500'} mt={0.5}>
                       (edited)
                     </Text>
                   )}
@@ -143,11 +147,11 @@ const ChatBox = ({ messages, currentUser, onReply }) => {
                   {/* Reply button - shows on hover */}
                   <IconButton
                     icon={<FaReply />}
-                    size="xs"
+                    size="2xs"
                     variant="ghost"
                     position="absolute"
-                    top={1}
-                    right={1}
+                    top={0.5}
+                    right={0.5}
                     opacity={0}
                     _groupHover={{ opacity: 1 }}
                     colorScheme={isOwn ? 'whiteAlpha' : 'gray'}
@@ -155,7 +159,7 @@ const ChatBox = ({ messages, currentUser, onReply }) => {
                     aria-label="Reply to message"
                   />
                 </Box>
-                <Text fontSize="xs" color="gray.400" mt={1}>
+                <Text fontSize="2xs" color="gray.400" mt={0.5}>
                   {new Date(message.createdAt).toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit'
@@ -165,7 +169,7 @@ const ChatBox = ({ messages, currentUser, onReply }) => {
 
               {isOwn && (
                 <Avatar
-                  size="sm"
+                  size="xs"
                   name={message.sender?.name}
                   src={getAvatarUrl(message.sender?.avatar)}
                 />

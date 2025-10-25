@@ -8,7 +8,6 @@ import {
   Heading,
   Text,
   useToast,
-  Divider,
   Badge,
   IconButton,
   Select,
@@ -267,41 +266,45 @@ const Discussion = () => {
   return (
     <Box minH="100vh" bg="gray.50">
       <Navbar />
-      <Container maxW="container.xl" py={4}>
-        <VStack spacing={4} align="stretch" h="calc(100vh - 150px)">
-          <HStack>
+      <Container maxW="container.xl" py={3}>
+        <VStack spacing={3} align="stretch" h="calc(100vh - 130px)">
+          {/* Header - Compact */}
+          <HStack spacing={2} bg="white" p={3} borderRadius="md" boxShadow="sm">
             <IconButton
               icon={<ArrowBackIcon />}
               onClick={() => navigate(`/${user?.role}/dashboard`)}
               variant="ghost"
+              size="sm"
             />
             <Box flex={1}>
-              <HStack justify="space-between">
-                <Heading size="md">{discussion?.title}</Heading>
-                <Badge colorScheme={discussion?.isActive ? 'green' : 'gray'}>
+              <HStack justify="space-between" align="start">
+                <Box flex={1}>
+                  <Heading size="sm" mb={1}>{discussion?.title}</Heading>
+                  <Text fontSize="xs" color="gray.600" noOfLines={1}>
+                    {discussion?.content}
+                  </Text>
+                </Box>
+                <Badge colorScheme={discussion?.isActive ? 'green' : 'gray'} fontSize="xs">
                   {discussion?.isActive ? 'Active' : 'Completed'}
                 </Badge>
               </HStack>
-              <Text fontSize="sm" color="gray.600">
-                {discussion?.content}
-              </Text>
               <Text fontSize="xs" color="gray.500" mt={1}>
                 {discussion?.groups && discussion.groups.length > 0 ? (
                   <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
                 ) : (
                   <>Group: {discussion?.group?.name}</>
-                )} | Lecturer: {discussion?.createdBy?.name}
+                )} • {discussion?.createdBy?.name}
               </Text>
             </Box>
           </HStack>
 
-          {/* Group selector for dosen */}
+          {/* Group selector for dosen - Compact */}
           {user?.role === 'dosen' && discussion?.groups && discussion.groups.length > 1 && (
-            <HStack>
-              <Text fontSize="sm" fontWeight="medium">View Group:</Text>
+            <HStack spacing={2} bg="white" px={3} py={2} borderRadius="md" boxShadow="sm">
+              <Text fontSize="xs" fontWeight="medium" color="gray.600">View:</Text>
               <Select
-                size="sm"
-                maxW="300px"
+                size="xs"
+                maxW="200px"
                 value={selectedGroupFilter}
                 onChange={(e) => {
                   const newValue = e.target.value
@@ -322,8 +325,6 @@ const Discussion = () => {
               </Select>
             </HStack>
           )}
-
-          <Divider />
 
           <ChatBox
             messages={displayedMessages}

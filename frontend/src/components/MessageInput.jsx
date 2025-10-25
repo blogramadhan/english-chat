@@ -57,15 +57,16 @@ const MessageInput = ({ onSendMessage, onSendFile, replyToMessage, onCancelReply
   }
 
   return (
-    <Box bg="white" p={4} borderRadius="lg" boxShadow="sm">
+    <Box bg="white" p={2} borderRadius="md" boxShadow="sm">
       <VStack spacing={0} align="stretch">
         <ReplyPreview replyToMessage={replyToMessage} onCancel={onCancelReply} />
 
-        <HStack spacing={2}>
+        <HStack spacing={1}>
           <IconButton
             icon={<AttachmentIcon />}
             onClick={() => fileInputRef.current?.click()}
             variant="ghost"
+            size="sm"
             aria-label="Attach file"
           />
           <input
@@ -87,6 +88,7 @@ const MessageInput = ({ onSendMessage, onSendFile, replyToMessage, onCancelReply
                 icon={<FaSmile />}
                 onClick={onToggle}
                 variant="ghost"
+                size="sm"
                 aria-label="Emoji"
               />
             </PopoverTrigger>
@@ -94,8 +96,8 @@ const MessageInput = ({ onSendMessage, onSendFile, replyToMessage, onCancelReply
               <PopoverBody p={0}>
                 <EmojiPicker
                   onEmojiClick={handleEmojiClick}
-                  width="350px"
-                  height="400px"
+                  width="320px"
+                  height="350px"
                 />
               </PopoverBody>
             </PopoverContent>
@@ -107,12 +109,14 @@ const MessageInput = ({ onSendMessage, onSendFile, replyToMessage, onCancelReply
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             flex={1}
+            size="sm"
           />
 
           <IconButton
             icon={<FaPaperPlane />}
             onClick={handleSend}
             colorScheme="brand"
+            size="sm"
             isDisabled={!message.trim()}
             aria-label="Send message"
           />
