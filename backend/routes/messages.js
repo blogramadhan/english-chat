@@ -285,9 +285,11 @@ router.delete('/:id', protect, async (req, res) => {
 
     const isSender = message.sender.toString() === req.user._id.toString();
     const isDosenCreator = req.user.role === 'dosen' && discussion.createdBy.toString() === req.user._id.toString();
+    const isCollaborator = req.user.role === 'dosen' && discussion.collaborators &&
+                          discussion.collaborators.some(collab => collab.toString() === req.user._id.toString());
 
-    // Allow deletion if user is the sender OR if user is dosen who created the discussion
-    if (!isSender && !isDosenCreator) {
+    // Allow deletion if user is the sender OR if user is dosen who created/collaborates on the discussion
+    if (!isSender && !isDosenCreator && !isCollaborator) {
       return res.status(403).json({ message: 'Not authorized to delete this message' });
     }
 

@@ -34,6 +34,7 @@ import {
   AccordionIcon,
 } from '@chakra-ui/react'
 import { AddIcon, EditIcon, DownloadIcon, DeleteIcon } from '@chakra-ui/icons'
+import { FaUserPlus } from 'react-icons/fa'
 import { useAuth } from '../context/AuthContext'
 import api from '../utils/api'
 import CreateGroupModal from '../components/CreateGroupModal'
@@ -43,6 +44,7 @@ import EditGroupModal from '../components/EditGroupModal'
 import EditDiscussionModal from '../components/EditDiscussionModal'
 import EditCategoryModal from '../components/EditCategoryModal'
 import ExportPDFModal from '../components/ExportPDFModal'
+import ManageCollaboratorsModal from '../components/ManageCollaboratorsModal'
 import Navbar from '../components/Navbar'
 
 const DosenDashboard = () => {
@@ -52,6 +54,7 @@ const DosenDashboard = () => {
   const [selectedGroup, setSelectedGroup] = useState(null)
   const [selectedDiscussion, setSelectedDiscussion] = useState(null)
   const [selectedDiscussionForPDF, setSelectedDiscussionForPDF] = useState(null)
+  const [selectedDiscussionForCollaborators, setSelectedDiscussionForCollaborators] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [groupToDelete, setGroupToDelete] = useState(null)
   const [discussionToDelete, setDiscussionToDelete] = useState(null)
@@ -77,6 +80,7 @@ const DosenDashboard = () => {
   const { isOpen: isEditDiscussionOpen, onOpen: onEditDiscussionOpen, onClose: onEditDiscussionClose } = useDisclosure()
   const { isOpen: isEditCategoryOpen, onOpen: onEditCategoryOpen, onClose: onEditCategoryClose } = useDisclosure()
   const { isOpen: isExportPDFOpen, onOpen: onExportPDFOpen, onClose: onExportPDFClose } = useDisclosure()
+  const { isOpen: isManageCollaboratorsOpen, onOpen: onManageCollaboratorsOpen, onClose: onManageCollaboratorsClose } = useDisclosure()
   const { isOpen: isDeleteAlertOpen, onOpen: onDeleteAlertOpen, onClose: onDeleteAlertClose } = useDisclosure()
   const { isOpen: isDeleteDiscussionAlertOpen, onOpen: onDeleteDiscussionAlertOpen, onClose: onDeleteDiscussionAlertClose } = useDisclosure()
   const { isOpen: isDeleteCategoryAlertOpen, onOpen: onDeleteCategoryAlertOpen, onClose: onDeleteCategoryAlertClose } = useDisclosure()
@@ -142,6 +146,16 @@ const DosenDashboard = () => {
     e.stopPropagation() // Prevent card click
     setSelectedDiscussionForPDF(discussion)
     onExportPDFOpen()
+  }
+
+  const handleManageCollaborators = (e, discussion) => {
+    e.stopPropagation() // Prevent card click
+    setSelectedDiscussionForCollaborators(discussion)
+    onManageCollaboratorsOpen()
+  }
+
+  const handleCollaboratorsUpdated = () => {
+    fetchData() // Refresh to get updated discussion with collaborators
   }
 
   const handleDeleteGroup = (e, group) => {
@@ -414,6 +428,15 @@ const DosenDashboard = () => {
                             title="Download PDF"
                           />
                           <IconButton
+                            icon={<FaUserPlus />}
+                            size="xs"
+                            colorScheme="purple"
+                            variant="ghost"
+                            onClick={(e) => handleManageCollaborators(e, discussion)}
+                            aria-label="Manage Collaborators"
+                            title="Manage Collaborators"
+                          />
+                          <IconButton
                             icon={<EditIcon />}
                             size="xs"
                             colorScheme="blue"
@@ -511,6 +534,15 @@ const DosenDashboard = () => {
                                             onClick={(e) => handleDownloadPDF(e, discussion)}
                                             aria-label="Download PDF"
                                             title="Download PDF"
+                                          />
+                                          <IconButton
+                                            icon={<FaUserPlus />}
+                                            size="xs"
+                                            colorScheme="purple"
+                                            variant="ghost"
+                                            onClick={(e) => handleManageCollaborators(e, discussion)}
+                                            aria-label="Manage Collaborators"
+                                            title="Manage Collaborators"
                                           />
                                           <IconButton
                                             icon={<EditIcon />}
@@ -928,6 +960,13 @@ const DosenDashboard = () => {
         isOpen={isExportPDFOpen}
         onClose={onExportPDFClose}
         discussion={selectedDiscussionForPDF}
+      />
+
+      <ManageCollaboratorsModal
+        isOpen={isManageCollaboratorsOpen}
+        onClose={onManageCollaboratorsClose}
+        discussion={selectedDiscussionForCollaborators}
+        onSuccess={handleCollaboratorsUpdated}
       />
 
       <CreateCategoryModal

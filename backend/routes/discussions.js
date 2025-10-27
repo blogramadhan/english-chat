@@ -60,9 +60,14 @@ router.get('/', protect, async (req, res) => {
     let discussions;
 
     if (req.user.role === 'dosen') {
-      // Get discussions created by dosen
-      discussions = await Discussion.find({ createdBy: req.user._id })
-        .populate('createdBy groups group category', '-password')
+      // Get discussions created by dosen OR where dosen is a collaborator
+      discussions = await Discussion.find({
+        $or: [
+          { createdBy: req.user._id },
+          { collaborators: req.user._id }
+        ]
+      })
+        .populate('createdBy collaborators groups group category', '-password')
         .sort('-createdAt');
     } else {
       // Get groups where mahasiswa is a member
@@ -76,7 +81,7 @@ router.get('/', protect, async (req, res) => {
           { group: { $in: groupIds } }
         ]
       })
-        .populate('createdBy groups group category', '-password')
+        .populate('createdBy collaborators groups group category', '-password')
         .sort('-createdAt');
     }
 
@@ -92,7 +97,7 @@ router.get('/', protect, async (req, res) => {
 router.get('/:id', protect, async (req, res) => {
   try {
     const discussion = await Discussion.findById(req.params.id)
-      .populate('createdBy groups group category', '-password');
+      .populate('createdBy collaborators groups group category', '-password');
 
     if (!discussion) {
       return res.status(404).json({ message: 'Discussion not found' });
@@ -117,8 +122,11 @@ router.put('/:id', protect, isDosen, async (req, res) => {
       return res.status(404).json({ message: 'Discussion not found' });
     }
 
-    // Check if user is the creator
-    if (discussion.createdBy.toString() !== req.user._id.toString()) {
+    // Check if user is the creator or a collaborator
+    const isCreator = discussion.createdBy.toString() === req.user._id.toString();
+    const isCollaborator = discussion.collaborators.some(collab => collab.toString() === req.user._id.toString());
+
+    if (!isCreator && !isCollaborator) {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
@@ -152,7 +160,7 @@ router.put('/:id', protect, isDosen, async (req, res) => {
     if (category !== undefined) discussion.category = category || null;
 
     const updatedDiscussion = await discussion.save();
-    await updatedDiscussion.populate('createdBy groups group category', '-password');
+    await updatedDiscussion.populate('createdBy collaborators groups group category', '-password');
 
     res.json(updatedDiscussion);
   } catch (error) {
@@ -178,6 +186,85 @@ router.delete('/:id', protect, isDosen, async (req, res) => {
 
     await discussion.deleteOne();
     res.json({ message: 'Discussion removed' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   POST /api/discussions/:id/collaborators
+// @desc    Add collaborator to discussion (Creator only)
+// @access  Private/Dosen
+router.post('/:id/collaborators', protect, isDosen, async (req, res) => {
+  try {
+    const { dosenId } = req.body;
+
+    const discussion = await Discussion.findById(req.params.id);
+
+    if (!discussion) {
+      return res.status(404).json({ message: 'Discussion not found' });
+    }
+
+    // Check if user is the creator
+    if (discussion.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Only the creator can add collaborators' });
+    }
+
+    // Check if dosenId is already a collaborator or is the creator
+    if (discussion.createdBy.toString() === dosenId) {
+      return res.status(400).json({ message: 'Cannot add creator as collaborator' });
+    }
+
+    if (discussion.collaborators.includes(dosenId)) {
+      return res.status(400).json({ message: 'User is already a collaborator' });
+    }
+
+    // Verify the user exists and is a dosen
+    const User = require('../models/User');
+    const dosenUser = await User.findById(dosenId);
+
+    if (!dosenUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (dosenUser.role !== 'dosen') {
+      return res.status(400).json({ message: 'Only lecturers can be added as collaborators' });
+    }
+
+    discussion.collaborators.push(dosenId);
+    await discussion.save();
+    await discussion.populate('collaborators', '-password');
+
+    res.json(discussion);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// @route   DELETE /api/discussions/:id/collaborators/:dosenId
+// @desc    Remove collaborator from discussion (Creator only)
+// @access  Private/Dosen
+router.delete('/:id/collaborators/:dosenId', protect, isDosen, async (req, res) => {
+  try {
+    const discussion = await Discussion.findById(req.params.id);
+
+    if (!discussion) {
+      return res.status(404).json({ message: 'Discussion not found' });
+    }
+
+    // Check if user is the creator
+    if (discussion.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Only the creator can remove collaborators' });
+    }
+
+    // Remove collaborator
+    discussion.collaborators = discussion.collaborators.filter(
+      collab => collab.toString() !== req.params.dosenId
+    );
+
+    await discussion.save();
+    await discussion.populate('collaborators', '-password');
+
+    res.json(discussion);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
