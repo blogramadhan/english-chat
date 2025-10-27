@@ -48,6 +48,7 @@ import ManageCollaboratorsModal from '../components/ManageCollaboratorsModal'
 import Navbar from '../components/Navbar'
 
 const DosenDashboard = () => {
+  const { user } = useAuth()
   const [groups, setGroups] = useState([])
   const [discussions, setDiscussions] = useState([])
   const [categories, setCategories] = useState([])
@@ -157,6 +158,20 @@ const DosenDashboard = () => {
   const handleCollaboratorsUpdated = () => {
     fetchData() // Refresh to get updated discussion with collaborators
   }
+
+  // Helper function to check if user is the creator of discussion
+  const isDiscussionCreator = (discussion) => {
+    return discussion.createdBy?._id === user?._id
+  }
+
+  // Helper function to check if user is a collaborator
+  const isCollaborator = (discussion) => {
+    return discussion.collaborators?.some(collab => collab._id === user?._id)
+  }
+
+  // Separate discussions by ownership
+  const ownedDiscussions = discussions.filter(d => isDiscussionCreator(d))
+  const collaboratedDiscussions = discussions.filter(d => isCollaborator(d))
 
   const handleDeleteGroup = (e, group) => {
     e.stopPropagation() // Prevent card click
@@ -373,20 +388,117 @@ const DosenDashboard = () => {
                     </Button>
                   </Flex>
 
+                  {/* Active Collaboration */}
+                  {collaboratedDiscussions.filter(d => d.isActive).length > 0 && (
+                    <Box mb={6}>
+                      <Flex justify="space-between" align="center" mb={4}>
+                        <HStack>
+                          <Heading size="md">Active Collaboration</Heading>
+                          <Badge colorScheme="purple" fontSize="sm">Collaborator</Badge>
+                        </HStack>
+                        <Text fontSize="sm" color="gray.600">
+                          {collaboratedDiscussions.filter(discussion => discussion.isActive).length} discussions
+                        </Text>
+                      </Flex>
+
+                      <Accordion allowMultiple>
+                        {groupDiscussionsByCategory(collaboratedDiscussions, true).map((categoryGroup) => (
+                          <AccordionItem key={categoryGroup.id} border="1px" borderColor="purple.200" borderRadius="md" mb={3}>
+                            <AccordionButton _expanded={{ bg: 'purple.50', color: 'purple.700' }}>
+                              <Box flex="1" textAlign="left">
+                                <HStack>
+                                  <Badge colorScheme={categoryGroup.id === 'uncategorized' ? 'gray' : 'purple'} fontSize="sm">
+                                    {categoryGroup.name}
+                                  </Badge>
+                                  <Text fontSize="sm" color="gray.600">
+                                    ({categoryGroup.discussions.length} discussions)
+                                  </Text>
+                                </HStack>
+                              </Box>
+                              <AccordionIcon />
+                            </AccordionButton>
+                            <AccordionPanel pb={4}>
+                              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                                {categoryGroup.discussions.map((discussion) => (
+                  <Card
+                    key={discussion._id}
+                    cursor="pointer"
+                    _hover={{ shadow: 'md', transform: 'translateY(-2px)' }}
+                    transition="all 0.2s"
+                    onClick={() => navigate(`/discussion/${discussion._id}`)}
+                    borderColor="purple.200"
+                    borderWidth="1px"
+                  >
+                    <CardBody>
+                      <Flex justify="space-between" align="start" mb={2}>
+                        <Box flex={1}>
+                          <HStack mb={1}>
+                            <Heading size="sm" noOfLines={1}>{discussion.title}</Heading>
+                          </HStack>
+                          <HStack spacing={1}>
+                            <Badge colorScheme="green" fontSize="xs">Active</Badge>
+                            <Badge colorScheme="purple" fontSize="xs">Collaborating</Badge>
+                          </HStack>
+                        </Box>
+                        <HStack spacing={0}>
+                          <IconButton
+                            icon={<DownloadIcon />}
+                            size="xs"
+                            colorScheme="green"
+                            variant="ghost"
+                            onClick={(e) => handleDownloadPDF(e, discussion)}
+                            aria-label="Download PDF"
+                            title="Download PDF"
+                          />
+                          <IconButton
+                            icon={<EditIcon />}
+                            size="xs"
+                            colorScheme="blue"
+                            variant="ghost"
+                            onClick={(e) => handleEditDiscussion(e, discussion)}
+                            aria-label="Edit discussion"
+                            title="Edit Discussion"
+                          />
+                        </HStack>
+                      </Flex>
+                      <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
+                        {discussion.content}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500" mb={1} noOfLines={1}>
+                        {discussion.groups && discussion.groups.length > 0 ? (
+                          <>Groups: {discussion.groups.map(g => g.name).join(', ')}</>
+                        ) : (
+                          <>Group: {discussion.group?.name}</>
+                        )}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500">
+                        Created by: {discussion.createdBy?.name}
+                      </Text>
+                    </CardBody>
+                  </Card>
+                                ))}
+                              </SimpleGrid>
+                            </AccordionPanel>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
+                    </Box>
+                  )}
+
                   {/* Active Discussions */}
                   <Box>
                     <Flex justify="space-between" align="center" mb={4}>
                       <Heading size="md">Active Discussions</Heading>
                       <Text fontSize="sm" color="gray.600">
-                        {discussions.filter(discussion => discussion.isActive).length} discussions
+                        {ownedDiscussions.filter(discussion => discussion.isActive).length} discussions
                       </Text>
                     </Flex>
 
-                    {discussions.filter(discussion => discussion.isActive).length === 0 ? (
+                    {ownedDiscussions.filter(discussion => discussion.isActive).length === 0 ? (
                       <Text color="gray.500" textAlign="center" py={8}>No active discussions</Text>
                     ) : (
                       <Accordion allowMultiple>
-                        {groupDiscussionsByCategory(discussions, true).map((categoryGroup) => (
+                        {groupDiscussionsByCategory(ownedDiscussions, true).map((categoryGroup) => (
                           <AccordionItem key={categoryGroup.id} border="1px" borderColor="gray.200" borderRadius="md" mb={3}>
                             <AccordionButton _expanded={{ bg: 'brand.50', color: 'brand.700' }}>
                               <Box flex="1" textAlign="left">
@@ -427,15 +539,18 @@ const DosenDashboard = () => {
                             aria-label="Download PDF"
                             title="Download PDF"
                           />
-                          <IconButton
-                            icon={<FaUserPlus />}
-                            size="xs"
-                            colorScheme="purple"
-                            variant="ghost"
-                            onClick={(e) => handleManageCollaborators(e, discussion)}
-                            aria-label="Manage Collaborators"
-                            title="Manage Collaborators"
-                          />
+                          {/* Only show Manage Collaborators if user is creator */}
+                          {isDiscussionCreator(discussion) && (
+                            <IconButton
+                              icon={<FaUserPlus />}
+                              size="xs"
+                              colorScheme="purple"
+                              variant="ghost"
+                              onClick={(e) => handleManageCollaborators(e, discussion)}
+                              aria-label="Manage Collaborators"
+                              title="Manage Collaborators"
+                            />
+                          )}
                           <IconButton
                             icon={<EditIcon />}
                             size="xs"
@@ -445,15 +560,18 @@ const DosenDashboard = () => {
                             aria-label="Edit discussion"
                             title="Edit Discussion"
                           />
-                          <IconButton
-                            icon={<DeleteIcon />}
-                            size="xs"
-                            colorScheme="red"
-                            variant="ghost"
-                            onClick={(e) => handleDeleteDiscussion(e, discussion)}
-                            aria-label="Delete discussion"
-                            title="Delete Discussion"
-                          />
+                          {/* Only show Delete if user is creator */}
+                          {isDiscussionCreator(discussion) && (
+                            <IconButton
+                              icon={<DeleteIcon />}
+                              size="xs"
+                              colorScheme="red"
+                              variant="ghost"
+                              onClick={(e) => handleDeleteDiscussion(e, discussion)}
+                              aria-label="Delete discussion"
+                              title="Delete Discussion"
+                            />
+                          )}
                                         </HStack>
                                       </Flex>
                                       <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
@@ -485,15 +603,15 @@ const DosenDashboard = () => {
                     <Flex justify="space-between" align="center" mb={4}>
                       <Heading size="md">Inactive Discussions</Heading>
                       <Text fontSize="sm" color="gray.600">
-                        {discussions.filter(discussion => !discussion.isActive).length} discussions
+                        {ownedDiscussions.filter(discussion => !discussion.isActive).length} discussions
                       </Text>
                     </Flex>
 
-                    {discussions.filter(discussion => !discussion.isActive).length === 0 ? (
+                    {ownedDiscussions.filter(discussion => !discussion.isActive).length === 0 ? (
                       <Text color="gray.500" textAlign="center" py={8}>No inactive discussions</Text>
                     ) : (
                       <Accordion allowMultiple>
-                        {groupDiscussionsByCategory(discussions, false).map((categoryGroup) => (
+                        {groupDiscussionsByCategory(ownedDiscussions, false).map((categoryGroup) => (
                           <AccordionItem key={categoryGroup.id} border="1px" borderColor="gray.200" borderRadius="md" mb={3}>
                             <AccordionButton _expanded={{ bg: 'gray.50' }}>
                               <Box flex="1" textAlign="left">
@@ -535,15 +653,18 @@ const DosenDashboard = () => {
                                             aria-label="Download PDF"
                                             title="Download PDF"
                                           />
-                                          <IconButton
-                                            icon={<FaUserPlus />}
-                                            size="xs"
-                                            colorScheme="purple"
-                                            variant="ghost"
-                                            onClick={(e) => handleManageCollaborators(e, discussion)}
-                                            aria-label="Manage Collaborators"
-                                            title="Manage Collaborators"
-                                          />
+                                          {/* Only show Manage Collaborators if user is creator */}
+                                          {isDiscussionCreator(discussion) && (
+                                            <IconButton
+                                              icon={<FaUserPlus />}
+                                              size="xs"
+                                              colorScheme="purple"
+                                              variant="ghost"
+                                              onClick={(e) => handleManageCollaborators(e, discussion)}
+                                              aria-label="Manage Collaborators"
+                                              title="Manage Collaborators"
+                                            />
+                                          )}
                                           <IconButton
                                             icon={<EditIcon />}
                                             size="xs"
@@ -553,15 +674,18 @@ const DosenDashboard = () => {
                                             aria-label="Edit discussion"
                                             title="Edit Discussion"
                                           />
-                                          <IconButton
-                                            icon={<DeleteIcon />}
-                                            size="xs"
-                                            colorScheme="red"
-                                            variant="ghost"
-                                            onClick={(e) => handleDeleteDiscussion(e, discussion)}
-                                            aria-label="Delete discussion"
-                                            title="Delete Discussion"
-                                          />
+                                          {/* Only show Delete if user is creator */}
+                                          {isDiscussionCreator(discussion) && (
+                                            <IconButton
+                                              icon={<DeleteIcon />}
+                                              size="xs"
+                                              colorScheme="red"
+                                              variant="ghost"
+                                              onClick={(e) => handleDeleteDiscussion(e, discussion)}
+                                              aria-label="Delete discussion"
+                                              title="Delete Discussion"
+                                            />
+                                          )}
                                         </HStack>
                                       </Flex>
                                       <Text fontSize="xs" color="gray.600" noOfLines={2} mb={2}>
