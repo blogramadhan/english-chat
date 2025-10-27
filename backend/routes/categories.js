@@ -4,11 +4,12 @@ const Category = require('../models/Category')
 const { protect, isDosen } = require('../middleware/auth')
 
 // @route   GET /api/categories
-// @desc    Get all categories
+// @desc    Get categories created by current user
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
-    const categories = await Category.find()
+    // Only return categories created by the current user
+    const categories = await Category.find({ createdBy: req.user._id })
       .populate('createdBy', 'name email')
       .sort({ name: 1 })
     res.json(categories)
