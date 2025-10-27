@@ -11,7 +11,7 @@ const Group = require('../models/Group');
 // @access  Private
 router.post('/', protect, async (req, res) => {
   try {
-    const { discussion, content, messageType, replyTo } = req.body;
+    const { discussion, content, messageType, replyTo, targetGroup } = req.body;
 
     // Verify discussion exists
     const discussionDoc = await Discussion.findById(discussion).populate('groups');
@@ -42,10 +42,29 @@ router.post('/', protect, async (req, res) => {
       }
     }
 
+    // For dosen: handle broadcast vs specific group
+    let isForAllGroups = false;
+    let finalTargetGroup = null;
+
+    if (req.user.role === 'dosen') {
+      if (targetGroup === 'all' || !targetGroup) {
+        isForAllGroups = true;
+        finalTargetGroup = null;
+      } else {
+        isForAllGroups = false;
+        finalTargetGroup = targetGroup;
+      }
+    } else {
+      // For mahasiswa: targetGroup is always their own group
+      finalTargetGroup = userGroup;
+    }
+
     const message = await Message.create({
       discussion,
       sender: req.user._id,
-      group: userGroup, // Add group to message
+      group: userGroup, // Sender's group (for mahasiswa)
+      targetGroup: finalTargetGroup, // Which group to send to (for dosen)
+      isForAllGroups, // True if dosen sends to all groups
       content,
       messageType: messageType || 'text',
       replyTo: replyTo || null
@@ -56,6 +75,11 @@ router.post('/', protect, async (req, res) => {
     // Populate group untuk filter di frontend
     if (message.group) {
       await message.populate('group');
+    }
+
+    // Populate targetGroup untuk menampilkan info di frontend
+    if (message.targetGroup) {
+      await message.populate('targetGroup');
     }
 
     // Populate replyTo message if exists
@@ -77,7 +101,7 @@ router.post('/', protect, async (req, res) => {
 // @access  Private
 router.post('/upload', protect, upload.single('file'), async (req, res) => {
   try {
-    const { discussion, content } = req.body;
+    const { discussion, content, targetGroup } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -101,10 +125,29 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
       }
     }
 
+    // For dosen: handle broadcast vs specific group
+    let isForAllGroups = false;
+    let finalTargetGroup = null;
+
+    if (req.user.role === 'dosen') {
+      if (targetGroup === 'all' || !targetGroup) {
+        isForAllGroups = true;
+        finalTargetGroup = null;
+      } else {
+        isForAllGroups = false;
+        finalTargetGroup = targetGroup;
+      }
+    } else {
+      // For mahasiswa: targetGroup is always their own group
+      finalTargetGroup = userGroup;
+    }
+
     const message = await Message.create({
       discussion,
       sender: req.user._id,
-      group: userGroup, // Add group to message
+      group: userGroup, // Sender's group (for mahasiswa)
+      targetGroup: finalTargetGroup, // Which group to send to (for dosen)
+      isForAllGroups, // True if dosen sends to all groups
       content: content || req.file.originalname,
       messageType: 'file',
       fileUrl: `/uploads/${req.file.filename}`,
@@ -117,6 +160,11 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
     // Populate group untuk filter di frontend
     if (message.group) {
       await message.populate('group');
+    }
+
+    // Populate targetGroup untuk menampilkan info di frontend
+    if (message.targetGroup) {
+      await message.populate('targetGroup');
     }
 
     res.status(201).json(message);
@@ -141,6 +189,7 @@ router.get('/:discussionId', protect, async (req, res) => {
       const messages = await Message.find({ discussion: req.params.discussionId })
         .populate('sender', '-password')
         .populate('group') // Populate group untuk filter di frontend
+        .populate('targetGroup') // Populate targetGroup untuk menampilkan info
         .populate({
           path: 'replyTo',
           populate: { path: 'sender', select: '-password' }
@@ -161,15 +210,20 @@ router.get('/:discussionId', protect, async (req, res) => {
       }
     }
 
-    // Filter messages by user's group
-    const query = { discussion: req.params.discussionId };
-    if (userGroup) {
-      query.group = userGroup; // Only show messages from user's group
-    }
+    // For mahasiswa: show messages from their own group + broadcast messages from dosen
+    const query = {
+      discussion: req.params.discussionId,
+      $or: [
+        { group: userGroup }, // Messages from their own group (from mahasiswa)
+        { isForAllGroups: true }, // Broadcast messages from dosen to all groups
+        { targetGroup: userGroup } // Messages from dosen specifically to their group
+      ]
+    };
 
     const messages = await Message.find(query)
       .populate('sender', '-password')
       .populate('group') // Populate group untuk konsistensi
+      .populate('targetGroup') // Populate targetGroup untuk menampilkan info
       .populate({
         path: 'replyTo',
         populate: { path: 'sender', select: '-password' }

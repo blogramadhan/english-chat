@@ -16,6 +16,15 @@ const messageSchema = new mongoose.Schema({
     ref: 'Group',
     required: false // Optional for backward compatibility
   },
+  targetGroup: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group',
+    required: false // For dosen: which group this message is sent to (null = all groups)
+  },
+  isForAllGroups: {
+    type: Boolean,
+    default: false // For dosen: true if message is sent to all groups
+  },
   replyTo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Message',

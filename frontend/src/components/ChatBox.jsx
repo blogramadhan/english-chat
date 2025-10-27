@@ -8,6 +8,7 @@ import {
   Image,
   Link,
   IconButton,
+  Badge,
 } from '@chakra-ui/react'
 import { AttachmentIcon } from '@chakra-ui/icons'
 import { FaReply } from 'react-icons/fa'
@@ -121,9 +122,23 @@ const ChatBox = ({ messages, currentUser, onReply }) => {
 
               <Box maxW="75%" position="relative" role="group">
                 {!isOwn && (
-                  <Text fontSize="xs" color="gray.600" mb={0.5} fontWeight="medium">
-                    {message.sender?.name}
-                  </Text>
+                  <HStack spacing={2} mb={0.5}>
+                    <Text fontSize="xs" color="gray.600" fontWeight="medium">
+                      {message.sender?.name}
+                    </Text>
+                    {/* Show target group badge for dosen messages */}
+                    {message.sender?.role === 'dosen' && (
+                      message.isForAllGroups ? (
+                        <Badge colorScheme="purple" fontSize="2xs" variant="subtle">
+                          All Groups
+                        </Badge>
+                      ) : message.targetGroup && (
+                        <Badge colorScheme="blue" fontSize="2xs" variant="subtle">
+                          {message.targetGroup.name}
+                        </Badge>
+                      )
+                    )}
+                  </HStack>
                 )}
                 <Box
                   bg={isOwn ? 'brand.500' : 'gray.100'}
@@ -159,12 +174,26 @@ const ChatBox = ({ messages, currentUser, onReply }) => {
                     aria-label="Reply to message"
                   />
                 </Box>
-                <Text fontSize="2xs" color="gray.400" mt={0.5}>
-                  {new Date(message.createdAt).toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </Text>
+                <HStack spacing={2} mt={0.5}>
+                  <Text fontSize="2xs" color="gray.400">
+                    {new Date(message.createdAt).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </Text>
+                  {/* Show target group badge for own dosen messages */}
+                  {isOwn && message.sender?.role === 'dosen' && (
+                    message.isForAllGroups ? (
+                      <Badge colorScheme="purple" fontSize="2xs" variant="subtle">
+                        All Groups
+                      </Badge>
+                    ) : message.targetGroup && (
+                      <Badge colorScheme="blue" fontSize="2xs" variant="subtle">
+                        {message.targetGroup.name}
+                      </Badge>
+                    )
+                  )}
+                </HStack>
               </Box>
 
               {isOwn && (

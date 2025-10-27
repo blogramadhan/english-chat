@@ -32,6 +32,7 @@ const Discussion = () => {
   const [loading, setLoading] = useState(true)
   const [userGroup, setUserGroup] = useState(null) // Track user's group in this discussion
   const [selectedGroupFilter, setSelectedGroupFilter] = useState('all') // For dosen to filter by group
+  const [selectedTargetGroup, setSelectedTargetGroup] = useState('all') // For dosen to select which group to send message to
   const [replyToMessage, setReplyToMessage] = useState(null) // Track message being replied to
 
   useEffect(() => {
@@ -52,19 +53,35 @@ const Discussion = () => {
         const exists = prev.some(m => m._id === message._id)
         if (exists) return prev
 
-        // For mahasiswa: only show messages from their own group
+        // For mahasiswa: filter based on message target
         if (user.role === 'mahasiswa' && userGroup) {
-          // If message has a group, check if it matches user's group
-          const messageGroupId = typeof message.group === 'object' ? message.group._id || message.group : message.group
-          if (message.group && messageGroupId !== userGroup) {
-            return prev // Don't add messages from other groups
+          // Show message if:
+          // 1. It's from their own group (mahasiswa messages)
+          // 2. It's a broadcast from dosen (isForAllGroups = true)
+          // 3. It's targeted to their group specifically
+          const messageGroupId = typeof message.group === 'object' ? message.group?._id : message.group
+          const targetGroupId = typeof message.targetGroup === 'object' ? message.targetGroup?._id : message.targetGroup
+
+          const isOwnGroupMessage = messageGroupId === userGroup
+          const isBroadcast = message.isForAllGroups === true
+          const isTargetedToGroup = targetGroupId === userGroup
+
+          if (!isOwnGroupMessage && !isBroadcast && !isTargetedToGroup) {
+            return prev // Don't add messages not for this student
           }
         }
 
         // For dosen: filter by selected group if not 'all'
         if (user.role === 'dosen' && selectedGroupFilter !== 'all') {
-          const messageGroupId = typeof message.group === 'object' ? message.group._id || message.group : message.group
-          if (message.group && messageGroupId !== selectedGroupFilter) {
+          const messageGroupId = typeof message.group === 'object' ? message.group?._id : message.group
+          const targetGroupId = typeof message.targetGroup === 'object' ? message.targetGroup?._id : message.targetGroup
+
+          // Show message if it's from the selected group or targeted to the selected group
+          const isFromSelectedGroup = messageGroupId === selectedGroupFilter
+          const isTargetedToSelectedGroup = targetGroupId === selectedGroupFilter
+          const isBroadcast = message.isForAllGroups === true
+
+          if (!isFromSelectedGroup && !isTargetedToSelectedGroup && !isBroadcast) {
             return prev // Don't add messages from other groups
           }
         }
@@ -144,10 +161,17 @@ const Discussion = () => {
 
   const handleSendMessage = async (messageData) => {
     try {
-      const { data } = await api.post('/messages', {
+      // For dosen: include targetGroup in the message
+      const payload = {
         discussion: id,
         ...messageData
-      })
+      }
+
+      if (user.role === 'dosen') {
+        payload.targetGroup = selectedTargetGroup
+      }
+
+      const { data } = await api.post('/messages', payload)
 
       // Add message to local state immediately (optimistic update)
       setMessages((prev) => [...prev, data])
@@ -185,6 +209,11 @@ const Discussion = () => {
       formData.append('discussion', id)
       formData.append('content', content || file.name)
 
+      // For dosen: include targetGroup
+      if (user.role === 'dosen') {
+        formData.append('targetGroup', selectedTargetGroup)
+      }
+
       const { data } = await api.post('/messages/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -212,54 +241,21 @@ const Discussion = () => {
   // Filter messages for display based on selected group (for dosen)
   const displayedMessages = user?.role === 'dosen' && selectedGroupFilter !== 'all'
     ? messages.filter(msg => {
-        // Jika message tidak punya group, skip (jangan tampilkan)
-        // Karena semua message seharusnya punya group di sistem multi-group
-        if (!msg.group) {
-          console.log('❌ Message without group:', msg._id, msg.content?.substring(0, 30))
-          return false
-        }
+        // Extract group IDs - handle berbagai format
+        const messageGroupId = typeof msg.group === 'object' ? msg.group?._id : msg.group
+        const targetGroupId = typeof msg.targetGroup === 'object' ? msg.targetGroup?._id : msg.targetGroup
 
-        // Extract group ID - handle berbagai format
-        let messageGroupId
-        if (typeof msg.group === 'object' && msg.group !== null) {
-          // Group is populated object: { _id: '...', name: '...', ... }
-          messageGroupId = msg.group._id
-        } else if (typeof msg.group === 'string') {
-          // Group is just an ObjectId string
-          messageGroupId = msg.group
-        } else {
-          console.warn('⚠️ Unknown group format:', msg.group)
-          return false
-        }
+        // Show message if:
+        // 1. It's from the selected group (mahasiswa messages)
+        // 2. It's targeted to the selected group (dosen messages)
+        // 3. It's a broadcast message (isForAllGroups)
+        const isFromSelectedGroup = messageGroupId === selectedGroupFilter
+        const isTargetedToSelectedGroup = targetGroupId === selectedGroupFilter
+        const isBroadcast = msg.isForAllGroups === true
 
-        // Convert both to string for comparison
-        const messageGroupStr = String(messageGroupId)
-        const selectedGroupStr = String(selectedGroupFilter)
-        const shouldShow = messageGroupStr === selectedGroupStr
-
-        // Debug logging - always show for troubleshooting
-        console.log('🔍 Filter check:', {
-          messageId: msg._id,
-          messageContent: msg.content?.substring(0, 30),
-          messageGroupId: messageGroupStr,
-          messageGroupType: typeof msg.group,
-          selectedGroupFilter: selectedGroupStr,
-          shouldShow,
-          comparison: `"${messageGroupStr}" === "${selectedGroupStr}"`,
-          groupObject: msg.group
-        })
-
-        return shouldShow
+        return isFromSelectedGroup || isTargetedToSelectedGroup || isBroadcast
       })
     : messages
-
-  // Log summary
-  console.log('📊 Filter Summary:', {
-    totalMessages: messages.length,
-    displayedMessages: displayedMessages.length,
-    selectedGroupFilter,
-    isFiltering: user?.role === 'dosen' && selectedGroupFilter !== 'all'
-  })
 
   if (loading) return null
 
@@ -331,6 +327,26 @@ const Discussion = () => {
             currentUser={user}
             onReply={handleReply}
           />
+
+          {/* Send to selector for dosen - Compact */}
+          {user?.role === 'dosen' && discussion?.groups && discussion.groups.length > 1 && (
+            <HStack spacing={2} bg="white" px={3} py={2} borderRadius="md" boxShadow="sm">
+              <Text fontSize="xs" fontWeight="medium" color="gray.600">Send to:</Text>
+              <Select
+                size="xs"
+                maxW="200px"
+                value={selectedTargetGroup}
+                onChange={(e) => setSelectedTargetGroup(e.target.value)}
+              >
+                <option value="all">All Groups</option>
+                {discussion.groups.map((group) => (
+                  <option key={group._id} value={group._id}>
+                    {group.name}
+                  </option>
+                ))}
+              </Select>
+            </HStack>
+          )}
 
           <MessageInput
             onSendMessage={handleSendMessage}
