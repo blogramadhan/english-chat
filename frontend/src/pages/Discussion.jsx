@@ -11,6 +11,14 @@ import {
   Badge,
   IconButton,
   Select,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  Button,
+  useDisclosure,
 } from '@chakra-ui/react'
 import { ArrowBackIcon } from '@chakra-ui/icons'
 import { io } from 'socket.io-client'
@@ -34,6 +42,10 @@ const Discussion = () => {
   const [selectedGroupFilter, setSelectedGroupFilter] = useState('all') // For dosen to filter by group
   const [selectedTargetGroup, setSelectedTargetGroup] = useState('all') // For dosen to select which group to send message to
   const [replyToMessage, setReplyToMessage] = useState(null) // Track message being replied to
+  const [messageToDelete, setMessageToDelete] = useState(null) // Track message to be deleted
+  const [isDeleting, setIsDeleting] = useState(false) // Track deletion in progress
+  const { isOpen: isDeleteAlertOpen, onOpen: onDeleteAlertOpen, onClose: onDeleteAlertClose } = useDisclosure()
+  const cancelRef = useRef()
 
   useEffect(() => {
     fetchDiscussion()
@@ -207,38 +219,54 @@ const Discussion = () => {
     setReplyToMessage(null)
   }
 
-  const handleDeleteMessage = async (message) => {
-    // Confirm deletion
-    if (!window.confirm('Are you sure you want to delete this message?')) {
-      return
-    }
+  const handleDeleteMessage = (message) => {
+    setMessageToDelete(message)
+    onDeleteAlertOpen()
+  }
+
+  const confirmDeleteMessage = async () => {
+    if (!messageToDelete) return
+
+    setIsDeleting(true)
 
     try {
-      await api.delete(`/messages/${message._id}`)
+      await api.delete(`/messages/${messageToDelete._id}`)
 
       // Remove message from local state
-      setMessages((prev) => prev.filter(m => m._id !== message._id))
+      setMessages((prev) => prev.filter(m => m._id !== messageToDelete._id))
 
       // Emit to socket for other users to remove
       socketRef.current.emit('delete-message', {
         discussionId: id,
-        messageId: message._id
+        messageId: messageToDelete._id
       })
 
       toast({
-        title: 'Success',
-        description: 'Message deleted',
+        title: 'Message deleted',
+        description: 'The message has been removed.',
         status: 'success',
-        duration: 2000,
+        duration: 3000,
+        isClosable: true,
       })
+
+      onDeleteAlertClose()
+      setMessageToDelete(null)
     } catch (error) {
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to delete message',
         status: 'error',
         duration: 3000,
+        isClosable: true,
       })
+    } finally {
+      setIsDeleting(false)
     }
+  }
+
+  const handleCancelDelete = () => {
+    setMessageToDelete(null)
+    onDeleteAlertClose()
   }
 
   const handleSendFile = async (file, content) => {
@@ -396,6 +424,43 @@ const Discussion = () => {
           />
         </VStack>
       </Container>
+
+      {/* Delete Message Confirmation Dialog */}
+      <AlertDialog
+        isOpen={isDeleteAlertOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={handleCancelDelete}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete Message
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to delete this message?
+              <Text mt={2} fontSize="sm" color="gray.600">
+                This action cannot be undone. The message will be removed for everyone in the discussion.
+              </Text>
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={handleCancelDelete}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={confirmDeleteMessage}
+                ml={3}
+                isLoading={isDeleting}
+                loadingText="Deleting..."
+              >
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   )
 }
