@@ -242,14 +242,6 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups, categories 
                                 >
                                   {group.name}
                                 </Text>
-                                <Text
-                                  as="span"
-                                  fontSize="sm"
-                                  color={isSelected ? 'red.500' : 'gray.500'}
-                                  ml={2}
-                                >
-                                  ({group.members?.length || 0} members)
-                                </Text>
                               </Checkbox>
                             )
                           })}
