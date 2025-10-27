@@ -20,7 +20,10 @@ import {
   Text,
   Box,
   Select,
+  InputGroup,
+  InputLeftElement,
 } from '@chakra-ui/react'
+import { SearchIcon } from '@chakra-ui/icons'
 import api from '../utils/api'
 
 const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups, categories }) => {
@@ -28,6 +31,7 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups, categories 
   const [content, setContent] = useState('')
   const [selectedGroups, setSelectedGroups] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const toast = useToast()
 
@@ -53,6 +57,27 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups, categories 
       return newSelection
     })
   }
+
+  // Filter groups based on search query
+  const filteredGroups = groups.filter(group => {
+    if (!group.isActive) return false
+    if (!searchQuery) return true
+
+    const query = searchQuery.toLowerCase()
+    return (
+      group.name.toLowerCase().includes(query) ||
+      (group.description && group.description.toLowerCase().includes(query))
+    )
+  })
+
+  // Sort groups to show selected ones at the top
+  const sortedGroups = [...filteredGroups].sort((a, b) => {
+    const aSelected = selectedGroups.includes(a._id)
+    const bSelected = selectedGroups.includes(b._id)
+    if (aSelected && !bSelected) return -1
+    if (!aSelected && bSelected) return 1
+    return 0
+  })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -96,6 +121,7 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups, categories 
       setContent('')
       setSelectedGroups([])
       setSelectedCategory('')
+      setSearchQuery('')
       onSuccess()
       onClose()
     } catch (error) {
@@ -166,6 +192,19 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups, categories 
                 <FormLabel>
                   Groups ({selectedGroups.length} selected) <Text as="span" color="red.500">*</Text>
                 </FormLabel>
+
+                {/* Search input */}
+                <InputGroup mb={3}>
+                  <InputLeftElement pointerEvents="none">
+                    <SearchIcon color="gray.400" />
+                  </InputLeftElement>
+                  <Input
+                    placeholder="Search groups..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </InputGroup>
+
                 <Box
                   maxH="200px"
                   overflowY="auto"
@@ -182,19 +221,38 @@ const CreateDiscussionModal = ({ isOpen, onClose, onSuccess, groups, categories 
                         <Text color="orange.500" fontSize="sm">
                           No active groups available. Please activate a group first.
                         </Text>
+                      ) : sortedGroups.length === 0 ? (
+                        <Text color="gray.500" fontSize="sm">
+                          No groups found matching "{searchQuery}"
+                        </Text>
                       ) : (
                         <Stack spacing={2}>
-                          {groups
-                            .filter(group => group.isActive)
-                            .map((group) => (
+                          {sortedGroups.map((group) => {
+                            const isSelected = selectedGroups.includes(group._id)
+                            return (
                               <Checkbox
                                 key={group._id}
-                                isChecked={selectedGroups.includes(group._id)}
+                                colorScheme="red"
+                                isChecked={isSelected}
                                 onChange={() => handleGroupToggle(group._id)}
                               >
-                                {group.name} ({group.members?.length || 0} members)
+                                <Text
+                                  color={isSelected ? 'red.600' : 'inherit'}
+                                  fontWeight={isSelected ? 'semibold' : 'normal'}
+                                >
+                                  {group.name}
+                                </Text>
+                                <Text
+                                  as="span"
+                                  fontSize="sm"
+                                  color={isSelected ? 'red.500' : 'gray.500'}
+                                  ml={2}
+                                >
+                                  ({group.members?.length || 0} members)
+                                </Text>
                               </Checkbox>
-                            ))}
+                            )
+                          })}
                         </Stack>
                       )}
                     </>
