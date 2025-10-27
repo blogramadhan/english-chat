@@ -56,6 +56,13 @@ io.on('connection', (socket) => {
     io.to(data.discussionId).emit('receive-message', data);
   });
 
+  socket.on('delete-message', (data) => {
+    // Emit message deletion to discussion room
+    io.to(data.discussionId).emit('message-deleted', {
+      messageId: data.messageId
+    });
+  });
+
   socket.on('typing', (data) => {
     socket.to(data.discussionId).emit('user-typing', data);
   });

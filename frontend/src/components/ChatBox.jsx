@@ -10,11 +10,11 @@ import {
   IconButton,
   Badge,
 } from '@chakra-ui/react'
-import { AttachmentIcon } from '@chakra-ui/icons'
+import { AttachmentIcon, DeleteIcon } from '@chakra-ui/icons'
 import { FaReply } from 'react-icons/fa'
 import { getAvatarUrl, getFileUrl } from '../utils/avatar'
 
-const ChatBox = ({ messages, currentUser, onReply }) => {
+const ChatBox = ({ messages, currentUser, onReply, onDelete }) => {
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -159,20 +159,37 @@ const ChatBox = ({ messages, currentUser, onReply }) => {
                     </Text>
                   )}
 
-                  {/* Reply button - shows on hover */}
-                  <IconButton
-                    icon={<FaReply />}
-                    size="2xs"
-                    variant="ghost"
+                  {/* Action buttons - shows on hover */}
+                  <HStack
+                    spacing={0.5}
                     position="absolute"
                     top={0.5}
                     right={0.5}
                     opacity={0}
                     _groupHover={{ opacity: 1 }}
-                    colorScheme={isOwn ? 'whiteAlpha' : 'gray'}
-                    onClick={() => onReply && onReply(message)}
-                    aria-label="Reply to message"
-                  />
+                  >
+                    {/* Delete button - only for dosen or own message */}
+                    {(currentUser.role === 'dosen' || isOwn) && onDelete && (
+                      <IconButton
+                        icon={<DeleteIcon />}
+                        size="2xs"
+                        variant="ghost"
+                        colorScheme="red"
+                        onClick={() => onDelete(message)}
+                        aria-label="Delete message"
+                      />
+                    )}
+
+                    {/* Reply button */}
+                    <IconButton
+                      icon={<FaReply />}
+                      size="2xs"
+                      variant="ghost"
+                      colorScheme={isOwn ? 'whiteAlpha' : 'gray'}
+                      onClick={() => onReply && onReply(message)}
+                      aria-label="Reply to message"
+                    />
+                  </HStack>
                 </Box>
                 <HStack spacing={2} mt={0.5}>
                   <Text fontSize="2xs" color="gray.400">

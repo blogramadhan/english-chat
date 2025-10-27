@@ -90,6 +90,11 @@ const Discussion = () => {
       })
     })
 
+    socketRef.current.on('message-deleted', ({ messageId }) => {
+      // Remove deleted message from state
+      setMessages((prev) => prev.filter(m => m._id !== messageId))
+    })
+
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect()
@@ -200,6 +205,40 @@ const Discussion = () => {
 
   const handleCancelReply = () => {
     setReplyToMessage(null)
+  }
+
+  const handleDeleteMessage = async (message) => {
+    // Confirm deletion
+    if (!window.confirm('Are you sure you want to delete this message?')) {
+      return
+    }
+
+    try {
+      await api.delete(`/messages/${message._id}`)
+
+      // Remove message from local state
+      setMessages((prev) => prev.filter(m => m._id !== message._id))
+
+      // Emit to socket for other users to remove
+      socketRef.current.emit('delete-message', {
+        discussionId: id,
+        messageId: message._id
+      })
+
+      toast({
+        title: 'Success',
+        description: 'Message deleted',
+        status: 'success',
+        duration: 2000,
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to delete message',
+        status: 'error',
+        duration: 3000,
+      })
+    }
   }
 
   const handleSendFile = async (file, content) => {
@@ -326,6 +365,7 @@ const Discussion = () => {
             messages={displayedMessages}
             currentUser={user}
             onReply={handleReply}
+            onDelete={handleDeleteMessage}
           />
 
           {/* Send to selector for dosen - Compact */}

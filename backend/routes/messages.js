@@ -271,19 +271,32 @@ router.put('/:id', protect, async (req, res) => {
 // @access  Private
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const message = await Message.findById(req.params.id);
+    const message = await Message.findById(req.params.id).populate('discussion');
 
     if (!message) {
       return res.status(404).json({ message: 'Message not found' });
     }
 
-    // Check if user is the sender
-    if (message.sender.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized' });
+    // Get the discussion to check if user is the creator (dosen)
+    const discussion = await Discussion.findById(message.discussion);
+    if (!discussion) {
+      return res.status(404).json({ message: 'Discussion not found' });
+    }
+
+    const isSender = message.sender.toString() === req.user._id.toString();
+    const isDosenCreator = req.user.role === 'dosen' && discussion.createdBy.toString() === req.user._id.toString();
+
+    // Allow deletion if user is the sender OR if user is dosen who created the discussion
+    if (!isSender && !isDosenCreator) {
+      return res.status(403).json({ message: 'Not authorized to delete this message' });
     }
 
     await message.deleteOne();
-    res.json({ message: 'Message removed' });
+    res.json({
+      message: 'Message removed',
+      messageId: req.params.id,
+      discussionId: discussion._id
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
