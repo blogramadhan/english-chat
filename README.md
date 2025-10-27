@@ -5,18 +5,56 @@ A modern web-based discussion platform for English language learning with real-t
 ## 🌟 Features
 
 ### User Management
-- **Multi-role System**: Admin, Lecturer, Student
+- **Multi-role System**: Admin, Lecturer (Dosen), Student (Mahasiswa)
 - **User Approval Workflow**: Admin approval for new user registrations
 - **Profile Management**: Update profile, change password, upload avatar
 - **Admin Dashboard**: Manage users, approve/reject registrations, edit user profiles
+- **Email Validation**: Duplicate email/NIM/NIP checking during registration
+- **Compact Login/Register**: Streamlined authentication forms
 
 ### Discussion & Chat
-- **Real-time Chat**: Socket.IO for real-time communication
-- **Group Management**: Lecturers can create and manage groups
-- **Discussion Rooms**: Organized discussions per group
-- **File Uploads**: Support for image uploads in chat
-- **PDF Export**: Download discussion history in PDF format
-- **Edit & Delete Messages**: Full message management capabilities
+- **Real-time Chat**: Socket.IO for instant messaging
+- **Multi-group Discussions**: Support for discussions across multiple groups
+- **Group Management**: Lecturers can create and manage student groups
+- **Category System**: Organize discussions by categories
+- **Accordion UI**: Discussions grouped by categories with collapsible sections
+- **Message Features**:
+  - Reply to messages with quote preview
+  - Edit and delete messages
+  - Image uploads in chat
+  - Emoji picker support
+  - Real-time message synchronization
+- **Targeted Messaging**: Lecturers can send messages to:
+  - All groups (broadcast)
+  - Specific groups only
+- **PDF Export**: Download discussion history with images and formatting
+- **Discussion Collaboration**: Lecturers can add collaborators to discussions
+- **Compact UI**: Optimized chat interface for better space usage
+
+### Lecturer Features
+- **Discussion Management**:
+  - Create discussions for multiple groups
+  - Edit and delete discussions
+  - Set discussions as active/inactive
+  - Assign discussions to categories
+- **Collaborator System**:
+  - Add other lecturers as collaborators
+  - Collaborators can view, edit, and manage discussions
+  - Separate "Active Collaboration" section in dashboard
+  - Creator-only controls (manage collaborators, delete discussion)
+- **Message Moderation**:
+  - Delete any message in their discussions
+  - Collaborators can also moderate messages
+- **Group-Specific Messaging**:
+  - Send messages to all groups or specific groups
+  - Visual badges showing message targets
+- **PDF Export**: Export discussion history with group filtering
+
+### Student Features
+- **Group-based Access**: View discussions from enrolled groups
+- **Filtered Messages**: See messages from own group + lecturer broadcasts
+- **Reply & React**: Reply to messages with context
+- **Image Sharing**: Upload and share images in discussions
 
 ### Security
 - **JWT Authentication**: Token-based authentication
@@ -162,7 +200,7 @@ npm run preview      # Preview production build
 
 ### Authentication
 - `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
+- `POST /api/auth/register` - User registration (with email/NIM/NIP validation)
 
 ### User Management
 - `GET /api/users/me` - Get current user profile
@@ -170,28 +208,53 @@ npm run preview      # Preview production build
 - `PUT /api/users/password` - Change password
 - `POST /api/users/avatar` - Upload avatar
 - `GET /api/users/mahasiswa` - Get all students
+- `GET /api/users/lecturers` - Get all lecturers (for collaborator selection)
 
 ### Admin
-- `GET /api/admin/users/pending` - Get pending users
+- `GET /api/admin/users/pending` - Get pending users (with pagination)
+- `GET /api/admin/users` - Get all users (with pagination)
 - `PUT /api/admin/users/:id/approve` - Approve user
 - `PUT /api/admin/users/:id/reject` - Reject user
 - `PUT /api/admin/users/:id` - Edit user profile
+- `DELETE /api/admin/users/:id` - Delete user
 - `GET /api/admin/stats` - Get dashboard statistics
 
 ### Groups & Discussions
 - `GET /api/groups` - Get user groups
 - `POST /api/groups` - Create group (Lecturer)
 - `PUT /api/groups/:id` - Update group (Lecturer)
-- `GET /api/discussions` - Get discussions
-- `POST /api/discussions` - Create discussion (Lecturer)
-- `PUT /api/discussions/:id` - Update discussion (Lecturer)
-- `GET /api/discussions/:id/export-pdf` - Export discussion to PDF
+- `DELETE /api/groups/:id` - Delete group (Lecturer)
+- `GET /api/discussions` - Get discussions (filtered by creator/collaborator for lecturers)
+- `POST /api/discussions` - Create discussion with multiple groups (Lecturer)
+- `PUT /api/discussions/:id` - Update discussion (Creator/Collaborator)
+- `DELETE /api/discussions/:id` - Delete discussion (Creator only)
+- `GET /api/discussions/:id/export-pdf` - Export discussion to PDF with group filtering
+
+### Discussion Collaboration
+- `POST /api/discussions/:id/collaborators` - Add collaborator (Creator only)
+- `DELETE /api/discussions/:id/collaborators/:dosenId` - Remove collaborator (Creator only)
+
+### Categories
+- `GET /api/categories` - Get all categories
+- `POST /api/categories` - Create category (Lecturer)
+- `PUT /api/categories/:id` - Update category (Lecturer)
+- `DELETE /api/categories/:id` - Delete category (Lecturer)
+
+### Messages
+- `GET /api/messages/:discussionId` - Get discussion messages (filtered by group for students)
+- `POST /api/messages` - Send message (with targetGroup for lecturers)
+- `POST /api/messages/upload` - Send message with file upload
+- `PUT /api/messages/:id` - Edit message (Own messages only)
+- `DELETE /api/messages/:id` - Delete message (Own messages or moderator)
 
 ### Real-time (Socket.IO)
-- `joinDiscussion` - Join discussion room
-- `sendMessage` - Send message
-- `editMessage` - Edit message
-- `deleteMessage` - Delete message
+- `join-discussion` - Join discussion room
+- `send-message` - Send message to discussion
+- `receive-message` - Receive new message (filtered by group/target)
+- `delete-message` - Delete message event
+- `message-deleted` - Message deletion notification
+- `typing` - User typing indicator
+- `user-typing` - Typing notification
 
 ## 🐛 Troubleshooting
 
@@ -273,26 +336,114 @@ docker-compose up --build
 - [x] Multi-role system (Admin, Lecturer, Student)
 - [x] Real-time chat with Socket.IO
 - [x] File upload (images) in chat
-- [x] PDF export for discussions
+- [x] Emoji picker in chat
+- [x] Reply to messages with quote preview
+- [x] Message edit and delete functionality
+- [x] PDF export for discussions with images
 - [x] Profile management (update info, password, avatar)
-- [x] Admin dashboard & user management
+- [x] Admin dashboard & user management with pagination
 - [x] Admin edit user profiles
 - [x] Group management (create, edit, activate/deactivate)
+- [x] Multi-group discussions support
+- [x] Discussion categories/tags
 - [x] Discussion management (create, edit, activate/deactivate)
+- [x] Discussion collaboration system
+- [x] Lecturer collaborators with role-based permissions
+- [x] Targeted messaging (broadcast or specific groups)
+- [x] Message filtering by group for students
+- [x] Accordion UI for organized discussions
+- [x] Compact UI design for all interfaces
+- [x] Custom AlertDialog for confirmations
+- [x] Email/NIM/NIP duplicate validation
 - [x] Docker deployment with automated backup
 - [x] MongoDB Atlas support
 - [x] Full English translation
 
 ### Future Enhancements 🚀
-- [ ] Email notifications for approvals
+- [ ] Email notifications for approvals and mentions
 - [ ] Discussion search functionality
-- [ ] Analytics dashboard
-- [ ] Message reactions (emoji)
+- [ ] Analytics dashboard for lecturers
+- [ ] Message reactions with emoji
 - [ ] User mentions (@username)
-- [ ] File attachments (PDF, DOCX)
-- [ ] Discussion categories/tags
+- [ ] File attachments (PDF, DOCX, etc.)
+- [ ] Discussion archiving
+- [ ] Export chat to other formats (Word, Excel)
 - [ ] Mobile responsive improvements
 - [ ] Dark mode theme
+- [ ] Read receipts for messages
+- [ ] Online/offline status indicators
+- [ ] Discussion templates
+- [ ] Bulk actions for admin
+
+## 🤝 Collaboration System
+
+### Overview
+Lecturers can collaborate on discussions, allowing multiple instructors to co-manage discussions and share teaching responsibilities.
+
+### Features
+- **Add Collaborators**: Discussion creators can invite other lecturers
+- **Role-Based Permissions**:
+  - **Creator**: Full control including manage collaborators and delete discussion
+  - **Collaborator**: Can view, edit, send messages, and moderate (cannot manage collaborators or delete)
+- **Visual Separation**: Collaborated discussions appear in purple-themed "Active Collaboration" section
+- **Access Control**: Buttons dynamically hidden based on user role
+- **Real-time Sync**: Collaborators see live updates and can participate immediately
+
+### Permissions Matrix
+
+| Action | Creator | Collaborator | Student |
+|--------|---------|--------------|---------|
+| View Discussion | ✅ | ✅ | ✅ (if in group) |
+| Send Messages | ✅ | ✅ | ✅ (own group) |
+| Send to All Groups | ✅ | ✅ | ❌ |
+| Send to Specific Group | ✅ | ✅ | ❌ |
+| Edit Discussion | ✅ | ✅ | ❌ |
+| Delete Messages | ✅ | ✅ | ✅ (own only) |
+| Add/Remove Collaborators | ✅ | ❌ | ❌ |
+| Delete Discussion | ✅ | ❌ | ❌ |
+| Export PDF | ✅ | ✅ | ❌ |
+
+### Use Cases
+- Team teaching across multiple groups
+- Guest lecturer participation
+- Teaching assistant support
+- Cross-department collaboration
+- Backup instructor access
+
+## 🎨 UI/UX Features
+
+### Dashboard Organization
+- **Accordion Layout**: Discussions grouped by categories with collapsible panels
+- **Visual Hierarchy**: Clear separation between active and inactive content
+- **Collaboration Section**: Dedicated "Active Collaboration" area with purple theme
+- **Badge System**: Visual indicators for discussion status and roles
+- **Compact Design**: Optimized spacing throughout the application
+
+### Chat Interface
+- **Reply System**: Quote and reply to specific messages
+- **Emoji Picker**: Built-in emoji selector for messages
+- **Image Preview**: In-line image display in chat
+- **Group Targeting**: Visual badges showing message broadcast/target
+- **Compact Layout**: Reduced padding and spacing for better content density
+- **Hover Actions**: Edit/delete/reply buttons appear on hover
+
+### Forms & Modals
+- **Custom AlertDialog**: Consistent confirmation dialogs across the app
+- **Compact Forms**: Streamlined login and registration
+- **Modal Management**:
+  - Create/Edit Group
+  - Create/Edit Discussion
+  - Create/Edit Category
+  - Manage Collaborators
+  - Export PDF
+- **Real-time Validation**: Instant feedback on form inputs
+
+### Admin Dashboard
+- **Pagination**: Efficient handling of large user lists
+- **Search & Filter**: Quick user lookup
+- **Compact Tables**: Dense information display
+- **Action Buttons**: Quick approve/reject/edit actions
+- **Statistics Cards**: At-a-glance system metrics
 
 ## 🔐 Security Features
 
@@ -301,9 +452,11 @@ docker-compose up --build
 - Role-based access control (RBAC)
 - Protected API routes with middleware
 - File upload validation (type, size)
+- Duplicate email/NIM/NIP prevention
 - XSS protection
 - CORS configuration
 - Environment variable management
+- Collaborator-based access control
 
 ## 🌍 Environment Variables
 
