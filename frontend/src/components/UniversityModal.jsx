@@ -16,7 +16,7 @@ import {
   VStack,
   useToast
 } from '@chakra-ui/react';
-import axios from 'axios';
+import api from '../utils/api';
 
 const UniversityModal = ({ isOpen, onClose, university }) => {
   const [formData, setFormData] = useState({
@@ -28,8 +28,6 @@ const UniversityModal = ({ isOpen, onClose, university }) => {
   });
   const [loading, setLoading] = useState(false);
   const toast = useToast();
-
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     if (university) {
@@ -59,7 +57,11 @@ const UniversityModal = ({ isOpen, onClose, university }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log('=== University Form Submit Debug ===');
+    console.log('1. Form Data:', formData);
+
     if (!formData.name || !formData.code) {
+      console.error('Validation failed: name or code is missing');
       toast({
         title: 'Error',
         description: 'Name and code are required',
@@ -72,38 +74,52 @@ const UniversityModal = ({ isOpen, onClose, university }) => {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
 
+      const url = university
+        ? `/universities/${university._id}`
+        : `/universities`;
+      const method = university ? 'PUT' : 'POST';
+
+      console.log('2. Request URL:', url);
+      console.log('3. Request Method:', method);
+      console.log('4. Request Body:', formData);
+
+      let response;
       if (university) {
-        await axios.put(`${API_URL}/universities/${university._id}`, formData, config);
-        toast({
-          title: 'Success',
-          description: 'University updated successfully',
-          status: 'success',
-          duration: 3000,
-          isClosable: true
-        });
+        response = await api.put(url, formData);
       } else {
-        await axios.post(`${API_URL}/universities`, formData, config);
-        toast({
-          title: 'Success',
-          description: 'University created successfully',
-          status: 'success',
-          duration: 3000,
-          isClosable: true
-        });
+        response = await api.post(url, formData);
       }
+
+      console.log('5. Response Success:', response.data);
+
+      toast({
+        title: 'Success',
+        description: university ? 'University updated successfully' : 'University created successfully',
+        status: 'success',
+        duration: 3000,
+        isClosable: true
+      });
 
       onClose();
     } catch (error) {
+      console.error('=== Error Details ===');
+      console.error('6. Error Object:', error);
+      console.error('7. Error Response:', error.response);
+      console.error('8. Error Response Data:', error.response?.data);
+      console.error('9. Error Response Status:', error.response?.status);
+      console.error('10. Error Message:', error.message);
+
+      const errorMessage = error.response?.data?.message
+        || error.response?.data?.error
+        || error.message
+        || 'Failed to save university';
+
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Failed to save university',
+        description: errorMessage,
         status: 'error',
-        duration: 3000,
+        duration: 5000,
         isClosable: true
       });
     } finally {

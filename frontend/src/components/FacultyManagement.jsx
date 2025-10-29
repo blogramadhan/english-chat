@@ -21,7 +21,7 @@ import {
   Select
 } from '@chakra-ui/react';
 import { EditIcon, DeleteIcon, SearchIcon, AddIcon } from '@chakra-ui/icons';
-import axios from 'axios';
+import api from '../utils/api';
 import FacultyModal from './FacultyModal';
 
 const FacultyManagement = () => {
@@ -34,8 +34,6 @@ const FacultyManagement = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
   useEffect(() => {
     fetchUniversities();
     fetchFaculties();
@@ -47,10 +45,7 @@ const FacultyManagement = () => {
 
   const fetchUniversities = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/universities/active`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/universities/active');
       setUniversities(response.data);
     } catch (error) {
       console.error('Failed to fetch universities:', error);
@@ -60,12 +55,8 @@ const FacultyManagement = () => {
   const fetchFaculties = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       const params = filterUniversity ? { universityId: filterUniversity } : {};
-      const response = await axios.get(`${API_URL}/faculties`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params
-      });
+      const response = await api.get('/faculties', { params });
       setFaculties(response.data);
     } catch (error) {
       toast({
@@ -96,10 +87,7 @@ const FacultyManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/faculties/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/faculties/${id}`);
 
       toast({
         title: 'Success',

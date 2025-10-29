@@ -20,7 +20,7 @@ import {
   useDisclosure
 } from '@chakra-ui/react';
 import { EditIcon, DeleteIcon, SearchIcon, AddIcon } from '@chakra-ui/icons';
-import axios from 'axios';
+import api from '../utils/api';
 import UniversityModal from './UniversityModal';
 
 const UniversityManagement = () => {
@@ -31,8 +31,6 @@ const UniversityManagement = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
   useEffect(() => {
     fetchUniversities();
   }, []);
@@ -40,10 +38,7 @@ const UniversityManagement = () => {
   const fetchUniversities = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/universities`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/universities');
       setUniversities(response.data);
     } catch (error) {
       toast({
@@ -74,10 +69,7 @@ const UniversityManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/universities/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/universities/${id}`);
 
       toast({
         title: 'Success',

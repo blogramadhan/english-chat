@@ -22,7 +22,7 @@ import {
   Tag
 } from '@chakra-ui/react';
 import { EditIcon, DeleteIcon, SearchIcon, AddIcon } from '@chakra-ui/icons';
-import axios from 'axios';
+import api from '../utils/api';
 import ProgramModal from './ProgramModal';
 
 const ProgramManagement = () => {
@@ -36,8 +36,6 @@ const ProgramManagement = () => {
   const [selectedProgram, setSelectedProgram] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchUniversities();
@@ -60,10 +58,7 @@ const ProgramManagement = () => {
 
   const fetchUniversities = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/universities/active`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/universities/active');
       setUniversities(response.data);
     } catch (error) {
       console.error('Failed to fetch universities:', error);
@@ -72,9 +67,7 @@ const ProgramManagement = () => {
 
   const fetchFaculties = async (universityId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/faculties/active`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get('/faculties/active', {
         params: { universityId }
       });
       setFaculties(response.data);
@@ -86,15 +79,11 @@ const ProgramManagement = () => {
   const fetchPrograms = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       const params = {};
       if (filterUniversity) params.universityId = filterUniversity;
       if (filterFaculty) params.facultyId = filterFaculty;
 
-      const response = await axios.get(`${API_URL}/programs`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params
-      });
+      const response = await api.get('/programs', { params });
       setPrograms(response.data);
     } catch (error) {
       toast({
@@ -125,10 +114,7 @@ const ProgramManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/programs/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/programs/${id}`);
 
       toast({
         title: 'Success',

@@ -17,7 +17,7 @@ import {
   VStack,
   useToast
 } from '@chakra-ui/react';
-import axios from 'axios';
+import api from '../utils/api';
 
 const ProgramModal = ({ isOpen, onClose, program, universities }) => {
   const [formData, setFormData] = useState({
@@ -32,8 +32,6 @@ const ProgramModal = ({ isOpen, onClose, program, universities }) => {
   const [faculties, setFaculties] = useState([]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
-
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     if (program) {
@@ -66,9 +64,7 @@ const ProgramModal = ({ isOpen, onClose, program, universities }) => {
 
   const fetchFaculties = async (universityId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/faculties/active`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get('/faculties/active', {
         params: { universityId }
       });
       setFaculties(response.data);
@@ -107,13 +103,9 @@ const ProgramModal = ({ isOpen, onClose, program, universities }) => {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
 
       if (program) {
-        await axios.put(`${API_URL}/programs/${program._id}`, formData, config);
+        await api.put(`/programs/${program._id}`, formData);
         toast({
           title: 'Success',
           description: 'Program updated successfully',
@@ -122,7 +114,7 @@ const ProgramModal = ({ isOpen, onClose, program, universities }) => {
           isClosable: true
         });
       } else {
-        await axios.post(`${API_URL}/programs`, formData, config);
+        await api.post('/programs', formData);
         toast({
           title: 'Success',
           description: 'Program created successfully',

@@ -17,7 +17,7 @@ import {
   VStack,
   useToast
 } from '@chakra-ui/react';
-import axios from 'axios';
+import api from '../utils/api';
 
 const FacultyModal = ({ isOpen, onClose, faculty, universities }) => {
   const [formData, setFormData] = useState({
@@ -29,8 +29,6 @@ const FacultyModal = ({ isOpen, onClose, faculty, universities }) => {
   });
   const [loading, setLoading] = useState(false);
   const toast = useToast();
-
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     if (faculty) {
@@ -73,13 +71,9 @@ const FacultyModal = ({ isOpen, onClose, faculty, universities }) => {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: { Authorization: `Bearer ${token}` }
-      };
 
       if (faculty) {
-        await axios.put(`${API_URL}/faculties/${faculty._id}`, formData, config);
+        await api.put(`/faculties/${faculty._id}`, formData);
         toast({
           title: 'Success',
           description: 'Faculty updated successfully',
@@ -88,7 +82,7 @@ const FacultyModal = ({ isOpen, onClose, faculty, universities }) => {
           isClosable: true
         });
       } else {
-        await axios.post(`${API_URL}/faculties`, formData, config);
+        await api.post('/faculties', formData);
         toast({
           title: 'Success',
           description: 'Faculty created successfully',
