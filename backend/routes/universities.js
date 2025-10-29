@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const University = require('../models/University');
 const Faculty = require('../models/Faculty');
-const Program = require('../models/Program');
 const { protect, isAdmin } = require('../middleware/auth');
 
 // Get all universities
@@ -49,6 +48,16 @@ router.post('/', protect, isAdmin, async (req, res) => {
   try {
     const { name, code, description, address } = req.body;
 
+    // Validate required fields
+    if (!name || !code) {
+      return res.status(400).json({ message: 'Name and code are required' });
+    }
+
+    // Check if req.user exists
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     // Check if university with same code already exists
     const existingUniversity = await University.findOne({ code });
     if (existingUniversity) {
@@ -68,7 +77,8 @@ router.post('/', protect, isAdmin, async (req, res) => {
 
     res.status(201).json(university);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error creating university:', error);
+    res.status(500).json({ message: 'Failed to save university', error: error.message });
   }
 });
 

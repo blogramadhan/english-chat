@@ -77,6 +77,16 @@ router.post('/', protect, isAdmin, async (req, res) => {
   try {
     const { name, code, description, level, faculty, university } = req.body;
 
+    // Validate required fields
+    if (!name || !code || !level || !faculty || !university) {
+      return res.status(400).json({ message: 'All fields (name, code, level, faculty, university) are required' });
+    }
+
+    // Check if req.user exists
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     // Check if faculty exists and belongs to the university
     const facultyExists = await Faculty.findById(faculty);
     if (!facultyExists) {
@@ -116,7 +126,8 @@ router.post('/', protect, isAdmin, async (req, res) => {
 
     res.status(201).json(program);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error creating program:', error);
+    res.status(500).json({ message: 'Failed to save program', error: error.message });
   }
 });
 

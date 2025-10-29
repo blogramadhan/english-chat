@@ -63,6 +63,16 @@ router.post('/', protect, isAdmin, async (req, res) => {
   try {
     const { name, code, description, university } = req.body;
 
+    // Validate required fields
+    if (!name || !code || !university) {
+      return res.status(400).json({ message: 'Name, code, and university are required' });
+    }
+
+    // Check if req.user exists
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     // Check if university exists
     const universityExists = await University.findById(university);
     if (!universityExists) {
@@ -89,7 +99,8 @@ router.post('/', protect, isAdmin, async (req, res) => {
 
     res.status(201).json(faculty);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Error creating faculty:', error);
+    res.status(500).json({ message: 'Failed to save faculty', error: error.message });
   }
 });
 
