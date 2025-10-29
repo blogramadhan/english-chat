@@ -51,6 +51,9 @@ import { CheckIcon, CloseIcon, DeleteIcon, EditIcon, SearchIcon } from '@chakra-
 import api from '../utils/api'
 import Navbar from '../components/Navbar'
 import EditUserModal from '../components/EditUserModal'
+import UniversityManagement from '../components/UniversityManagement'
+import FacultyManagement from '../components/FacultyManagement'
+import ProgramManagement from '../components/ProgramManagement'
 import { useRef } from 'react'
 
 const AdminDashboard = () => {
@@ -402,6 +405,9 @@ const AdminDashboard = () => {
             <TabList>
               <Tab fontSize="sm">Pending Approval ({pendingUsers.length})</Tab>
               <Tab fontSize="sm">All Users ({allUsers.length})</Tab>
+              <Tab fontSize="sm">Universities</Tab>
+              <Tab fontSize="sm">Faculties</Tab>
+              <Tab fontSize="sm">Programs</Tab>
             </TabList>
 
             <TabPanels>
@@ -625,6 +631,42 @@ const AdminDashboard = () => {
                         </HStack>
                       </Flex>
                     )}
+                  </CardBody>
+                </Card>
+              </TabPanel>
+
+              {/* Universities Tab */}
+              <TabPanel px={0}>
+                <Card size="sm">
+                  <CardHeader pb={2}>
+                    <Heading size="sm">University Management</Heading>
+                  </CardHeader>
+                  <CardBody pt={2}>
+                    <UniversityManagement />
+                  </CardBody>
+                </Card>
+              </TabPanel>
+
+              {/* Faculties Tab */}
+              <TabPanel px={0}>
+                <Card size="sm">
+                  <CardHeader pb={2}>
+                    <Heading size="sm">Faculty Management</Heading>
+                  </CardHeader>
+                  <CardBody pt={2}>
+                    <FacultyManagement />
+                  </CardBody>
+                </Card>
+              </TabPanel>
+
+              {/* Programs Tab */}
+              <TabPanel px={0}>
+                <Card size="sm">
+                  <CardHeader pb={2}>
+                    <Heading size="sm">Program Management</Heading>
+                  </CardHeader>
+                  <CardBody pt={2}>
+                    <ProgramManagement />
                   </CardBody>
                 </Card>
               </TabPanel>

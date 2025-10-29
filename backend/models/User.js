@@ -52,6 +52,18 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User' // Deprecated: kept for backward compatibility
   },
+  university: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'University'
+  },
+  faculty: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Faculty'
+  },
+  program: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Program'
+  },
   avatar: {
     type: String,
     default: ''
