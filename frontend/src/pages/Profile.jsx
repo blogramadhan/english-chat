@@ -40,6 +40,7 @@ const Profile = () => {
   const [universities, setUniversities] = useState([]);
   const [faculties, setFaculties] = useState([]);
   const [programs, setPrograms] = useState([]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -65,53 +66,72 @@ const Profile = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setProfileData({
-        name: user.name || '',
-        email: user.email || '',
-        nim: user.nim || '',
-        nip: user.nip || '',
-        university: user.university?._id || user.university || '',
-        faculty: user.faculty?._id || user.faculty || '',
-        program: user.program?._id || user.program || ''
-      });
+    const loadUserData = async () => {
+      if (user) {
+        const universityId = user.university?._id || user.university || '';
+        const facultyId = user.faculty?._id || user.faculty || '';
+        const programId = user.program?._id || user.program || '';
 
-      // Load lecturers if user is mahasiswa
-      if (user.role === 'mahasiswa') {
-        fetchLecturers();
-        fetchUserLecturers();
-      }
+        setProfileData({
+          name: user.name || '',
+          email: user.email || '',
+          nim: user.nim || '',
+          nip: user.nip || '',
+          university: universityId,
+          faculty: facultyId,
+          program: programId
+        });
 
-      // Load universities, faculties, programs
-      fetchUniversities();
-      if (user.university) {
-        const universityId = user.university?._id || user.university;
-        fetchFaculties(universityId);
+        // Load lecturers if user is mahasiswa
+        if (user.role === 'mahasiswa') {
+          fetchLecturers();
+          fetchUserLecturers();
+        }
+
+        // Load universities first
+        await fetchUniversities();
+
+        // Load faculties if university exists
+        if (universityId) {
+          await fetchFaculties(universityId);
+        }
+
+        // Load programs if faculty exists
+        if (facultyId) {
+          await fetchPrograms(facultyId);
+        }
+
+        // Mark initial load as complete
+        setIsInitialLoad(false);
       }
-      if (user.faculty) {
-        const facultyId = user.faculty?._id || user.faculty;
-        fetchPrograms(facultyId);
-      }
-    }
+    };
+
+    loadUserData();
   }, [user]);
 
   useEffect(() => {
+    // Skip if this is initial load
+    if (isInitialLoad) return;
+
     if (profileData.university) {
       fetchFaculties(profileData.university);
     } else {
       setFaculties([]);
       setProfileData(prev => ({ ...prev, faculty: '', program: '' }));
     }
-  }, [profileData.university]);
+  }, [profileData.university, isInitialLoad]);
 
   useEffect(() => {
+    // Skip if this is initial load
+    if (isInitialLoad) return;
+
     if (profileData.faculty) {
       fetchPrograms(profileData.faculty);
     } else {
       setPrograms([]);
       setProfileData(prev => ({ ...prev, program: '' }));
     }
-  }, [profileData.faculty]);
+  }, [profileData.faculty, isInitialLoad]);
 
   const fetchLecturers = async () => {
     try {
@@ -430,6 +450,13 @@ const Profile = () => {
                         onChange={handleProfileChange}
                         placeholder="Select university"
                       >
+                        {/* Show current selection first if it exists but not in the list yet */}
+                        {profileData.university && user?.university &&
+                         !universities.find(u => u._id === profileData.university) && (
+                          <option value={profileData.university}>
+                            {user.university.name || 'Loading...'}
+                          </option>
+                        )}
                         {universities.map((university) => (
                           <option key={university._id} value={university._id}>
                             {university.name}
@@ -447,6 +474,13 @@ const Profile = () => {
                         placeholder="Select faculty"
                         isDisabled={!profileData.university}
                       >
+                        {/* Show current selection first if it exists but not in the list yet */}
+                        {profileData.faculty && user?.faculty &&
+                         !faculties.find(f => f._id === profileData.faculty) && (
+                          <option value={profileData.faculty}>
+                            {user.faculty.name || 'Loading...'}
+                          </option>
+                        )}
                         {faculties.map((faculty) => (
                           <option key={faculty._id} value={faculty._id}>
                             {faculty.name}
@@ -464,6 +498,13 @@ const Profile = () => {
                         placeholder="Select program"
                         isDisabled={!profileData.faculty}
                       >
+                        {/* Show current selection first if it exists but not in the list yet */}
+                        {profileData.program && user?.program &&
+                         !programs.find(p => p._id === profileData.program) && (
+                          <option value={profileData.program}>
+                            {user.program.name ? `${user.program.name} (${user.program.level || ''})` : 'Loading...'}
+                          </option>
+                        )}
                         {programs.map((program) => (
                           <option key={program._id} value={program._id}>
                             {program.name} ({program.level})
