@@ -26,7 +26,7 @@ router.post('/register', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, role, nim, nip, lecturers } = req.body;
+    const { name, email, password, role, nim, nip, lecturers, university, faculty, program } = req.body;
 
     // Check if user exists with the same email
     const userExists = await User.findOne({ email });
@@ -75,6 +75,12 @@ router.post('/register', [
 
     // Create user
     const userData = { name, email, password, role };
+
+    // Add academic information
+    if (university) userData.university = university;
+    if (faculty) userData.faculty = faculty;
+    if (program) userData.program = program;
+
     if (role === 'mahasiswa') {
       if (nim) userData.nim = nim;
       if (lecturers) {

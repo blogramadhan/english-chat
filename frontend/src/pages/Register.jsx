@@ -29,10 +29,16 @@ const Register = () => {
     password: '',
     role: 'mahasiswa',
     nim: '',
-    nip: ''
+    nip: '',
+    university: '',
+    faculty: '',
+    program: ''
   })
   const [selectedLecturers, setSelectedLecturers] = useState([])
   const [lecturers, setLecturers] = useState([])
+  const [universities, setUniversities] = useState([])
+  const [faculties, setFaculties] = useState([])
+  const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(false)
   const { register } = useAuth()
   const navigate = useNavigate()
@@ -40,7 +46,26 @@ const Register = () => {
 
   useEffect(() => {
     fetchLecturers()
+    fetchUniversities()
   }, [])
+
+  useEffect(() => {
+    if (formData.university) {
+      fetchFaculties(formData.university)
+    } else {
+      setFaculties([])
+      setFormData(prev => ({ ...prev, faculty: '', program: '' }))
+    }
+  }, [formData.university])
+
+  useEffect(() => {
+    if (formData.faculty) {
+      fetchPrograms(formData.faculty)
+    } else {
+      setPrograms([])
+      setFormData(prev => ({ ...prev, program: '' }))
+    }
+  }, [formData.faculty])
 
   const fetchLecturers = async () => {
     try {
@@ -48,6 +73,37 @@ const Register = () => {
       setLecturers(response.data)
     } catch (error) {
       console.error('Failed to fetch lecturers:', error)
+    }
+  }
+
+  const fetchUniversities = async () => {
+    try {
+      const response = await api.get('/universities/active')
+      setUniversities(response.data)
+    } catch (error) {
+      console.error('Failed to fetch universities:', error)
+    }
+  }
+
+  const fetchFaculties = async (universityId) => {
+    try {
+      const response = await api.get('/faculties/active', {
+        params: { universityId }
+      })
+      setFaculties(response.data)
+    } catch (error) {
+      console.error('Failed to fetch faculties:', error)
+    }
+  }
+
+  const fetchPrograms = async (facultyId) => {
+    try {
+      const response = await api.get('/programs/active', {
+        params: { facultyId }
+      })
+      setPrograms(response.data)
+    } catch (error) {
+      console.error('Failed to fetch programs:', error)
     }
   }
 
@@ -168,6 +224,59 @@ const Register = () => {
                   <Select name="role" value={formData.role} onChange={handleChange} size="sm">
                     <option value="mahasiswa">Student</option>
                     <option value="dosen">Lecturer</option>
+                  </Select>
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel fontSize="sm">University</FormLabel>
+                  <Select
+                    name="university"
+                    value={formData.university}
+                    onChange={handleChange}
+                    size="sm"
+                    placeholder="Select university"
+                  >
+                    {universities.map((university) => (
+                      <option key={university._id} value={university._id}>
+                        {university.name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel fontSize="sm">Faculty</FormLabel>
+                  <Select
+                    name="faculty"
+                    value={formData.faculty}
+                    onChange={handleChange}
+                    size="sm"
+                    placeholder="Select faculty"
+                    isDisabled={!formData.university}
+                  >
+                    {faculties.map((faculty) => (
+                      <option key={faculty._id} value={faculty._id}>
+                        {faculty.name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel fontSize="sm">Program</FormLabel>
+                  <Select
+                    name="program"
+                    value={formData.program}
+                    onChange={handleChange}
+                    size="sm"
+                    placeholder="Select program"
+                    isDisabled={!formData.faculty}
+                  >
+                    {programs.map((program) => (
+                      <option key={program._id} value={program._id}>
+                        {program.name} ({program.level})
+                      </option>
+                    ))}
                   </Select>
                 </FormControl>
 

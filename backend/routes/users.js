@@ -12,7 +12,11 @@ const path = require('path');
 // @access  Private
 router.get('/me', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await User.findById(req.user._id)
+      .select('-password')
+      .populate('university', 'name code')
+      .populate('faculty', 'name')
+      .populate('program', 'name level');
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -93,6 +97,11 @@ router.put('/profile', protect, async (req, res) => {
       user.email = req.body.email;
     }
 
+    // Update academic information
+    if (req.body.university !== undefined) user.university = req.body.university;
+    if (req.body.faculty !== undefined) user.faculty = req.body.faculty;
+    if (req.body.program !== undefined) user.program = req.body.program;
+
     // Update NIM/NIP based on role
     if (user.role === 'mahasiswa') {
       if (req.body.nim) user.nim = req.body.nim;
@@ -125,6 +134,11 @@ router.put('/profile', protect, async (req, res) => {
 
     const updatedUser = await user.save();
 
+    // Populate university, faculty, and program
+    await updatedUser.populate('university', 'name code');
+    await updatedUser.populate('faculty', 'name');
+    await updatedUser.populate('program', 'name level');
+
     res.json({
       _id: updatedUser._id,
       name: updatedUser.name,
@@ -133,7 +147,10 @@ router.put('/profile', protect, async (req, res) => {
       nim: updatedUser.nim,
       nip: updatedUser.nip,
       avatar: updatedUser.avatar,
-      status: updatedUser.status
+      status: updatedUser.status,
+      university: updatedUser.university,
+      faculty: updatedUser.faculty,
+      program: updatedUser.program
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

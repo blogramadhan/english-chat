@@ -22,6 +22,7 @@ import {
   InputRightElement,
   Checkbox,
   Stack,
+  Select,
 } from '@chakra-ui/react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useAuth } from '../context/AuthContext';
@@ -36,6 +37,9 @@ const Profile = () => {
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [lecturers, setLecturers] = useState([]);
   const [selectedLecturers, setSelectedLecturers] = useState([]);
+  const [universities, setUniversities] = useState([]);
+  const [faculties, setFaculties] = useState([]);
+  const [programs, setPrograms] = useState([]);
 
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -43,6 +47,9 @@ const Profile = () => {
     email: '',
     nim: '',
     nip: '',
+    university: '',
+    faculty: '',
+    program: ''
   });
 
   // Password form state
@@ -64,6 +71,9 @@ const Profile = () => {
         email: user.email || '',
         nim: user.nim || '',
         nip: user.nip || '',
+        university: user.university?._id || user.university || '',
+        faculty: user.faculty?._id || user.faculty || '',
+        program: user.program?._id || user.program || ''
       });
 
       // Load lecturers if user is mahasiswa
@@ -71,8 +81,37 @@ const Profile = () => {
         fetchLecturers();
         fetchUserLecturers();
       }
+
+      // Load universities, faculties, programs
+      fetchUniversities();
+      if (user.university) {
+        const universityId = user.university?._id || user.university;
+        fetchFaculties(universityId);
+      }
+      if (user.faculty) {
+        const facultyId = user.faculty?._id || user.faculty;
+        fetchPrograms(facultyId);
+      }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (profileData.university) {
+      fetchFaculties(profileData.university);
+    } else {
+      setFaculties([]);
+      setProfileData(prev => ({ ...prev, faculty: '', program: '' }));
+    }
+  }, [profileData.university]);
+
+  useEffect(() => {
+    if (profileData.faculty) {
+      fetchPrograms(profileData.faculty);
+    } else {
+      setPrograms([]);
+      setProfileData(prev => ({ ...prev, program: '' }));
+    }
+  }, [profileData.faculty]);
 
   const fetchLecturers = async () => {
     try {
@@ -93,6 +132,37 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Failed to fetch user lecturers:', error);
+    }
+  };
+
+  const fetchUniversities = async () => {
+    try {
+      const response = await api.get('/universities/active');
+      setUniversities(response.data);
+    } catch (error) {
+      console.error('Failed to fetch universities:', error);
+    }
+  };
+
+  const fetchFaculties = async (universityId) => {
+    try {
+      const response = await api.get('/faculties/active', {
+        params: { universityId }
+      });
+      setFaculties(response.data);
+    } catch (error) {
+      console.error('Failed to fetch faculties:', error);
+    }
+  };
+
+  const fetchPrograms = async (facultyId) => {
+    try {
+      const response = await api.get('/programs/active', {
+        params: { facultyId }
+      });
+      setPrograms(response.data);
+    } catch (error) {
+      console.error('Failed to fetch programs:', error);
     }
   };
 
@@ -347,6 +417,59 @@ const Profile = () => {
                         value={profileData.email}
                         onChange={handleProfileChange}
                       />
+                    </FormControl>
+
+                    <Divider />
+                    <Text fontWeight="bold" fontSize="sm" color="gray.600">Academic Information</Text>
+
+                    <FormControl isRequired>
+                      <FormLabel>University</FormLabel>
+                      <Select
+                        name="university"
+                        value={profileData.university}
+                        onChange={handleProfileChange}
+                        placeholder="Select university"
+                      >
+                        {universities.map((university) => (
+                          <option key={university._id} value={university._id}>
+                            {university.name}
+                          </option>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>Faculty</FormLabel>
+                      <Select
+                        name="faculty"
+                        value={profileData.faculty}
+                        onChange={handleProfileChange}
+                        placeholder="Select faculty"
+                        isDisabled={!profileData.university}
+                      >
+                        {faculties.map((faculty) => (
+                          <option key={faculty._id} value={faculty._id}>
+                            {faculty.name}
+                          </option>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel>Program</FormLabel>
+                      <Select
+                        name="program"
+                        value={profileData.program}
+                        onChange={handleProfileChange}
+                        placeholder="Select program"
+                        isDisabled={!profileData.faculty}
+                      >
+                        {programs.map((program) => (
+                          <option key={program._id} value={program._id}>
+                            {program.name} ({program.level})
+                          </option>
+                        ))}
+                      </Select>
                     </FormControl>
 
                     {user?.role === 'mahasiswa' && (
