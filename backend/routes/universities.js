@@ -16,10 +16,11 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
-// Get active universities only
-router.get('/active', protect, async (req, res) => {
+// Get active universities only (public - for registration)
+router.get('/active', async (req, res) => {
   try {
     const universities = await University.find({ isActive: true })
+      .select('name code description')
       .sort({ name: 1 });
     res.json(universities);
   } catch (error) {

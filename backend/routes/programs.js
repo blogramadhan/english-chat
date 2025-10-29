@@ -30,8 +30,8 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
-// Get active programs
-router.get('/active', protect, async (req, res) => {
+// Get active programs (public - for registration)
+router.get('/active', async (req, res) => {
   try {
     const { facultyId, universityId } = req.query;
     const query = { isActive: true };
@@ -44,7 +44,8 @@ router.get('/active', protect, async (req, res) => {
     }
 
     const programs = await Program.find(query)
-      .populate('faculty', 'name code')
+      .select('name description level faculty university')
+      .populate('faculty', 'name')
       .populate('university', 'name code')
       .sort({ name: 1 });
 

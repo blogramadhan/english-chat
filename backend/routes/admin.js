@@ -107,6 +107,28 @@ router.put('/users/:id/reject', protect, isAdmin, async (req, res) => {
   }
 });
 
+// @route   GET /api/admin/users/:id
+// @desc    Get single user with populated fields
+// @access  Private/Admin
+router.get('/users/:id', protect, isAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id)
+      .select('-password')
+      .populate('university', 'name code')
+      .populate('faculty', 'name')
+      .populate('program', 'name level')
+      .populate('approvedBy', 'name email');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // @route   PUT /api/admin/users/:id
 // @desc    Update user profile (by admin)
 // @access  Private/Admin
@@ -145,6 +167,11 @@ router.put('/users/:id', protect, isAdmin, async (req, res) => {
       user.nip = req.body.nip;
     }
 
+    // Update academic information
+    if (req.body.university !== undefined) user.university = req.body.university || null;
+    if (req.body.faculty !== undefined) user.faculty = req.body.faculty || null;
+    if (req.body.program !== undefined) user.program = req.body.program || null;
+
     // Admin can also update status
     if (req.body.status && ['pending', 'approved', 'rejected'].includes(req.body.status)) {
       user.status = req.body.status;
@@ -156,6 +183,11 @@ router.put('/users/:id', protect, isAdmin, async (req, res) => {
 
     const updatedUser = await user.save();
 
+    // Populate academic fields for response
+    await updatedUser.populate('university', 'name code');
+    await updatedUser.populate('faculty', 'name');
+    await updatedUser.populate('program', 'name level');
+
     res.json({
       message: 'User updated successfully',
       user: {
@@ -166,7 +198,10 @@ router.put('/users/:id', protect, isAdmin, async (req, res) => {
         nim: updatedUser.nim,
         nip: updatedUser.nip,
         avatar: updatedUser.avatar,
-        status: updatedUser.status
+        status: updatedUser.status,
+        university: updatedUser.university,
+        faculty: updatedUser.faculty,
+        program: updatedUser.program
       }
     });
   } catch (error) {
