@@ -41,6 +41,7 @@ const Profile = () => {
   const [faculties, setFaculties] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -65,27 +66,57 @@ const Profile = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Fetch current user data with populated fields
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await api.get('/users/me');
+      setCurrentUser(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch current user:', error);
+      // Fallback to user from context
+      return user;
+    }
+  };
+
   useEffect(() => {
     const loadUserData = async () => {
       if (user) {
-        const universityId = user.university?._id || user.university || '';
-        const facultyId = user.faculty?._id || user.faculty || '';
-        const programId = user.program?._id || user.program || '';
+        // Fetch latest user data with populated fields
+        const userData = await fetchCurrentUser();
+
+        const universityId = userData.university?._id || userData.university || '';
+        const facultyId = userData.faculty?._id || userData.faculty || '';
+        const programId = userData.program?._id || userData.program || '';
+
+        console.log('Loading user data:', {
+          universityId,
+          facultyId,
+          programId,
+          university: userData.university,
+          faculty: userData.faculty,
+          program: userData.program
+        });
 
         setProfileData({
-          name: user.name || '',
-          email: user.email || '',
-          nim: user.nim || '',
-          nip: user.nip || '',
+          name: userData.name || '',
+          email: userData.email || '',
+          nim: userData.nim || '',
+          nip: userData.nip || '',
           university: universityId,
           faculty: facultyId,
           program: programId
         });
 
         // Load lecturers if user is mahasiswa
-        if (user.role === 'mahasiswa') {
+        if (userData.role === 'mahasiswa') {
           fetchLecturers();
-          fetchUserLecturers();
+          // Fetch lecturers separately to get the populated list
+          if (userData.lecturers && userData.lecturers.length > 0) {
+            setSelectedLecturers(userData.lecturers.map(l => l._id || l));
+          } else if (userData.lecturer) {
+            setSelectedLecturers([userData.lecturer._id || userData.lecturer]);
+          }
         }
 
         // Load universities first
@@ -139,19 +170,6 @@ const Profile = () => {
       setLecturers(response.data);
     } catch (error) {
       console.error('Failed to fetch lecturers:', error);
-    }
-  };
-
-  const fetchUserLecturers = async () => {
-    try {
-      const response = await api.get('/users/me');
-      if (response.data.lecturers && response.data.lecturers.length > 0) {
-        setSelectedLecturers(response.data.lecturers);
-      } else if (response.data.lecturer) {
-        setSelectedLecturers([response.data.lecturer]);
-      }
-    } catch (error) {
-      console.error('Failed to fetch user lecturers:', error);
     }
   };
 
@@ -451,10 +469,10 @@ const Profile = () => {
                         placeholder="Select university"
                       >
                         {/* Show current selection first if it exists but not in the list yet */}
-                        {profileData.university && user?.university &&
+                        {profileData.university && currentUser?.university &&
                          !universities.find(u => u._id === profileData.university) && (
                           <option value={profileData.university}>
-                            {user.university.name || 'Loading...'}
+                            {currentUser.university.name || 'Loading...'}
                           </option>
                         )}
                         {universities.map((university) => (
@@ -475,10 +493,10 @@ const Profile = () => {
                         isDisabled={!profileData.university}
                       >
                         {/* Show current selection first if it exists but not in the list yet */}
-                        {profileData.faculty && user?.faculty &&
+                        {profileData.faculty && currentUser?.faculty &&
                          !faculties.find(f => f._id === profileData.faculty) && (
                           <option value={profileData.faculty}>
-                            {user.faculty.name || 'Loading...'}
+                            {currentUser.faculty.name || 'Loading...'}
                           </option>
                         )}
                         {faculties.map((faculty) => (
@@ -499,10 +517,10 @@ const Profile = () => {
                         isDisabled={!profileData.faculty}
                       >
                         {/* Show current selection first if it exists but not in the list yet */}
-                        {profileData.program && user?.program &&
+                        {profileData.program && currentUser?.program &&
                          !programs.find(p => p._id === profileData.program) && (
                           <option value={profileData.program}>
-                            {user.program.name ? `${user.program.name} (${user.program.level || ''})` : 'Loading...'}
+                            {currentUser.program.name ? `${currentUser.program.name} (${currentUser.program.level || ''})` : 'Loading...'}
                           </option>
                         )}
                         {programs.map((program) => (
