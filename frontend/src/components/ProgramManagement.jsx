@@ -145,7 +145,6 @@ const ProgramManagement = () => {
   const filteredPrograms = programs.filter(
     (program) =>
       program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      program.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       program.faculty?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       program.university?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -212,7 +211,6 @@ const ProgramManagement = () => {
           <Table variant="simple">
             <Thead>
               <Tr>
-                <Th>Code</Th>
                 <Th>Name</Th>
                 <Th>Level</Th>
                 <Th>Faculty</Th>
@@ -224,8 +222,7 @@ const ProgramManagement = () => {
             <Tbody>
               {filteredPrograms.map((program) => (
                 <Tr key={program._id}>
-                  <Td fontWeight="bold">{program.code}</Td>
-                  <Td>{program.name}</Td>
+                  <Td fontWeight="bold">{program.name}</Td>
                   <Td>
                     <Tag colorScheme="purple">{program.level}</Tag>
                   </Td>

@@ -75,11 +75,11 @@ router.get('/:id', protect, async (req, res) => {
 // Create program (admin only)
 router.post('/', protect, isAdmin, async (req, res) => {
   try {
-    const { name, code, description, level, faculty, university } = req.body;
+    const { name, description, level, faculty, university } = req.body;
 
     // Validate required fields
-    if (!name || !code || !level || !faculty || !university) {
-      return res.status(400).json({ message: 'All fields (name, code, level, faculty, university) are required' });
+    if (!name || !level || !faculty || !university) {
+      return res.status(400).json({ message: 'Name, level, faculty, and university are required' });
     }
 
     // Check if req.user exists
@@ -103,15 +103,8 @@ router.post('/', protect, isAdmin, async (req, res) => {
       return res.status(404).json({ message: 'University not found' });
     }
 
-    // Check if program with same code exists in this faculty
-    const existingProgram = await Program.findOne({ code, faculty });
-    if (existingProgram) {
-      return res.status(400).json({ message: 'Program with this code already exists in this faculty' });
-    }
-
     const program = new Program({
       name,
-      code,
       description,
       level,
       faculty,
@@ -120,7 +113,7 @@ router.post('/', protect, isAdmin, async (req, res) => {
     });
 
     await program.save();
-    await program.populate('faculty', 'name code');
+    await program.populate('faculty', 'name');
     await program.populate('university', 'name code');
     await program.populate('createdBy', 'name email');
 
@@ -134,7 +127,7 @@ router.post('/', protect, isAdmin, async (req, res) => {
 // Update program (admin only)
 router.put('/:id', protect, isAdmin, async (req, res) => {
   try {
-    const { name, code, description, level, faculty, university, isActive } = req.body;
+    const { name, description, level, faculty, university, isActive } = req.body;
 
     const program = await Program.findById(req.params.id);
     if (!program) {
@@ -161,21 +154,7 @@ router.put('/:id', protect, isAdmin, async (req, res) => {
       }
     }
 
-    // Check if code is being changed and if it conflicts
-    const targetFaculty = faculty || program.faculty;
-    if (code && (code !== program.code || targetFaculty.toString() !== program.faculty.toString())) {
-      const existingProgram = await Program.findOne({
-        code,
-        faculty: targetFaculty,
-        _id: { $ne: req.params.id }
-      });
-      if (existingProgram) {
-        return res.status(400).json({ message: 'Program with this code already exists in this faculty' });
-      }
-    }
-
     program.name = name || program.name;
-    program.code = code || program.code;
     program.description = description !== undefined ? description : program.description;
     program.level = level || program.level;
     program.faculty = faculty || program.faculty;
@@ -183,7 +162,7 @@ router.put('/:id', protect, isAdmin, async (req, res) => {
     program.isActive = isActive !== undefined ? isActive : program.isActive;
 
     await program.save();
-    await program.populate('faculty', 'name code');
+    await program.populate('faculty', 'name');
     await program.populate('university', 'name code');
     await program.populate('createdBy', 'name email');
 

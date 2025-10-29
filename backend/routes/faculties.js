@@ -61,11 +61,11 @@ router.get('/:id', protect, async (req, res) => {
 // Create faculty (admin only)
 router.post('/', protect, isAdmin, async (req, res) => {
   try {
-    const { name, code, description, university } = req.body;
+    const { name, description, university } = req.body;
 
     // Validate required fields
-    if (!name || !code || !university) {
-      return res.status(400).json({ message: 'Name, code, and university are required' });
+    if (!name || !university) {
+      return res.status(400).json({ message: 'Name and university are required' });
     }
 
     // Check if req.user exists
@@ -79,15 +79,8 @@ router.post('/', protect, isAdmin, async (req, res) => {
       return res.status(404).json({ message: 'University not found' });
     }
 
-    // Check if faculty with same code exists in this university
-    const existingFaculty = await Faculty.findOne({ code, university });
-    if (existingFaculty) {
-      return res.status(400).json({ message: 'Faculty with this code already exists in this university' });
-    }
-
     const faculty = new Faculty({
       name,
-      code,
       description,
       university,
       createdBy: req.user._id
@@ -107,7 +100,7 @@ router.post('/', protect, isAdmin, async (req, res) => {
 // Update faculty (admin only)
 router.put('/:id', protect, isAdmin, async (req, res) => {
   try {
-    const { name, code, description, university, isActive } = req.body;
+    const { name, description, university, isActive } = req.body;
 
     const faculty = await Faculty.findById(req.params.id);
     if (!faculty) {
@@ -122,21 +115,7 @@ router.put('/:id', protect, isAdmin, async (req, res) => {
       }
     }
 
-    // Check if code is being changed and if it conflicts
-    const targetUniversity = university || faculty.university;
-    if (code && (code !== faculty.code || targetUniversity !== faculty.university.toString())) {
-      const existingFaculty = await Faculty.findOne({
-        code,
-        university: targetUniversity,
-        _id: { $ne: req.params.id }
-      });
-      if (existingFaculty) {
-        return res.status(400).json({ message: 'Faculty with this code already exists in this university' });
-      }
-    }
-
     faculty.name = name || faculty.name;
-    faculty.code = code || faculty.code;
     faculty.description = description !== undefined ? description : faculty.description;
     faculty.university = university || faculty.university;
     faculty.isActive = isActive !== undefined ? isActive : faculty.isActive;

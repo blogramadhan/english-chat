@@ -118,7 +118,6 @@ const FacultyManagement = () => {
   const filteredFaculties = faculties.filter(
     (faculty) =>
       faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faculty.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       faculty.university?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -139,7 +138,7 @@ const FacultyManagement = () => {
               <SearchIcon color="gray.300" />
             </InputLeftElement>
             <Input
-              placeholder="Search by name or code..."
+              placeholder="Search by name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -171,7 +170,6 @@ const FacultyManagement = () => {
           <Table variant="simple">
             <Thead>
               <Tr>
-                <Th>Code</Th>
                 <Th>Name</Th>
                 <Th>University</Th>
                 <Th>Status</Th>
@@ -181,8 +179,7 @@ const FacultyManagement = () => {
             <Tbody>
               {filteredFaculties.map((faculty) => (
                 <Tr key={faculty._id}>
-                  <Td fontWeight="bold">{faculty.code}</Td>
-                  <Td>{faculty.name}</Td>
+                  <Td fontWeight="bold">{faculty.name}</Td>
                   <Td>{faculty.university?.name}</Td>
                   <Td>
                     <Badge colorScheme={faculty.isActive ? 'green' : 'red'}>

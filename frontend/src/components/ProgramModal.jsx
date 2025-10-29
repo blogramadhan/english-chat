@@ -22,7 +22,6 @@ import api from '../utils/api';
 const ProgramModal = ({ isOpen, onClose, program, universities }) => {
   const [formData, setFormData] = useState({
     name: '',
-    code: '',
     description: '',
     level: '',
     university: '',
@@ -37,7 +36,6 @@ const ProgramModal = ({ isOpen, onClose, program, universities }) => {
     if (program) {
       setFormData({
         name: program.name || '',
-        code: program.code || '',
         description: program.description || '',
         level: program.level || '',
         university: program.university?._id || '',
@@ -51,7 +49,6 @@ const ProgramModal = ({ isOpen, onClose, program, universities }) => {
     } else {
       setFormData({
         name: '',
-        code: '',
         description: '',
         level: '',
         university: '',
@@ -90,10 +87,10 @@ const ProgramModal = ({ isOpen, onClose, program, universities }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.code || !formData.level || !formData.university || !formData.faculty) {
+    if (!formData.name || !formData.level || !formData.university || !formData.faculty) {
       toast({
         title: 'Error',
-        description: 'All fields are required',
+        description: 'Name, level, university, and faculty are required',
         status: 'error',
         duration: 3000,
         isClosable: true
@@ -178,17 +175,6 @@ const ProgramModal = ({ isOpen, onClose, program, universities }) => {
                     </option>
                   ))}
                 </Select>
-              </FormControl>
-
-              <FormControl isRequired>
-                <FormLabel>Program Code</FormLabel>
-                <Input
-                  name="code"
-                  value={formData.code}
-                  onChange={handleChange}
-                  placeholder="e.g., IF001"
-                  textTransform="uppercase"
-                />
               </FormControl>
 
               <FormControl isRequired>

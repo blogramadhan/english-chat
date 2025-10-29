@@ -6,12 +6,6 @@ const facultySchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  code: {
-    type: String,
-    required: true,
-    trim: true,
-    uppercase: true
-  },
   description: {
     type: String,
     trim: true
@@ -33,8 +27,5 @@ const facultySchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
-// Composite index to ensure unique faculty code within a university
-facultySchema.index({ code: 1, university: 1 }, { unique: true });
 
 module.exports = mongoose.model('Faculty', facultySchema);

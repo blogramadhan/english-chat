@@ -22,7 +22,6 @@ import api from '../utils/api';
 const FacultyModal = ({ isOpen, onClose, faculty, universities }) => {
   const [formData, setFormData] = useState({
     name: '',
-    code: '',
     description: '',
     university: '',
     isActive: true
@@ -34,7 +33,6 @@ const FacultyModal = ({ isOpen, onClose, faculty, universities }) => {
     if (faculty) {
       setFormData({
         name: faculty.name || '',
-        code: faculty.code || '',
         description: faculty.description || '',
         university: faculty.university?._id || '',
         isActive: faculty.isActive !== undefined ? faculty.isActive : true
@@ -42,7 +40,6 @@ const FacultyModal = ({ isOpen, onClose, faculty, universities }) => {
     } else {
       setFormData({
         name: '',
-        code: '',
         description: '',
         university: '',
         isActive: true
@@ -58,10 +55,10 @@ const FacultyModal = ({ isOpen, onClose, faculty, universities }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.code || !formData.university) {
+    if (!formData.name || !formData.university) {
       toast({
         title: 'Error',
-        description: 'Name, code, and university are required',
+        description: 'Name and university are required',
         status: 'error',
         duration: 3000,
         isClosable: true
@@ -129,17 +126,6 @@ const FacultyModal = ({ isOpen, onClose, faculty, universities }) => {
                     </option>
                   ))}
                 </Select>
-              </FormControl>
-
-              <FormControl isRequired>
-                <FormLabel>Faculty Code</FormLabel>
-                <Input
-                  name="code"
-                  value={formData.code}
-                  onChange={handleChange}
-                  placeholder="e.g., FT001"
-                  textTransform="uppercase"
-                />
               </FormControl>
 
               <FormControl isRequired>
