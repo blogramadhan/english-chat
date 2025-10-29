@@ -403,272 +403,294 @@ const AdminDashboard = () => {
           {/* Tabs */}
           <Tabs colorScheme="brand" size="sm">
             <TabList>
-              <Tab fontSize="sm">Pending Approval ({pendingUsers.length})</Tab>
-              <Tab fontSize="sm">All Users ({allUsers.length})</Tab>
-              <Tab fontSize="sm">Universities</Tab>
-              <Tab fontSize="sm">Faculties</Tab>
-              <Tab fontSize="sm">Programs</Tab>
+              <Tab fontSize="sm">User Management</Tab>
+              <Tab fontSize="sm">Affiliation</Tab>
             </TabList>
 
             <TabPanels>
-              {/* Pending Users Tab */}
+              {/* User Management Tab with Nested Tabs */}
               <TabPanel px={0}>
-                <Card size="sm">
-                  <CardHeader pb={2}>
-                    <VStack align="stretch" spacing={3}>
-                      <Heading size="sm">Pending Users</Heading>
-                      <InputGroup size="sm">
-                        <InputLeftElement pointerEvents="none">
-                          <SearchIcon color="gray.300" />
-                        </InputLeftElement>
-                        <Input
-                          placeholder="Search by name, email, NIM/NIP, or role..."
-                          value={searchPending}
-                          onChange={(e) => setSearchPending(e.target.value)}
-                        />
-                      </InputGroup>
-                    </VStack>
-                  </CardHeader>
-                  <CardBody pt={2}>
-                    {pendingUsers.length === 0 ? (
-                      <Text color="gray.500" fontSize="sm" py={4}>No users waiting for approval</Text>
-                    ) : filteredPendingUsers.length === 0 ? (
-                      <Text color="gray.500" fontSize="sm" py={4}>No users found matching your search</Text>
-                    ) : (
-                      <Table variant="simple" size="sm">
-                        <Thead>
-                          <Tr>
-                            <Th fontSize="xs" py={2}>Name</Th>
-                            <Th fontSize="xs" py={2}>Email</Th>
-                            <Th fontSize="xs" py={2}>Role</Th>
-                            <Th fontSize="xs" py={2}>NIM/NIP</Th>
-                            <Th fontSize="xs" py={2}>Registered</Th>
-                            <Th fontSize="xs" py={2}>Actions</Th>
-                          </Tr>
-                        </Thead>
-                        <Tbody>
-                          {currentPendingUsers.map((user) => (
-                            <Tr key={user._id}>
-                              <Td fontSize="sm" py={2}>{user.name}</Td>
-                              <Td fontSize="sm" py={2}>{user.email}</Td>
-                              <Td py={2}>{getRoleBadge(user.role)}</Td>
-                              <Td fontSize="sm" py={2}>{user.nim || user.nip || '-'}</Td>
-                              <Td fontSize="sm" py={2}>
-                                {new Date(user.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
-                              </Td>
-                              <Td py={2}>
-                                <HStack spacing={1}>
-                                  <IconButton
-                                    icon={<CheckIcon />}
-                                    colorScheme="green"
-                                    size="xs"
-                                    onClick={() => handleApprove(user._id)}
-                                    aria-label="Approve"
-                                  />
-                                  <IconButton
-                                    icon={<CloseIcon />}
-                                    colorScheme="red"
-                                    size="xs"
-                                    onClick={() => handleReject(user._id)}
-                                    aria-label="Reject"
-                                  />
-                                </HStack>
-                              </Td>
-                            </Tr>
-                          ))}
-                        </Tbody>
-                      </Table>
-                    )}
+                <Tabs colorScheme="blue" size="sm" variant="enclosed">
+                  <TabList>
+                    <Tab fontSize="sm">Pending Approval ({pendingUsers.length})</Tab>
+                    <Tab fontSize="sm">All Users ({allUsers.length})</Tab>
+                  </TabList>
 
-                    {/* Pagination for Pending Users */}
-                    {filteredPendingUsers.length > usersPerPage && (
-                      <Flex justify="space-between" align="center" mt={4} pt={3} borderTop="1px" borderColor="gray.200">
-                        <Text fontSize="sm" color="gray.600">
-                          Showing {indexOfFirstPendingUser + 1} to {Math.min(indexOfLastPendingUser, filteredPendingUsers.length)} of {filteredPendingUsers.length} users
-                        </Text>
-                        <HStack spacing={2}>
-                          <Button
-                            size="sm"
-                            onClick={() => setCurrentPendingPage(prev => Math.max(prev - 1, 1))}
-                            isDisabled={currentPendingPage === 1}
-                          >
-                            Previous
-                          </Button>
-                          <Text fontSize="sm" px={2}>
-                            Page {currentPendingPage} of {totalPendingPages}
-                          </Text>
-                          <Button
-                            size="sm"
-                            onClick={() => setCurrentPendingPage(prev => Math.min(prev + 1, totalPendingPages))}
-                            isDisabled={currentPendingPage === totalPendingPages}
-                          >
-                            Next
-                          </Button>
-                        </HStack>
-                      </Flex>
-                    )}
-                  </CardBody>
-                </Card>
-              </TabPanel>
+                  <TabPanels>
+                    {/* Pending Users Sub-Tab */}
+                    <TabPanel px={0}>
+                      <Card size="sm">
+                        <CardHeader pb={2}>
+                          <VStack align="stretch" spacing={3}>
+                            <Heading size="sm">Pending Users</Heading>
+                            <InputGroup size="sm">
+                              <InputLeftElement pointerEvents="none">
+                                <SearchIcon color="gray.300" />
+                              </InputLeftElement>
+                              <Input
+                                placeholder="Search by name, email, NIM/NIP, or role..."
+                                value={searchPending}
+                                onChange={(e) => setSearchPending(e.target.value)}
+                              />
+                            </InputGroup>
+                          </VStack>
+                        </CardHeader>
+                        <CardBody pt={2}>
+                          {pendingUsers.length === 0 ? (
+                            <Text color="gray.500" fontSize="sm" py={4}>No users waiting for approval</Text>
+                          ) : filteredPendingUsers.length === 0 ? (
+                            <Text color="gray.500" fontSize="sm" py={4}>No users found matching your search</Text>
+                          ) : (
+                            <Table variant="simple" size="sm">
+                              <Thead>
+                                <Tr>
+                                  <Th fontSize="xs" py={2}>Name</Th>
+                                  <Th fontSize="xs" py={2}>Email</Th>
+                                  <Th fontSize="xs" py={2}>Role</Th>
+                                  <Th fontSize="xs" py={2}>NIM/NIP</Th>
+                                  <Th fontSize="xs" py={2}>Registered</Th>
+                                  <Th fontSize="xs" py={2}>Actions</Th>
+                                </Tr>
+                              </Thead>
+                              <Tbody>
+                                {currentPendingUsers.map((user) => (
+                                  <Tr key={user._id}>
+                                    <Td fontSize="sm" py={2}>{user.name}</Td>
+                                    <Td fontSize="sm" py={2}>{user.email}</Td>
+                                    <Td py={2}>{getRoleBadge(user.role)}</Td>
+                                    <Td fontSize="sm" py={2}>{user.nim || user.nip || '-'}</Td>
+                                    <Td fontSize="sm" py={2}>
+                                      {new Date(user.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </Td>
+                                    <Td py={2}>
+                                      <HStack spacing={1}>
+                                        <IconButton
+                                          icon={<CheckIcon />}
+                                          colorScheme="green"
+                                          size="xs"
+                                          onClick={() => handleApprove(user._id)}
+                                          aria-label="Approve"
+                                        />
+                                        <IconButton
+                                          icon={<CloseIcon />}
+                                          colorScheme="red"
+                                          size="xs"
+                                          onClick={() => handleReject(user._id)}
+                                          aria-label="Reject"
+                                        />
+                                      </HStack>
+                                    </Td>
+                                  </Tr>
+                                ))}
+                              </Tbody>
+                            </Table>
+                          )}
 
-              {/* All Users Tab */}
-              <TabPanel px={0}>
-                <Card size="sm">
-                  <CardHeader pb={2}>
-                    <VStack align="stretch" spacing={3}>
-                      <Heading size="sm">All Users</Heading>
-                      <InputGroup size="sm">
-                        <InputLeftElement pointerEvents="none">
-                          <SearchIcon color="gray.300" />
-                        </InputLeftElement>
-                        <Input
-                          placeholder="Search by name, email, NIM/NIP, role, or status..."
-                          value={searchAll}
-                          onChange={(e) => setSearchAll(e.target.value)}
-                        />
-                      </InputGroup>
-                    </VStack>
-                  </CardHeader>
-                  <CardBody pt={2}>
-                    {filteredAllUsers.length === 0 ? (
-                      <Text color="gray.500" fontSize="sm" py={4}>
-                        {allUsers.length === 0 ? 'No users found' : 'No users found matching your search'}
-                      </Text>
-                    ) : (
-                      <Table variant="simple" size="sm">
-                        <Thead>
-                          <Tr>
-                            <Th fontSize="xs" py={2}>Name</Th>
-                            <Th fontSize="xs" py={2}>Email</Th>
-                            <Th fontSize="xs" py={2}>Role</Th>
-                            <Th fontSize="xs" py={2}>Status</Th>
-                            <Th fontSize="xs" py={2}>NIM/NIP</Th>
-                            <Th fontSize="xs" py={2}>Registered</Th>
-                            <Th fontSize="xs" py={2}>Actions</Th>
-                          </Tr>
-                        </Thead>
-                        <Tbody>
-                          {currentAllUsers.map((user) => (
-                          <Tr key={user._id}>
-                            <Td fontSize="sm" py={2}>{user.name}</Td>
-                            <Td fontSize="sm" py={2}>{user.email}</Td>
-                            <Td py={2}>{getRoleBadge(user.role)}</Td>
-                            <Td py={2}>{getStatusBadge(user.status)}</Td>
-                            <Td fontSize="sm" py={2}>{user.nim || user.nip || '-'}</Td>
-                            <Td fontSize="sm" py={2}>
-                              {new Date(user.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
-                            </Td>
-                            <Td py={2}>
-                              <HStack spacing={1}>
-                                {user.status === 'pending' && (
-                                  <>
-                                    <IconButton
-                                      icon={<CheckIcon />}
-                                      colorScheme="green"
-                                      size="xs"
-                                      onClick={() => handleApprove(user._id)}
-                                      aria-label="Approve"
-                                    />
-                                    <IconButton
-                                      icon={<CloseIcon />}
-                                      colorScheme="orange"
-                                      size="xs"
-                                      onClick={() => handleReject(user._id)}
-                                      aria-label="Reject"
-                                    />
-                                  </>
-                                )}
-                                {user.role !== 'admin' && (
-                                  <>
-                                    <IconButton
-                                      icon={<EditIcon />}
-                                      colorScheme="blue"
-                                      size="xs"
-                                      onClick={() => handleEditClick(user)}
-                                      aria-label="Edit"
-                                    />
-                                    <IconButton
-                                      icon={<DeleteIcon />}
-                                      colorScheme="red"
-                                      size="xs"
-                                      onClick={() => handleDeleteClick(user)}
-                                      aria-label="Delete"
-                                    />
-                                  </>
-                                )}
+                          {/* Pagination for Pending Users */}
+                          {filteredPendingUsers.length > usersPerPage && (
+                            <Flex justify="space-between" align="center" mt={4} pt={3} borderTop="1px" borderColor="gray.200">
+                              <Text fontSize="sm" color="gray.600">
+                                Showing {indexOfFirstPendingUser + 1} to {Math.min(indexOfLastPendingUser, filteredPendingUsers.length)} of {filteredPendingUsers.length} users
+                              </Text>
+                              <HStack spacing={2}>
+                                <Button
+                                  size="sm"
+                                  onClick={() => setCurrentPendingPage(prev => Math.max(prev - 1, 1))}
+                                  isDisabled={currentPendingPage === 1}
+                                >
+                                  Previous
+                                </Button>
+                                <Text fontSize="sm" px={2}>
+                                  Page {currentPendingPage} of {totalPendingPages}
+                                </Text>
+                                <Button
+                                  size="sm"
+                                  onClick={() => setCurrentPendingPage(prev => Math.min(prev + 1, totalPendingPages))}
+                                  isDisabled={currentPendingPage === totalPendingPages}
+                                >
+                                  Next
+                                </Button>
                               </HStack>
-                            </Td>
-                          </Tr>
-                          ))}
-                        </Tbody>
-                      </Table>
-                    )}
+                            </Flex>
+                          )}
+                        </CardBody>
+                      </Card>
+                    </TabPanel>
 
-                    {/* Pagination for All Users */}
-                    {filteredAllUsers.length > usersPerPage && (
-                      <Flex justify="space-between" align="center" mt={4} pt={3} borderTop="1px" borderColor="gray.200">
-                        <Text fontSize="sm" color="gray.600">
-                          Showing {indexOfFirstAllUser + 1} to {Math.min(indexOfLastAllUser, filteredAllUsers.length)} of {filteredAllUsers.length} users
-                        </Text>
-                        <HStack spacing={2}>
-                          <Button
-                            size="sm"
-                            onClick={() => setCurrentAllUsersPage(prev => Math.max(prev - 1, 1))}
-                            isDisabled={currentAllUsersPage === 1}
-                          >
-                            Previous
-                          </Button>
-                          <Text fontSize="sm" px={2}>
-                            Page {currentAllUsersPage} of {totalAllUsersPages}
-                          </Text>
-                          <Button
-                            size="sm"
-                            onClick={() => setCurrentAllUsersPage(prev => Math.min(prev + 1, totalAllUsersPages))}
-                            isDisabled={currentAllUsersPage === totalAllUsersPages}
-                          >
-                            Next
-                          </Button>
-                        </HStack>
-                      </Flex>
-                    )}
-                  </CardBody>
-                </Card>
+                    {/* All Users Sub-Tab */}
+                    <TabPanel px={0}>
+                      <Card size="sm">
+                        <CardHeader pb={2}>
+                          <VStack align="stretch" spacing={3}>
+                            <Heading size="sm">All Users</Heading>
+                            <InputGroup size="sm">
+                              <InputLeftElement pointerEvents="none">
+                                <SearchIcon color="gray.300" />
+                              </InputLeftElement>
+                              <Input
+                                placeholder="Search by name, email, NIM/NIP, role, or status..."
+                                value={searchAll}
+                                onChange={(e) => setSearchAll(e.target.value)}
+                              />
+                            </InputGroup>
+                          </VStack>
+                        </CardHeader>
+                        <CardBody pt={2}>
+                          {filteredAllUsers.length === 0 ? (
+                            <Text color="gray.500" fontSize="sm" py={4}>
+                              {allUsers.length === 0 ? 'No users found' : 'No users found matching your search'}
+                            </Text>
+                          ) : (
+                            <Table variant="simple" size="sm">
+                              <Thead>
+                                <Tr>
+                                  <Th fontSize="xs" py={2}>Name</Th>
+                                  <Th fontSize="xs" py={2}>Email</Th>
+                                  <Th fontSize="xs" py={2}>Role</Th>
+                                  <Th fontSize="xs" py={2}>Status</Th>
+                                  <Th fontSize="xs" py={2}>NIM/NIP</Th>
+                                  <Th fontSize="xs" py={2}>Registered</Th>
+                                  <Th fontSize="xs" py={2}>Actions</Th>
+                                </Tr>
+                              </Thead>
+                              <Tbody>
+                                {currentAllUsers.map((user) => (
+                                <Tr key={user._id}>
+                                  <Td fontSize="sm" py={2}>{user.name}</Td>
+                                  <Td fontSize="sm" py={2}>{user.email}</Td>
+                                  <Td py={2}>{getRoleBadge(user.role)}</Td>
+                                  <Td py={2}>{getStatusBadge(user.status)}</Td>
+                                  <Td fontSize="sm" py={2}>{user.nim || user.nip || '-'}</Td>
+                                  <Td fontSize="sm" py={2}>
+                                    {new Date(user.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  </Td>
+                                  <Td py={2}>
+                                    <HStack spacing={1}>
+                                      {user.status === 'pending' && (
+                                        <>
+                                          <IconButton
+                                            icon={<CheckIcon />}
+                                            colorScheme="green"
+                                            size="xs"
+                                            onClick={() => handleApprove(user._id)}
+                                            aria-label="Approve"
+                                          />
+                                          <IconButton
+                                            icon={<CloseIcon />}
+                                            colorScheme="orange"
+                                            size="xs"
+                                            onClick={() => handleReject(user._id)}
+                                            aria-label="Reject"
+                                          />
+                                        </>
+                                      )}
+                                      {user.role !== 'admin' && (
+                                        <>
+                                          <IconButton
+                                            icon={<EditIcon />}
+                                            colorScheme="blue"
+                                            size="xs"
+                                            onClick={() => handleEditClick(user)}
+                                            aria-label="Edit"
+                                          />
+                                          <IconButton
+                                            icon={<DeleteIcon />}
+                                            colorScheme="red"
+                                            size="xs"
+                                            onClick={() => handleDeleteClick(user)}
+                                            aria-label="Delete"
+                                          />
+                                        </>
+                                      )}
+                                    </HStack>
+                                  </Td>
+                                </Tr>
+                                ))}
+                              </Tbody>
+                            </Table>
+                          )}
+
+                          {/* Pagination for All Users */}
+                          {filteredAllUsers.length > usersPerPage && (
+                            <Flex justify="space-between" align="center" mt={4} pt={3} borderTop="1px" borderColor="gray.200">
+                              <Text fontSize="sm" color="gray.600">
+                                Showing {indexOfFirstAllUser + 1} to {Math.min(indexOfLastAllUser, filteredAllUsers.length)} of {filteredAllUsers.length} users
+                              </Text>
+                              <HStack spacing={2}>
+                                <Button
+                                  size="sm"
+                                  onClick={() => setCurrentAllUsersPage(prev => Math.max(prev - 1, 1))}
+                                  isDisabled={currentAllUsersPage === 1}
+                                >
+                                  Previous
+                                </Button>
+                                <Text fontSize="sm" px={2}>
+                                  Page {currentAllUsersPage} of {totalAllUsersPages}
+                                </Text>
+                                <Button
+                                  size="sm"
+                                  onClick={() => setCurrentAllUsersPage(prev => Math.min(prev + 1, totalAllUsersPages))}
+                                  isDisabled={currentAllUsersPage === totalAllUsersPages}
+                                >
+                                  Next
+                                </Button>
+                              </HStack>
+                            </Flex>
+                          )}
+                        </CardBody>
+                      </Card>
+                    </TabPanel>
+                  </TabPanels>
+                </Tabs>
               </TabPanel>
 
-              {/* Universities Tab */}
+              {/* Affiliation Tab with Nested Tabs */}
               <TabPanel px={0}>
-                <Card size="sm">
-                  <CardHeader pb={2}>
-                    <Heading size="sm">University Management</Heading>
-                  </CardHeader>
-                  <CardBody pt={2}>
-                    <UniversityManagement />
-                  </CardBody>
-                </Card>
-              </TabPanel>
+                <Tabs colorScheme="green" size="sm" variant="enclosed">
+                  <TabList>
+                    <Tab fontSize="sm">Universities</Tab>
+                    <Tab fontSize="sm">Faculties</Tab>
+                    <Tab fontSize="sm">Programs</Tab>
+                  </TabList>
 
-              {/* Faculties Tab */}
-              <TabPanel px={0}>
-                <Card size="sm">
-                  <CardHeader pb={2}>
-                    <Heading size="sm">Faculty Management</Heading>
-                  </CardHeader>
-                  <CardBody pt={2}>
-                    <FacultyManagement />
-                  </CardBody>
-                </Card>
-              </TabPanel>
+                  <TabPanels>
+                    {/* Universities Sub-Tab */}
+                    <TabPanel px={0}>
+                      <Card size="sm">
+                        <CardHeader pb={2}>
+                          <Heading size="sm">University Management</Heading>
+                        </CardHeader>
+                        <CardBody pt={2}>
+                          <UniversityManagement />
+                        </CardBody>
+                      </Card>
+                    </TabPanel>
 
-              {/* Programs Tab */}
-              <TabPanel px={0}>
-                <Card size="sm">
-                  <CardHeader pb={2}>
-                    <Heading size="sm">Program Management</Heading>
-                  </CardHeader>
-                  <CardBody pt={2}>
-                    <ProgramManagement />
-                  </CardBody>
-                </Card>
+                    {/* Faculties Sub-Tab */}
+                    <TabPanel px={0}>
+                      <Card size="sm">
+                        <CardHeader pb={2}>
+                          <Heading size="sm">Faculty Management</Heading>
+                        </CardHeader>
+                        <CardBody pt={2}>
+                          <FacultyManagement />
+                        </CardBody>
+                      </Card>
+                    </TabPanel>
+
+                    {/* Programs Sub-Tab */}
+                    <TabPanel px={0}>
+                      <Card size="sm">
+                        <CardHeader pb={2}>
+                          <Heading size="sm">Program Management</Heading>
+                        </CardHeader>
+                        <CardBody pt={2}>
+                          <ProgramManagement />
+                        </CardBody>
+                      </Card>
+                    </TabPanel>
+                  </TabPanels>
+                </Tabs>
               </TabPanel>
             </TabPanels>
           </Tabs>
