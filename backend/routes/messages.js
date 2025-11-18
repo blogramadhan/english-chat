@@ -5,6 +5,97 @@ const upload = require('../middleware/upload');
 const Message = require('../models/Message');
 const Discussion = require('../models/Discussion');
 const Group = require('../models/Group');
+const Notification = require('../models/Notification');
+
+// Helper function to create notifications for new messages
+const createMessageNotifications = async (message, discussion) => {
+  try {
+    const notifications = [];
+
+    // Get all users who should receive notification
+    const discussionDoc = await Discussion.findById(discussion).populate('groups');
+    if (!discussionDoc) return;
+
+    // Collect all unique users who should be notified
+    const recipientIds = new Set();
+
+    // If message is from dosen (broadcast or targeted)
+    if (message.isForAllGroups) {
+      // Notify all students in all groups
+      for (const group of discussionDoc.groups) {
+        const groupDoc = await Group.findById(group._id).populate('members');
+        if (groupDoc) {
+          groupDoc.members.forEach(member => {
+            if (member._id.toString() !== message.sender.toString()) {
+              recipientIds.add(member._id.toString());
+            }
+          });
+        }
+      }
+    } else if (message.targetGroup) {
+      // Notify students in specific target group
+      const groupDoc = await Group.findById(message.targetGroup).populate('members');
+      if (groupDoc) {
+        groupDoc.members.forEach(member => {
+          if (member._id.toString() !== message.sender.toString()) {
+            recipientIds.add(member._id.toString());
+          }
+        });
+      }
+    } else if (message.group) {
+      // Message from student - notify dosen (creator and collaborators) AND other students in same group
+
+      // Add discussion creator (dosen)
+      if (discussionDoc.createdBy.toString() !== message.sender.toString()) {
+        recipientIds.add(discussionDoc.createdBy.toString());
+      }
+
+      // Add collaborators (dosen)
+      if (discussionDoc.collaborators && discussionDoc.collaborators.length > 0) {
+        discussionDoc.collaborators.forEach(collab => {
+          if (collab.toString() !== message.sender.toString()) {
+            recipientIds.add(collab.toString());
+          }
+        });
+      }
+
+      // Add other students in the same group
+      const groupDoc = await Group.findById(message.group).populate('members');
+      if (groupDoc) {
+        groupDoc.members.forEach(member => {
+          if (member._id.toString() !== message.sender.toString()) {
+            recipientIds.add(member._id.toString());
+          }
+        });
+      }
+    }
+
+    // Create notifications for all recipients
+    const notificationType = message.replyTo ? 'new_reply' : 'new_message';
+    const notificationContent = message.messageType === 'file'
+      ? `sent a file: ${message.fileName}`
+      : (message.content.length > 50 ? message.content.substring(0, 50) + '...' : message.content);
+
+    for (const recipientId of recipientIds) {
+      notifications.push({
+        recipient: recipientId,
+        sender: message.sender,
+        discussion: discussion,
+        message: message._id,
+        type: notificationType,
+        content: notificationContent
+      });
+    }
+
+    // Bulk create notifications
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+  } catch (error) {
+    console.error('Error creating notifications:', error);
+    // Don't throw error - notifications are not critical
+  }
+};
 
 // @route   POST /api/messages
 // @desc    Send message in discussion
@@ -90,6 +181,9 @@ router.post('/', protect, async (req, res) => {
       });
     }
 
+    // Create notifications for recipients (don't await - run in background)
+    createMessageNotifications(message, discussion);
+
     res.status(201).json(message);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -166,6 +260,9 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
     if (message.targetGroup) {
       await message.populate('targetGroup');
     }
+
+    // Create notifications for recipients (don't await - run in background)
+    createMessageNotifications(message, discussion);
 
     res.status(201).json(message);
   } catch (error) {

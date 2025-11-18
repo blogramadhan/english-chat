@@ -17,6 +17,7 @@ import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import LoomaLogo from './LoomaLogo'
+import NotificationBell from './NotificationBell'
 import { getAvatarUrl } from '../utils/avatar'
 
 const Navbar = () => {
@@ -47,13 +48,15 @@ const Navbar = () => {
           </VStack>
         </HStack>
 
-        <Menu>
-          <MenuButton as={Button} rightIcon={<ChevronDownIcon />} variant="ghost">
-            <HStack spacing={2}>
-              <Avatar size="sm" name={user?.name} src={getAvatarUrl(user?.avatar)} />
-              <Text>{user?.name}</Text>
-            </HStack>
-          </MenuButton>
+        <HStack spacing={2}>
+          <NotificationBell />
+          <Menu>
+            <MenuButton as={Button} rightIcon={<ChevronDownIcon />} variant="ghost">
+              <HStack spacing={2}>
+                <Avatar size="sm" name={user?.name} src={getAvatarUrl(user?.avatar)} />
+                <Text>{user?.name}</Text>
+              </HStack>
+            </MenuButton>
           <MenuList>
             <MenuItem>
               <VStack align="start" spacing={0}>
@@ -69,6 +72,7 @@ const Navbar = () => {
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </MenuList>
         </Menu>
+        </HStack>
       </Flex>
     </Box>
   )

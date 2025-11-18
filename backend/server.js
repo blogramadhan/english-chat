@@ -39,6 +39,7 @@ app.use('/api/groups', require('./routes/groups'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/discussions', require('./routes/discussions'));
 app.use('/api/messages', require('./routes/messages'));
+app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/universities', require('./routes/universities'));
 app.use('/api/faculties', require('./routes/faculties'));
 app.use('/api/programs', require('./routes/programs'));
