@@ -301,6 +301,13 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
     // Get messages for this discussion (filtered by group if specified)
     const messages = await Message.find(messageQuery)
       .populate('sender', 'name email role')
+      .populate({
+        path: 'replyTo',
+        populate: {
+          path: 'sender',
+          select: 'name email role'
+        }
+      })
       .sort('createdAt');
 
     // Helper function to sanitize text for PDF
@@ -402,6 +409,38 @@ router.get('/:id/export-pdf', protect, isDosen, async (req, res) => {
 
       // Add spacing before message content
       doc.moveDown(0.5);
+
+      // Render reply preview if exists
+      if (message.replyTo) {
+        // Reply box with visual indicator
+        doc.fontSize(7).font('Helvetica').fillColor('gray');
+
+        // Reply sender name
+        const replySenderName = sanitizeText(message.replyTo.sender?.name) || 'Unknown';
+        doc.text('┃ ', leftMargin + contentIndent, doc.y, { continued: true });
+        doc.text(`Replying to ${replySenderName}:`, { continued: false });
+
+        // Reply content preview
+        let replyContent = '';
+        if (message.replyTo.messageType === 'file') {
+          replyContent = `[File: ${sanitizeText(message.replyTo.fileName) || 'attachment'}]`;
+        } else {
+          replyContent = sanitizeText(message.replyTo.content);
+          // Truncate if too long
+          if (replyContent.length > 60) {
+            replyContent = replyContent.substring(0, 60) + '...';
+          }
+        }
+
+        doc.text('┃ ', leftMargin + contentIndent, doc.y, { continued: true });
+        doc.text(replyContent, {
+          width: doc.page.width - leftMargin - contentIndent - 30 - doc.page.margins.right,
+          continued: false
+        });
+
+        doc.moveDown(0.3);
+        doc.fillColor('black');
+      }
 
       // Message content with indent
       doc.fillColor('black').fontSize(9).font('Helvetica');
