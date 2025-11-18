@@ -40,9 +40,16 @@ const Register = () => {
   const [faculties, setFaculties] = useState([])
   const [programs, setPrograms] = useState([])
   const [loading, setLoading] = useState(false)
-  const { register } = useAuth()
+  const { register, user } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
+
+  // Auto-redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate(`/${user.role}/dashboard`, { replace: true })
+    }
+  }, [user, navigate])
 
   useEffect(() => {
     fetchLecturers()

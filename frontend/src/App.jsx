@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import PrivateRoute from './components/PrivateRoute'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -9,6 +9,17 @@ import DosenDashboard from './pages/DosenDashboard'
 import MahasiswaDashboard from './pages/MahasiswaDashboard'
 import Discussion from './pages/Discussion'
 import Profile from './pages/Profile'
+
+// Component to handle root redirect
+const RootRedirect = () => {
+  const { user } = useAuth()
+
+  if (user) {
+    return <Navigate to={`/${user.role}/dashboard`} replace />
+  }
+
+  return <Navigate to="/login" replace />
+}
 
 function App() {
   return (
@@ -64,7 +75,7 @@ function App() {
               }
             />
 
-            <Route path="/" element={<Navigate to="/login" />} />
+            <Route path="/" element={<RootRedirect />} />
           </Routes>
         </Box>
       </Router>
