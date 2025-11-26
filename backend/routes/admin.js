@@ -159,6 +159,14 @@ router.put('/users/:id', protect, isAdmin, async (req, res) => {
       user.email = req.body.email;
     }
 
+    // Update password if provided
+    if (req.body.password) {
+      if (req.body.password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters' });
+      }
+      user.password = req.body.password;
+    }
+
     // Update NIM/NIP based on role
     if (user.role === 'mahasiswa' && req.body.nim !== undefined) {
       user.nim = req.body.nim;

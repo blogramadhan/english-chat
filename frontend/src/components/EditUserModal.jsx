@@ -36,6 +36,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
     university: '',
     faculty: '',
     program: '',
+    password: '',
   });
 
   // Fetch user with populated fields
@@ -80,6 +81,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
           university: universityId,
           faculty: facultyId,
           program: programId,
+          password: '',
         });
 
         // Load universities first
@@ -179,6 +181,22 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
         program: formData.program,
       };
 
+      // Add password if provided
+      if (formData.password && formData.password.trim() !== '') {
+        if (formData.password.length < 6) {
+          toast({
+            title: 'Error',
+            description: 'Password minimal 6 karakter',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+          });
+          setLoading(false);
+          return;
+        }
+        updateData.password = formData.password;
+      }
+
       // Add NIM/NIP based on role
       if (user.role === 'mahasiswa') {
         updateData.nim = formData.nim;
@@ -244,6 +262,20 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
                   onChange={handleChange}
                   placeholder="Email"
                 />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Password Baru</FormLabel>
+                <Input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Kosongkan jika tidak ingin mengubah password"
+                />
+                <Text fontSize="xs" color="gray.500" mt={1}>
+                  Minimal 6 karakter. Biarkan kosong jika tidak ingin mengubah password.
+                </Text>
               </FormControl>
 
               {user.role === 'mahasiswa' && (
