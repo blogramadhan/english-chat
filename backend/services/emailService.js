@@ -153,7 +153,7 @@ const sendRegistrationEmail = async (name, email) => {
               <div class="footer">
                 <p>Email ini dikirim secara otomatis dari sistem HiFella.</p>
                 <p>Mohon tidak membalas email ini.</p>
-                <p>&copy; ${new Date().getFullYear()} HiFella - Learning Online Platform. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} HiFella - Interactive English Learning Platform. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -350,7 +350,7 @@ const sendProfileUpdateEmail = async (name, email, changes) => {
               <div class="footer">
                 <p>Email ini dikirim secara otomatis dari sistem HiFella.</p>
                 <p>Mohon tidak membalas email ini.</p>
-                <p>&copy; ${new Date().getFullYear()} HiFella - Learning Online Platform. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} HiFella - Interactive English Learning Platform. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -545,7 +545,7 @@ const sendPasswordResetEmail = async (name, email, resetToken) => {
               <div class="footer">
                 <p>Email ini dikirim secara otomatis dari sistem HiFella.</p>
                 <p>Mohon tidak membalas email ini.</p>
-                <p>&copy; ${new Date().getFullYear()} HiFella - Learning Online Platform. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} HiFella - Interactive English Learning Platform. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -748,7 +748,7 @@ const sendPasswordResetConfirmationEmail = async (name, email) => {
               <div class="footer">
                 <p>Email ini dikirim secara otomatis dari sistem HiFella.</p>
                 <p>Mohon tidak membalas email ini.</p>
-                <p>&copy; ${new Date().getFullYear()} HiFella - Learning Online Platform. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} HiFella - Interactive English Learning Platform. All rights reserved.</p>
               </div>
             </div>
           </div>
