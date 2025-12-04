@@ -18,7 +18,7 @@ import {
     AlertIcon,
     AlertDescription,
 } from '@chakra-ui/react'
-import axios from 'axios'
+import api from '../utils/api'
 import HifellaLogo from '../components/HifellaLogo'
 
 const ForgotPassword = () => {
@@ -32,8 +32,7 @@ const ForgotPassword = () => {
         setLoading(true)
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-            await axios.post(`${API_URL}/api/auth/forgot-password`, { email })
+            await api.post('/auth/forgot-password', { email })
 
             setSubmitted(true)
             toast({

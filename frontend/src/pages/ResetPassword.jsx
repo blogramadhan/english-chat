@@ -18,7 +18,7 @@ import {
     AlertIcon,
     AlertDescription,
 } from '@chakra-ui/react'
-import axios from 'axios'
+import api from '../utils/api'
 import HifellaLogo from '../components/HifellaLogo'
 
 const ResetPassword = () => {
@@ -71,8 +71,7 @@ const ResetPassword = () => {
         setLoading(true)
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-            await axios.post(`${API_URL}/api/auth/reset-password`, {
+            await api.post('/auth/reset-password', {
                 token,
                 password,
             })
