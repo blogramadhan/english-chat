@@ -16,7 +16,7 @@ import {
   CardBody,
 } from '@chakra-ui/react'
 import { useAuth } from '../context/AuthContext'
-import LoomaLogo from '../components/LoomaLogo'
+import HifellaLogo from '../components/HifellaLogo'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -68,11 +68,11 @@ const Login = () => {
         <CardBody p={6}>
           <VStack spacing={4}>
             <Box pt={2}>
-              <LoomaLogo size={70} />
+              <HifellaLogo size={70} />
             </Box>
             <VStack spacing={0.5}>
-              <Heading size="lg" color="brand.600">LOOMA</Heading>
-              <Text fontSize="xs" color="gray.500" fontWeight="medium">Learning Online Platform</Text>
+              <Heading size="lg" color="brand.600">HIFELLA</Heading>
+              <Text fontSize="xs" color="gray.500" fontWeight="medium">Hi Friends English Learning</Text>
             </VStack>
             <Text color="gray.600" fontSize="sm">Sign in to your account</Text>
 

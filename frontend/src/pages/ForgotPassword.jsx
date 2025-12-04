@@ -19,7 +19,7 @@ import {
     AlertDescription,
 } from '@chakra-ui/react'
 import axios from 'axios'
-import LoomaLogo from '../components/LoomaLogo'
+import HifellaLogo from '../components/HifellaLogo'
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('')
@@ -62,11 +62,11 @@ const ForgotPassword = () => {
                 <CardBody p={6}>
                     <VStack spacing={4}>
                         <Box pt={2}>
-                            <LoomaLogo size={70} />
+                            <HifellaLogo size={70} />
                         </Box>
                         <VStack spacing={0.5}>
-                            <Heading size="lg" color="brand.600">LOOMA</Heading>
-                            <Text fontSize="xs" color="gray.500" fontWeight="medium">Learning Online Platform</Text>
+                            <Heading size="lg" color="brand.600">HIFELLA</Heading>
+                            <Text fontSize="xs" color="gray.500" fontWeight="medium">Hi Friends English Learning</Text>
                         </VStack>
                         <Heading size="md" color="gray.700">Lupa Password</Heading>
                         <Text color="gray.600" fontSize="sm" textAlign="center">

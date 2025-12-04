@@ -1,4 +1,4 @@
-# LOOMA - Learning Online Platform
+# HIFELLA - Learning Online Platform
 
 A modern web-based discussion platform for English language learning with real-time chat, group management, academic affiliation management, and user approval system.
 
@@ -150,7 +150,7 @@ npm install
 # Create .env file
 cp .env.example .env
 # Edit .env with your MongoDB connection string:
-# MONGODB_URI=mongodb://localhost:27017/looma
+# MONGODB_URI=mongodb://localhost:27017/hifella
 # JWT_SECRET=your_secret_key_here
 # PORT=5000
 
@@ -186,7 +186,7 @@ cp .env.production .env.production.local
 nano .env.production.local
 
 # Configure your MongoDB Atlas connection:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/looma
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/hifella
 # JWT_SECRET=your_production_secret_key
 # CLIENT_URL=http://your-domain.com
 
@@ -745,9 +745,9 @@ npm run build
 
 ```env
 # Database
-MONGODB_URI=mongodb://localhost:27017/looma
+MONGODB_URI=mongodb://localhost:27017/hifella
 # Or MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/looma
+# MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/hifella
 
 # Authentication
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production

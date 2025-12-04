@@ -16,7 +16,7 @@ import {
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import LoomaLogo from './LoomaLogo'
+import HifellaLogo from './HifellaLogo'
 import NotificationBell from './NotificationBell'
 import { getAvatarUrl } from '../utils/avatar'
 
@@ -37,13 +37,13 @@ const Navbar = () => {
           cursor="pointer"
           onClick={() => navigate(`/${user?.role}/dashboard`)}
         >
-          <LoomaLogo size={50} />
+          <HifellaLogo size={50} />
           <VStack align="start" spacing={0}>
             <Heading size="md" color="brand.600" lineHeight="1.2">
-              LOOMA
+              HIFELLA
             </Heading>
             <Text fontSize="xs" color="gray.500" fontWeight="medium">
-              Learning Online Platform
+              Hi Friends English Learning
             </Text>
           </VStack>
         </HStack>

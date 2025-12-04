@@ -6,7 +6,7 @@
 set -e  # Exit on error
 
 echo "========================================="
-echo "LOOMA - Production Deployment"
+echo "HIFELLA - Production Deployment"
 echo "========================================="
 echo ""
 
