@@ -67,13 +67,19 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     default: ''
+  },
+  resetPasswordToken: {
+    type: String
+  },
+  resetPasswordExpires: {
+    type: Date
   }
 }, {
   timestamps: true
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
@@ -86,8 +92,45 @@ userSchema.pre('save', async function(next) {
 });
 
 // Compare password method
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Generate password reset token
+userSchema.methods.generatePasswordResetToken = function () {
+  const crypto = require('crypto');
+
+  // Generate random token
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  // Hash token and set to resetPasswordToken field
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set token expiration (1 hour)
+  this.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+
+  // Return unhashed token to send via email
+  return resetToken;
+};
+
+// Validate password reset token
+userSchema.methods.validatePasswordResetToken = function (token) {
+  const crypto = require('crypto');
+
+  // Hash the provided token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  // Check if token matches and hasn't expired
+  return (
+    this.resetPasswordToken === hashedToken &&
+    this.resetPasswordExpires > Date.now()
+  );
 };
 
 module.exports = mongoose.model('User', userSchema);

@@ -100,6 +100,12 @@ const Login = () => {
                   />
                 </FormControl>
 
+                <Box w="full" textAlign="right">
+                  <Link as={RouterLink} to="/forgot-password" color="brand.500" fontSize="xs" fontWeight="medium">
+                    Lupa password?
+                  </Link>
+                </Box>
+
                 <Button
                   type="submit"
                   colorScheme="brand"

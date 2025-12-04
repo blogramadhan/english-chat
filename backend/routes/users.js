@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const upload = require('../middleware/upload');
 const fs = require('fs');
 const path = require('path');
+const emailService = require('../services/emailService');
 
 // @route   GET /api/users/me
 // @desc    Get current user profile
@@ -133,6 +134,26 @@ router.put('/profile', protect, async (req, res) => {
     }
 
     const updatedUser = await user.save();
+
+    // Track changes for email notification
+    const changes = {};
+    if (req.body.name && req.body.name !== user.name) changes.name = req.body.name;
+    if (req.body.email && req.body.email !== user.email) changes.email = req.body.email;
+    if (req.body.nim && req.body.nim !== user.nim) changes.nim = req.body.nim;
+    if (req.body.nip && req.body.nip !== user.nip) changes.nip = req.body.nip;
+    if (req.body.university !== undefined) changes.university = true;
+    if (req.body.faculty !== undefined) changes.faculty = true;
+    if (req.body.program !== undefined) changes.program = true;
+
+    // Send profile update email if there are changes
+    if (Object.keys(changes).length > 0) {
+      try {
+        await emailService.sendProfileUpdateEmail(updatedUser.name, updatedUser.email, changes);
+      } catch (emailError) {
+        console.error('Failed to send profile update email:', emailError);
+        // Continue even if email fails
+      }
+    }
 
     // Populate university, faculty, and program
     await updatedUser.populate('university', 'name code');
