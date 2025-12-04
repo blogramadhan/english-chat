@@ -185,7 +185,7 @@ const Register = () => {
             </Box>
             <VStack spacing={0.5}>
               <Heading size="lg" color="brand.600">HIFELLA</Heading>
-              <Text fontSize="xs" color="gray.500" fontWeight="medium">Hi Friends English Learning</Text>
+              <Text fontSize="xs" color="gray.500" fontWeight="medium">Interactive English Learning Platform</Text>
             </VStack>
             <Text color="gray.600" fontSize="sm">Create new account</Text>
 

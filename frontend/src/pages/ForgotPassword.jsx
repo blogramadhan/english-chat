@@ -66,7 +66,7 @@ const ForgotPassword = () => {
                         </Box>
                         <VStack spacing={0.5}>
                             <Heading size="lg" color="brand.600">HIFELLA</Heading>
-                            <Text fontSize="xs" color="gray.500" fontWeight="medium">Hi Friends English Learning</Text>
+                            <Text fontSize="xs" color="gray.500" fontWeight="medium">Interactive English Learning Platform</Text>
                         </VStack>
                         <Heading size="md" color="gray.700">Forgot Password</Heading>
                         <Text color="gray.600" fontSize="sm" textAlign="center">
