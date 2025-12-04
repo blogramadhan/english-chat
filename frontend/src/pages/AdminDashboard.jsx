@@ -118,7 +118,7 @@ const AdminDashboard = () => {
       setError(error.response?.data?.message || 'Failed to load data')
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal memuat data',
+        description: error.response?.data?.message || 'Failed to load data',
         status: 'error',
         duration: 5000,
       })
@@ -134,7 +134,7 @@ const AdminDashboard = () => {
 
       toast({
         title: 'User approved',
-        description: 'User berhasil disetujui',
+        description: 'User approved successfully',
         status: 'success',
         duration: 3000,
       })
@@ -143,7 +143,7 @@ const AdminDashboard = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal approve user',
+        description: error.response?.data?.message || 'Failed to approve user',
         status: 'error',
         duration: 3000,
       })
@@ -156,7 +156,7 @@ const AdminDashboard = () => {
 
       toast({
         title: 'User rejected',
-        description: 'User ditolak',
+        description: 'User rejected successfully',
         status: 'success',
         duration: 3000,
       })
@@ -165,7 +165,7 @@ const AdminDashboard = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal reject user',
+        description: error.response?.data?.message || 'Failed to reject user',
         status: 'error',
         duration: 3000,
       })
@@ -197,7 +197,7 @@ const AdminDashboard = () => {
 
       toast({
         title: 'User deleted',
-        description: 'User berhasil dihapus',
+        description: 'User deleted successfully',
         status: 'success',
         duration: 3000,
       })
@@ -207,7 +207,7 @@ const AdminDashboard = () => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal hapus user',
+        description: error.response?.data?.message || 'Failed to delete user',
         status: 'error',
         duration: 3000,
       })

@@ -49,7 +49,7 @@ const ResetPassword = () => {
         if (password !== confirmPassword) {
             toast({
                 title: 'Password Mismatch',
-                description: 'Password dan konfirmasi password tidak cocok.',
+                description: 'Password and confirmation password do not match.',
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -60,7 +60,7 @@ const ResetPassword = () => {
         if (password.length < 6) {
             toast({
                 title: 'Password Too Short',
-                description: 'Password harus minimal 6 karakter.',
+                description: 'Password must be at least 6 characters.',
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -79,7 +79,7 @@ const ResetPassword = () => {
 
             toast({
                 title: 'Password Reset Successful',
-                description: 'Password Anda telah berhasil direset. Silakan login dengan password baru Anda.',
+                description: 'Your password has been successfully reset. Please login with your new password.',
                 status: 'success',
                 duration: 5000,
                 isClosable: true,
@@ -121,20 +121,20 @@ const ResetPassword = () => {
                         </VStack>
                         <Heading size="md" color="gray.700">Reset Password</Heading>
                         <Text color="gray.600" fontSize="sm" textAlign="center">
-                            Masukkan password baru Anda.
+                            Enter your new password.
                         </Text>
 
                         <Alert status="info" borderRadius="md" fontSize="sm">
                             <AlertIcon />
                             <AlertDescription>
-                                Password harus minimal 6 karakter.
+                                Password must be at least 6 characters.
                             </AlertDescription>
                         </Alert>
 
                         <Box as="form" onSubmit={handleSubmit} w="full">
                             <VStack spacing={3}>
                                 <FormControl isRequired>
-                                    <FormLabel fontSize="sm">Password Baru</FormLabel>
+                                    <FormLabel fontSize="sm">New Password</FormLabel>
                                     <Input
                                         type="password"
                                         value={password}
@@ -145,7 +145,7 @@ const ResetPassword = () => {
                                 </FormControl>
 
                                 <FormControl isRequired>
-                                    <FormLabel fontSize="sm">Konfirmasi Password</FormLabel>
+                                    <FormLabel fontSize="sm">Confirm Password</FormLabel>
                                     <Input
                                         type="password"
                                         value={confirmPassword}
@@ -167,9 +167,9 @@ const ResetPassword = () => {
                                 </Button>
 
                                 <Text fontSize="sm">
-                                    Ingat password Anda?{' '}
+                                    Remember your password?{' '}
                                     <Link as={RouterLink} to="/login" color="brand.500" fontWeight="bold">
-                                        Login di sini
+                                        Login here
                                     </Link>
                                 </Text>
                             </VStack>

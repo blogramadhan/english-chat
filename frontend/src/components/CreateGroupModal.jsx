@@ -49,7 +49,7 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Gagal memuat daftar mahasiswa',
+        description: 'Failed to load student list',
         status: 'error',
         duration: 3000,
       })
@@ -68,7 +68,7 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
       })
 
       toast({
-        title: 'Grup berhasil dibuat',
+        title: 'Group created successfully',
         status: 'success',
         duration: 3000,
       })
@@ -81,7 +81,7 @@ const CreateGroupModal = ({ isOpen, onClose, onSuccess }) => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal membuat grup',
+        description: error.response?.data?.message || 'Failed to create group',
         status: 'error',
         duration: 3000,
       })

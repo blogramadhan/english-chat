@@ -68,16 +68,16 @@ const ForgotPassword = () => {
                             <Heading size="lg" color="brand.600">HIFELLA</Heading>
                             <Text fontSize="xs" color="gray.500" fontWeight="medium">Hi Friends English Learning</Text>
                         </VStack>
-                        <Heading size="md" color="gray.700">Lupa Password</Heading>
+                        <Heading size="md" color="gray.700">Forgot Password</Heading>
                         <Text color="gray.600" fontSize="sm" textAlign="center">
-                            Masukkan email Anda dan kami akan mengirimkan link untuk mereset password Anda.
+                            Enter your email address and we will send you a link to reset your password.
                         </Text>
 
                         {submitted ? (
                             <Alert status="success" borderRadius="md">
                                 <AlertIcon />
                                 <AlertDescription fontSize="sm">
-                                    Link reset password telah dikirim ke email Anda. Silakan cek inbox Anda (dan folder spam jika tidak ditemukan).
+                                    Password reset link has been sent to your email. Please check your inbox (and spam folder if not found).
                                 </AlertDescription>
                             </Alert>
                         ) : (
@@ -102,7 +102,7 @@ const ForgotPassword = () => {
                                         isLoading={loading}
                                         mt={2}
                                     >
-                                        Kirim Link Reset Password
+                                        Send Reset Link
                                     </Button>
                                 </VStack>
                             </Box>
@@ -110,15 +110,15 @@ const ForgotPassword = () => {
 
                         <VStack spacing={2} w="full">
                             <Text fontSize="sm">
-                                Ingat password Anda?{' '}
+                                Remember your password?{' '}
                                 <Link as={RouterLink} to="/login" color="brand.500" fontWeight="bold">
-                                    Login di sini
+                                    Login here
                                 </Link>
                             </Text>
                             <Text fontSize="sm">
-                                Belum punya akun?{' '}
+                                Don't have an account?{' '}
                                 <Link as={RouterLink} to="/register" color="brand.500" fontWeight="bold">
-                                    Daftar di sini
+                                    Register here
                                 </Link>
                             </Text>
                         </VStack>

@@ -186,7 +186,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
         if (formData.password.length < 6) {
           toast({
             title: 'Error',
-            description: 'Password minimal 6 karakter',
+            description: 'Password must be at least 6 characters',
             status: 'error',
             duration: 3000,
             isClosable: true,
@@ -207,8 +207,8 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
       const { data } = await api.put(`/admin/users/${user._id}`, updateData);
 
       toast({
-        title: 'Berhasil',
-        description: data.message || 'User berhasil diperbarui',
+        title: 'Success',
+        description: data.message || 'User updated successfully',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -222,7 +222,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
     } catch (error) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Gagal memperbarui user',
+        description: error.response?.data?.message || 'Failed to update user',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -244,12 +244,12 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
           <ModalBody>
             <VStack spacing={4}>
               <FormControl isRequired>
-                <FormLabel>Nama</FormLabel>
+                <FormLabel>Name</FormLabel>
                 <Input
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="Nama lengkap"
+                  placeholder="Full name"
                 />
               </FormControl>
 
@@ -265,16 +265,16 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
               </FormControl>
 
               <FormControl>
-                <FormLabel>Password Baru</FormLabel>
+                <FormLabel>New Password</FormLabel>
                 <Input
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Kosongkan jika tidak ingin mengubah password"
+                  placeholder="Leave blank to keep current password"
                 />
                 <Text fontSize="xs" color="gray.500" mt={1}>
-                  Minimal 6 karakter. Biarkan kosong jika tidak ingin mengubah password.
+                  Minimum 6 characters. Leave blank if you don't want to change the password.
                 </Text>
               </FormControl>
 
@@ -285,7 +285,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
                     name="nim"
                     value={formData.nim}
                     onChange={handleChange}
-                    placeholder="Nomor Induk Mahasiswa"
+                    placeholder="Student ID Number"
                   />
                 </FormControl>
               )}
@@ -297,7 +297,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
                     name="nip"
                     value={formData.nip}
                     onChange={handleChange}
-                    placeholder="Nomor Induk Pegawai"
+                    placeholder="Employee ID Number"
                   />
                 </FormControl>
               )}
@@ -404,10 +404,10 @@ const EditUserModal = ({ isOpen, onClose, user, onUserUpdated }) => {
 
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>
-              Batal
+              Cancel
             </Button>
             <Button colorScheme="blue" type="submit" isLoading={loading}>
-              Simpan
+              Save
             </Button>
           </ModalFooter>
         </form>
