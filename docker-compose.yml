@@ -14,6 +14,7 @@ services:
       - MONGODB_URI=${MONGODB_URI}
       - JWT_SECRET=${JWT_SECRET}
       - CLIENT_URL=${CLIENT_URL}
+      - RESEND_API=${RESEND_API}
     volumes:
       # Persist uploaded files
       - ./backend/uploads:/app/uploads
