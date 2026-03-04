@@ -61,7 +61,8 @@ backups/
 Caddyfile
 Caddyfile.*
 
-# Markdown files - only README.md is tracked
+# Markdown files - only README.md and CLAUDE.md are tracked
 *.md
 !README.md
+!CLAUDE.md
 

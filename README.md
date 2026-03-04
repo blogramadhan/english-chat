@@ -129,13 +129,13 @@
 | **Node.js** | 20+ | Runtime environment |
 | **Express.js** | 4.x | Web framework |
 | **MongoDB** | 6.0+ | NoSQL database |
-| **Mongoose** | 7.x | ODM for MongoDB |
+| **Mongoose** | 8.x | ODM for MongoDB |
 | **Socket.IO** | 4.6+ | Real-time communication |
 | **JWT** | 9.x | Authentication tokens |
-| **bcrypt** | 5.x | Password hashing |
+| **bcryptjs** | 2.4.x | Password hashing |
 | **Multer** | 1.4.x | File upload handling |
-| **PDFKit** | 0.14.x | PDF generation |
-| **Resend** | 3.x | Email service |
+| **PDFKit** | 0.13.x | PDF generation |
+| **Resend** | 6.x | Email service |
 
 ### Frontend
 | Technology | Version | Purpose |
@@ -155,8 +155,7 @@
 | **Docker** | Containerization |
 | **Docker Compose** | Multi-container orchestration |
 | **MongoDB Atlas** | Cloud database hosting |
-| **PM2** | Process management (optional) |
-| **Nginx** | Reverse proxy (recommended) |
+| **Caddy** | Reverse proxy with automatic SSL |
 
 ---
 
@@ -320,48 +319,20 @@ docker-compose logs -f frontend
 - Frontend: `https://your-frontend-domain.com`
 - Backend API: `https://your-backend-domain.com`
 
-**5. Configure Reverse Proxy (Nginx)**
+**5. Configure Reverse Proxy (Caddy)**
 
-**Example Nginx Configuration:**
-```nginx
-# Frontend
-server {
-    listen 80;
-    server_name hifella.thynk.my.id;
-
-    location / {
-        proxy_pass http://localhost:3090;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
+**Example Caddyfile (see `Caddyfile.example`):**
+```
+hifella.thynk.my.id {
+    reverse_proxy localhost:3090
 }
 
-# Backend API
-server {
-    listen 80;
-    server_name hifella-pi.thynk.my.id;
-
-    location / {
-        proxy_pass http://localhost:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
-
-    # Increase upload size for images
-    client_max_body_size 20M;
+hifella-pi.thynk.my.id {
+    reverse_proxy localhost:5000
 }
 ```
 
-**Enable SSL with Certbot:**
-```bash
-sudo certbot --nginx -d hifella.thynk.my.id -d hifella-pi.thynk.my.id
-```
+Caddy automatically provisions and renews SSL certificates via Let's Encrypt.
 
 ---
 
@@ -988,10 +959,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---
 
-**Version**: 2.1.0
-**Last Updated**: 2025-12-04
+**Version**: 2.2.0
+**Last Updated**: 2026-03-04
 **Status**: Production Ready ✅
-**Node.js**: 20.19+ Required
+**Node.js**: 20+ Required
 **Vite**: 7.2.6
 
 ---
@@ -1000,6 +971,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 Made with ❤️ for English Language Learning
 
-**[⬆ Back to Top](#hifella---hi-friends-english-learning-application)**
+**[⬆ Back to Top](#hifella---interactive-english-learning-platform)**
 
 </div>
