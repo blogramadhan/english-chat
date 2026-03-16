@@ -290,8 +290,8 @@ chmod +x deploy.sh
 3. **Stop containers** - Stop services (preserves data)
 4. **Restart containers** - Quick restart
 5. **View logs** - Real-time log monitoring
-6. **Backup database** - Create backup archive
-7. **Restore from backup** - Restore previous state
+6. **Backup** - Backup MongoDB (if self-hosted) + uploaded files
+7. **Restore from backup** - Restore uploads; skips MongoDB if using Atlas
 8. **Remove containers** - Clean removal
 9. **Exit** - Exit script
 
@@ -868,7 +868,7 @@ Access to XMLHttpRequest blocked by CORS policy
 - [ ] Implement rate limiting on auth endpoints
 - [ ] Set up logging and monitoring
 - [ ] Regular security updates: `npm audit fix`
-- [ ] Backup database regularly
+- [ ] Backup regularly with `./backup.sh` — backs up uploaded files + MongoDB (auto-skipped on Atlas Free Tier since no native backup is provided)
 - [ ] Use environment variables for all secrets
 - [ ] Review and limit file upload sizes
 - [ ] Set up firewall rules
@@ -959,8 +959,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---
 
-**Version**: 2.2.0
-**Last Updated**: 2026-03-04
+**Version**: 2.2.1
+**Last Updated**: 2026-03-16
 **Status**: Production Ready ✅
 **Node.js**: 20+ Required
 **Vite**: 7.2.6

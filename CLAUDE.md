@@ -35,9 +35,9 @@ npm run preview       # Preview production build
 
 ### Deployment (from root)
 ```bash
-./deploy.sh           # Full Docker deployment
-./backup.sh           # Database backup
-./restore.sh          # Database restore
+./deploy.sh           # Full Docker deployment (interactive menu)
+./backup.sh           # Backup uploads + MongoDB (via --uri, requires mongodump installed)
+./restore.sh          # Restore uploads; auto-skips MongoDB if MONGODB_URI is Atlas (mongodb+srv)
 ```
 
 ## Architecture
@@ -94,6 +94,12 @@ Use the custom `api` utility (`frontend/src/utils/api.js`) for all API calls —
 
 ### Frontend (build-time via Vite)
 `VITE_API_URL` (API server URL), `VITE_SOCKET_URL` (Socket.IO server URL)
+
+### Backup & Server Migration
+- `backup.sh` backs up: uploaded files (`backend/uploads/`) + MongoDB dump (uses `--uri` to connect to Atlas)
+- `restore.sh` auto-detects Atlas via `mongodb+srv` in `MONGODB_URI` — if Atlas, skips MongoDB restore (data stays in cloud) and only restores uploads
+- When migrating servers: copy backup folder, clone repo, set `.env.production.local` with the same `MONGODB_URI`, run `restore.sh`, then `deploy.sh`
+- `mongodump`/`mongorestore` must be installed on the server: `sudo apt install mongodb-database-tools`
 
 ## No Test Suite
 This project currently has no test framework configured. There is no lint or format command.
