@@ -75,35 +75,25 @@ elif [ -f backend/.env ]; then
     export $(cat backend/.env | grep -v '^#' | xargs)
 fi
 
-# Extract database name
-DB_NAME=$(echo $MONGODB_URI | sed -n 's/.*\/\([^?]*\).*/\1/p')
-if [ -z "$DB_NAME" ]; then
-    DB_NAME="online-discussion"
-fi
-
-# Restore MongoDB
-echo -e "${GREEN}1. Restoring MongoDB database...${NC}"
-MONGODB_BACKUP="$BACKUP_DIR/mongodb-${TIMESTAMP}.tar.gz"
-
-if [ -f "$MONGODB_BACKUP" ]; then
-    if command -v mongorestore &> /dev/null; then
-        # Extract backup
-        TEMP_DIR=$(mktemp -d)
-        tar -xzf "$MONGODB_BACKUP" -C "$TEMP_DIR"
-
-        # Restore database
-        mongorestore --db "$DB_NAME" --drop "$TEMP_DIR/mongodb/$DB_NAME"
-
-        # Cleanup
-        rm -rf "$TEMP_DIR"
-
-        echo -e "${GREEN}✓ MongoDB restored successfully${NC}"
-    else
-        echo -e "${YELLOW}⚠ mongorestore not found. Skipping MongoDB restore.${NC}"
-        echo -e "${YELLOW}  Install with: sudo apt-get install mongodb-database-tools${NC}"
-    fi
+# Restore MongoDB (skip if using Atlas cloud)
+echo -e "${GREEN}1. Checking MongoDB restore...${NC}"
+if echo "$MONGODB_URI" | grep -q "mongodb+srv"; then
+    echo -e "${YELLOW}⚠ MongoDB Atlas detected — skipping restore (data lives in the cloud).${NC}"
 else
-    echo -e "${YELLOW}⚠ MongoDB backup not found. Skipping.${NC}"
+    MONGODB_BACKUP="$BACKUP_DIR/mongodb-${TIMESTAMP}.tar.gz"
+    if [ -f "$MONGODB_BACKUP" ]; then
+        if command -v mongorestore &> /dev/null; then
+            TEMP_DIR=$(mktemp -d)
+            tar -xzf "$MONGODB_BACKUP" -C "$TEMP_DIR"
+            mongorestore --uri="$MONGODB_URI" --drop "$TEMP_DIR/mongodb/"
+            rm -rf "$TEMP_DIR"
+            echo -e "${GREEN}✓ MongoDB restored successfully${NC}"
+        else
+            echo -e "${YELLOW}⚠ mongorestore not found. Install with: sudo apt-get install mongodb-database-tools${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⚠ MongoDB backup not found. Skipping.${NC}"
+    fi
 fi
 
 # Restore uploads folder

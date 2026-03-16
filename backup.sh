@@ -29,10 +29,10 @@ elif [ -f backend/.env ]; then
     export $(cat backend/.env | grep -v '^#' | xargs)
 fi
 
-# Extract database name from MongoDB URI
-DB_NAME=$(echo $MONGODB_URI | sed -n 's/.*\/\([^?]*\).*/\1/p')
+# Extract database name from MongoDB URI (for display only)
+DB_NAME=$(echo $MONGODB_URI | sed -n 's/.*\/\([^/?][^?]*\).*/\1/p')
 if [ -z "$DB_NAME" ]; then
-    DB_NAME="online-discussion"
+    DB_NAME="(auto-detect from URI)"
 fi
 
 echo -e "${BLUE}Database:${NC} $DB_NAME"
@@ -45,7 +45,7 @@ mkdir -p "$BACKUP_DIR"
 # Backup MongoDB
 echo -e "${GREEN}1. Backing up MongoDB database...${NC}"
 if command -v mongodump &> /dev/null; then
-    mongodump --db "$DB_NAME" --out "$BACKUP_DIR/mongodb" --quiet
+    mongodump --uri="$MONGODB_URI" --out "$BACKUP_DIR/mongodb" --quiet
 
     # Compress MongoDB backup
     tar -czf "$BACKUP_DIR/mongodb-${TIMESTAMP}.tar.gz" -C "$BACKUP_DIR" mongodb

@@ -72,6 +72,9 @@ npm run preview       # Preview production build
 - JWT tokens (7-day expiry) stored in localStorage, auto-attached via axios interceptor
 - Role middleware guards routes: `auth.protect` + `auth.isAdmin` / `auth.isDosen` / `auth.isMahasiswa`
 
+### Group Ownership
+Groups are created and managed exclusively by `dosen`. `mahasiswa` can only read/join groups. `admin` manages users and academic hierarchy but does not own groups.
+
 ### Academic Hierarchy
 University → Faculty → Program (cascading relationships with cascading deletes)
 
