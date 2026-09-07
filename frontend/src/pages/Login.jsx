@@ -70,9 +70,19 @@ const Login = () => {
             <Box pt={2}>
               <HifellaLogo size={70} />
             </Box>
-            <VStack spacing={0.5}>
+            <VStack spacing={1}>
               <Heading size="lg" color="brand.600">HIFELLA</Heading>
-              <Text fontSize="xs" color="gray.500" fontWeight="medium">Human Interaction-Facilitated Environment for Language Learning and Argumentation</Text>
+              {/* Long enough to wrap, so centre it explicitly under the wordmark. */}
+              <Text
+                fontSize="xs"
+                color="gray.500"
+                fontWeight="medium"
+                textAlign="center"
+                lineHeight="short"
+                px={2}
+              >
+                Human Interaction-Facilitated Environment for Language Learning and Argumentation
+              </Text>
             </VStack>
             <Text color="gray.600" fontSize="sm">Sign in to your account</Text>
 
