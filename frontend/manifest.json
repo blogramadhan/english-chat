@@ -1,7 +1,7 @@
 {
-  "name": "HIFELLA - Interactive English Learning Platform",
+  "name": "HIFELLA - Human Interaction-Facilitated Environment for Language Learning and Argumentation",
   "short_name": "HIFELLA",
-  "description": "Collaborative English learning and discussion platform",
+  "description": "Group discussion workspace for English language learning and argumentation",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",

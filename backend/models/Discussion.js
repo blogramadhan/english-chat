@@ -45,4 +45,8 @@ const discussionSchema = new mongoose.Schema({
   timestamps: true
 });
 
+discussionSchema.index({ createdBy: 1, createdAt: -1 });
+discussionSchema.index({ collaborators: 1 });
+discussionSchema.index({ groups: 1 });
+
 module.exports = mongoose.model('Discussion', discussionSchema);

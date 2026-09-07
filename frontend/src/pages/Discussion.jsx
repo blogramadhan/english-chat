@@ -51,53 +51,24 @@ const Discussion = () => {
     fetchDiscussion()
     fetchMessages()
 
-    // Setup socket connection
+    // Setup socket connection. The server authenticates the handshake and only
+    // delivers messages this user is allowed to see, so no filtering here.
     const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'
-    socketRef.current = io(SOCKET_URL)
+    // The token lives inside the stored userInfo blob, same as the axios client.
+    let authToken = null
+    try {
+      authToken = JSON.parse(localStorage.getItem('userInfo') || '{}').token || null
+    } catch {
+      authToken = null
+    }
+
+    socketRef.current = io(SOCKET_URL, { auth: { token: authToken } })
 
     socketRef.current.emit('join-discussion', id)
 
     socketRef.current.on('receive-message', (message) => {
-      // Only add message if it's not from current user (to avoid duplicates)
-      // Messages from current user are already added optimistically
       setMessages((prev) => {
-        // Check if message already exists (by _id or timestamp + sender)
-        const exists = prev.some(m => m._id === message._id)
-        if (exists) return prev
-
-        // For mahasiswa: filter based on message target
-        if (user.role === 'mahasiswa' && userGroup) {
-          // Show message if:
-          // 1. It's from their own group (mahasiswa messages)
-          // 2. It's a broadcast from dosen (isForAllGroups = true)
-          // 3. It's targeted to their group specifically
-          const messageGroupId = typeof message.group === 'object' ? message.group?._id : message.group
-          const targetGroupId = typeof message.targetGroup === 'object' ? message.targetGroup?._id : message.targetGroup
-
-          const isOwnGroupMessage = messageGroupId === userGroup
-          const isBroadcast = message.isForAllGroups === true
-          const isTargetedToGroup = targetGroupId === userGroup
-
-          if (!isOwnGroupMessage && !isBroadcast && !isTargetedToGroup) {
-            return prev // Don't add messages not for this student
-          }
-        }
-
-        // For dosen: filter by selected group if not 'all'
-        if (user.role === 'dosen' && selectedGroupFilter !== 'all') {
-          const messageGroupId = typeof message.group === 'object' ? message.group?._id : message.group
-          const targetGroupId = typeof message.targetGroup === 'object' ? message.targetGroup?._id : message.targetGroup
-
-          // Show message if it's from the selected group or targeted to the selected group
-          const isFromSelectedGroup = messageGroupId === selectedGroupFilter
-          const isTargetedToSelectedGroup = targetGroupId === selectedGroupFilter
-          const isBroadcast = message.isForAllGroups === true
-
-          if (!isFromSelectedGroup && !isTargetedToSelectedGroup && !isBroadcast) {
-            return prev // Don't add messages from other groups
-          }
-        }
-
+        if (prev.some((m) => m._id === message._id)) return prev
         return [...prev, message]
       })
     })
@@ -109,10 +80,11 @@ const Discussion = () => {
 
     return () => {
       if (socketRef.current) {
+        socketRef.current.emit('leave-discussion', id)
         socketRef.current.disconnect()
       }
     }
-  }, [id, user, userGroup, selectedGroupFilter])
+  }, [id])
 
   const fetchDiscussion = async () => {
     try {
@@ -190,14 +162,10 @@ const Discussion = () => {
 
       const { data } = await api.post('/messages', payload)
 
-      // Add message to local state immediately (optimistic update)
-      setMessages((prev) => [...prev, data])
-
-      // Emit to socket for other users to receive
-      socketRef.current.emit('send-message', {
-        discussionId: id,
-        ...data
-      })
+      // Show it at once; the server's broadcast is de-duplicated by _id.
+      setMessages((prev) =>
+        prev.some((m) => m._id === data._id) ? prev : [...prev, data]
+      )
 
       // Clear reply state after sending
       setReplyToMessage(null)
@@ -232,14 +200,8 @@ const Discussion = () => {
     try {
       await api.delete(`/messages/${messageToDelete._id}`)
 
-      // Remove message from local state
+      // Remove locally; the server broadcasts the deletion to the room.
       setMessages((prev) => prev.filter(m => m._id !== messageToDelete._id))
-
-      // Emit to socket for other users to remove
-      socketRef.current.emit('delete-message', {
-        discussionId: id,
-        messageId: messageToDelete._id
-      })
 
       toast({
         title: 'Message deleted',
@@ -287,14 +249,10 @@ const Discussion = () => {
         }
       })
 
-      // Add message to local state immediately (optimistic update)
-      setMessages((prev) => [...prev, data])
-
-      // Emit to socket for other users to receive
-      socketRef.current.emit('send-message', {
-        discussionId: id,
-        ...data
-      })
+      // Show it at once; the server's broadcast is de-duplicated by _id.
+      setMessages((prev) =>
+        prev.some((m) => m._id === data._id) ? prev : [...prev, data]
+      )
     } catch (error) {
       toast({
         title: 'Error',

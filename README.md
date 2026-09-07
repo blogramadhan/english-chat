@@ -1,4 +1,4 @@
-# HIFELLA - Interactive English Learning Platform
+# HIFELLA - Human Interaction-Facilitated Environment for Language Learning and Argumentation
 
 > A modern, full-featured web-based discussion platform for English language learning with real-time chat, comprehensive group management, academic affiliation system, and automated user approval workflow.
 

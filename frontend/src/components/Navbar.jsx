@@ -43,7 +43,7 @@ const Navbar = () => {
               HIFELLA
             </Heading>
             <Text fontSize="xs" color="gray.500" fontWeight="medium">
-              Interactive English Learning Platform
+              Human Interaction-Facilitated Environment for Language Learning and Argumentation
             </Text>
           </VStack>
         </HStack>

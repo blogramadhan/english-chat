@@ -7,8 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (production only)
-RUN npm install --omit=dev
+# Install dependencies (production only). Prefer the lockfile so the image
+# gets exactly the audited versions rather than re-resolving semver ranges.
+RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
 
 # Copy application files
 COPY . .

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, isDosen } = require('../middleware/auth');
+const { resolveAccess } = require('../middleware/discussionAccess');
 const Discussion = require('../models/Discussion');
 const Group = require('../models/Group');
 const Message = require('../models/Message');
@@ -96,15 +97,26 @@ router.get('/', protect, async (req, res) => {
 // @access  Private
 router.get('/:id', protect, async (req, res) => {
   try {
+    // Only the owning dosen, a collaborator, or a member of one of its groups
+    // may read a discussion. Without this, any id is readable by anyone.
+    const access = await resolveAccess(req.params.id, req.user);
+    if (!access) {
+      return res.status(404).json({ message: 'Discussion not found' });
+    }
+    if (!access.isOwner && !access.isMember) {
+      return res
+        .status(403)
+        .json({ message: 'You do not have access to this discussion' });
+    }
+
     const discussion = await Discussion.findById(req.params.id)
       .populate('createdBy collaborators groups group category', '-password');
 
-    if (!discussion) {
-      return res.status(404).json({ message: 'Discussion not found' });
-    }
-
     res.json(discussion);
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(404).json({ message: 'Discussion not found' });
+    }
     res.status(500).json({ message: error.message });
   }
 });

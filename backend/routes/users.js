@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth');
+const { protect, isAdmin } = require('../middleware/auth');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const upload = require('../middleware/upload');
@@ -27,7 +27,7 @@ router.get('/me', protect, async (req, res) => {
 // @route   GET /api/users
 // @desc    Get all users (for admin/dosen)
 // @access  Private
-router.get('/', protect, async (req, res) => {
+router.get('/', protect, isAdmin, async (req, res) => {
   try {
     const users = await User.find().select('-password');
     res.json(users);

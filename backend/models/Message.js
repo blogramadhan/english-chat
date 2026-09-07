@@ -66,4 +66,10 @@ const messageSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// The transcript is always read per discussion, newest first.
+messageSchema.index({ discussion: 1, createdAt: -1 });
+messageSchema.index({ discussion: 1, group: 1 });
+messageSchema.index({ discussion: 1, targetGroup: 1 });
+messageSchema.index({ replyTo: 1 });
+
 module.exports = mongoose.model('Message', messageSchema);

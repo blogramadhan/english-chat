@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, isDosen } = require('../middleware/auth');
+const { canSeeGroup } = require('../middleware/discussionAccess');
 const Group = require('../models/Group');
 
 // @route   POST /api/groups
@@ -55,15 +56,22 @@ router.get('/', protect, async (req, res) => {
 // @access  Private
 router.get('/:id', protect, async (req, res) => {
   try {
-    const group = await Group.findById(req.params.id)
-      .populate('createdBy members', '-password');
-
+    // Membership lists carry names and emails, so restrict them to the group's
+    // own members, the dosen who owns it, and admins.
+    const { group, allowed } = await canSeeGroup(req.params.id, req.user);
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
+    if (!allowed) {
+      return res.status(403).json({ message: 'Not authorized to view this group' });
+    }
 
+    await group.populate('createdBy members', '-password');
     res.json(group);
   } catch (error) {
+    if (error.name === 'CastError') {
+      return res.status(404).json({ message: 'Group not found' });
+    }
     res.status(500).json({ message: error.message });
   }
 });

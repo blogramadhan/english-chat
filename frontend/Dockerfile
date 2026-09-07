@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies. Prefer the lockfile for a reproducible build.
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 # Install serve for production
 RUN npm install -g serve

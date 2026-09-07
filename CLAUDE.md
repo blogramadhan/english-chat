@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-HIFELLA - Interactive English Learning Platform. A full-stack web discussion platform for English language learning with real-time chat, group management, academic affiliation system, and automated user approval workflow.
+HIFELLA - Human Interaction-Facilitated Environment for Language Learning and Argumentation. A full-stack web discussion platform for English language learning with real-time chat, group management, academic affiliation system, and automated user approval workflow.
 
 ## Tech Stack
 

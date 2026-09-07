@@ -1,7 +1,27 @@
 const { Resend } = require('resend');
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API);
+// The Resend constructor throws when the key is absent. Constructing it at
+// import time therefore took the whole server down on a missing or misspelled
+// RESEND_API. Email is best-effort at every call site, so degrade instead:
+// without a key, sends resolve as a handled error and the app keeps running.
+const apiKey = process.env.RESEND_API;
+
+if (!apiKey) {
+  console.warn(
+    'RESEND_API is not set - transactional email is disabled for this process.'
+  );
+}
+
+const resend = apiKey
+  ? new Resend(apiKey)
+  : {
+      emails: {
+        send: async () => ({
+          data: null,
+          error: new Error('Email is not configured (RESEND_API is missing)')
+        })
+      }
+    };
 
 // Email configuration
 const FROM_EMAIL = 'HiFella Admin <hifella@thynk.my.id>';
@@ -153,7 +173,7 @@ const sendRegistrationEmail = async (name, email) => {
               <div class="footer">
                 <p>Email ini dikirim secara otomatis dari sistem HiFella.</p>
                 <p>Mohon tidak membalas email ini.</p>
-                <p>&copy; ${new Date().getFullYear()} HiFella - Interactive English Learning Platform. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} HiFella - Human Interaction-Facilitated Environment for Language Learning and Argumentation. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -350,7 +370,7 @@ const sendProfileUpdateEmail = async (name, email, changes) => {
               <div class="footer">
                 <p>Email ini dikirim secara otomatis dari sistem HiFella.</p>
                 <p>Mohon tidak membalas email ini.</p>
-                <p>&copy; ${new Date().getFullYear()} HiFella - Interactive English Learning Platform. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} HiFella - Human Interaction-Facilitated Environment for Language Learning and Argumentation. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -545,7 +565,7 @@ const sendPasswordResetEmail = async (name, email, resetToken) => {
               <div class="footer">
                 <p>Email ini dikirim secara otomatis dari sistem HiFella.</p>
                 <p>Mohon tidak membalas email ini.</p>
-                <p>&copy; ${new Date().getFullYear()} HiFella - Interactive English Learning Platform. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} HiFella - Human Interaction-Facilitated Environment for Language Learning and Argumentation. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -748,7 +768,7 @@ const sendPasswordResetConfirmationEmail = async (name, email) => {
               <div class="footer">
                 <p>Email ini dikirim secara otomatis dari sistem HiFella.</p>
                 <p>Mohon tidak membalas email ini.</p>
-                <p>&copy; ${new Date().getFullYear()} HiFella - Interactive English Learning Platform. All rights reserved.</p>
+                <p>&copy; ${new Date().getFullYear()} HiFella - Human Interaction-Facilitated Environment for Language Learning and Argumentation. All rights reserved.</p>
               </div>
             </div>
           </div>

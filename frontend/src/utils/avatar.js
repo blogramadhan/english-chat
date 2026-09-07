@@ -17,7 +17,7 @@ export const getAvatarUrl = (avatarPath) => {
   const API_URL = import.meta.env.VITE_API_URL
   if (API_URL) {
     // Remove /api from API_URL if it exists, and append the avatar path
-    const baseUrl = API_URL.replace('/api', '')
+    const baseUrl = API_URL.replace(/\/api\/?$/, '')
     return `${baseUrl}${avatarPath}`
   }
 
@@ -44,7 +44,7 @@ export const getFileUrl = (filePath) => {
   const API_URL = import.meta.env.VITE_API_URL
   if (API_URL) {
     // Remove /api from API_URL if it exists, and append the file path
-    const baseUrl = API_URL.replace('/api', '')
+    const baseUrl = API_URL.replace(/\/api\/?$/, '')
     return `${baseUrl}${filePath}`
   }
 
